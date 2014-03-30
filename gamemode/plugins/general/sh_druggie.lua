@@ -68,11 +68,11 @@ end
 
 Dialog["Drug Dealer"] = {}
 Dialog["Drug Dealer"][1] = {
-	Text 		= "What are you doin round' here...",
+	Text 		= "What are you doin 'round here...",
 	Replies 	= {1,2}
 }
 Dialog["Drug Dealer"][2] = {
-	Text 		= "What do you have?",
+	Text 		= "What are you packin'... Got anything sweet for me?",
 	Replies 	= function(pl) 
 		local t = {} 
 		if pl:HasItem("Weed") then table.insert(t,5) end
@@ -117,7 +117,7 @@ Replies["Drug Dealer"][4] = {
 	OnUse		= function(pl) end
 }
 Replies["Drug Dealer"][5] = {
-	Text		= "I have some weed",
+	Text		= "I've got some of that homegrown...",
 	OnUse		= function(pl) 
 		if !pl:HasItem("Weed") then 
 			return 4 
@@ -139,7 +139,7 @@ Replies["Drug Dealer"][5] = {
 	end
 }
 Replies["Drug Dealer"][6] = {
-	Text		= "I have some shrooms",
+	Text		= "I have some nature snacks... the psychedelic kind.",
 	OnUse		= function(pl) 
 		if !pl:HasItem("Shrooms") then 
 			return 4 
