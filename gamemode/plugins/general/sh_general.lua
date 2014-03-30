@@ -3,19 +3,11 @@ ITEM.Group = "Tools"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_crowbar.mdl"
 ITEM.Description = "...because you forgot your key, right?"
-ITEM.Weight = 0.8
+ITEM.Size = {1,2}
 ITEM.LookAt = vector_origin
 ITEM.CamPos = Vector(10,40,20)
 ITEM.BulkPrice = 1000
 ITEM.BulkAmt = 10
-ITEM.TeamOnly = TEAM_MOBBOSS
-ITEM.Args = {
-	CanPutAway = true
-}
-ITEM.CanHold = true
-ITEM.MenuAdds = function(menu,index)
-	menu:AddOption("Equip",function() RunConsoleCommand("use_gun",index) end)
-end
 ITEM.SWEPClass = "lockpick"
 
 
@@ -24,15 +16,10 @@ ITEM.Group = "Edible Items"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/healthvial.mdl"
 ITEM.Description = "Great for healing after a drunken brawl"
-ITEM.Weight = 1
+ITEM.Size = {1,1}
 ITEM.CanHeal = true
 ITEM.LookAt = vector_origin
 ITEM.CamPos = Vector(5,12,16)
-ITEM.BulkPrice = 1000
-ITEM.BulkAmt = 10
-ITEM.Args = {
-	RestoreHP = 20
-}
 ITEM.CanHold = true
 ITEM.MenuAdds = function(menu,index)
 	menu:AddOption("Use",function() RunConsoleCommand("use_health",index) end)
@@ -41,32 +28,23 @@ end
 local ITEM = items.DefineItem("Water")
 ITEM.Group = "General"
 ITEM.EntityClass = "darkland_item"
+ITEM.Size = {1,2}
 ITEM.Model = "models/props_junk/garbage_plasticbottle003a.mdl"
 ITEM.Description = "Good old H2O"
 ITEM.LookAt = vector_origin
 ITEM.CamPos = Vector(10,40,20)
-ITEM.Weight = 1
-ITEM.NoBuy = true
-ITEM.Args = {}
 
 local ITEM = items.DefineItem("Crowbar")
 ITEM.Group = "Weapons"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_crowbar.mdl"
 ITEM.Description = "Great for opening crates...and heads."
-ITEM.Weight = 1.5
+ITEM.Size = {1,2}
 ITEM.LookAt = vector_origin
 ITEM.CamPos = Vector(10,40,20)
-ITEM.BulkPrice = 2500
-ITEM.BulkAmt = 10
-ITEM.NoBuy = true
-ITEM.Args = {
-	CanPutAway = true
-}
+
 ITEM.CanHold = true
-ITEM.MenuAdds = function(menu,index)
-	menu:AddOption("Equip",function() RunConsoleCommand("use_gun",index) end)
-end
+
 ITEM.SWEPClass = "weapon_crowbar"
 
 
@@ -75,21 +53,13 @@ ITEM.Group = "Weapons"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_rif_ak47.mdl"
 ITEM.Description = "Outlawed weapon that is very powerful"
-ITEM.Weight = 1.3
+ITEM.Size = {3,2}
 ITEM.AmmoAmt = 90
 ITEM.LookAt = vector_origin
 ITEM.CamPos = Vector(10,40,20)
 ITEM.Ammo = "SMG1"
-ITEM.BulkPrice = 30000
-ITEM.BulkAmt = 10
-ITEM.NoBuy = true
-ITEM.Args = {
-	CanPutAway = true
-}
 ITEM.CanHold = true
-ITEM.MenuAdds = function(menu,index)
-	menu:AddOption("Equip",function() RunConsoleCommand("use_gun",index) end)
-end
+
 ITEM.SWEPClass = "darkland_ak47"
 
 local ITEM = items.DefineItem("FiveSeven")

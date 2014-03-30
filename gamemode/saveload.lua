@@ -4,12 +4,17 @@ function BeginRPProfile(pl)
 	--SET UP DEFAULTS IN CASE QUERY TAKES FOREVER
 	pl:SetTeam(TEAM_CITIZENS)
 	pl.Inventory 		= {}
+	for y=1,INV_Y do
+		pl.Inventory[y] = {}
+		for x=1,INV_X do
+			pl.Inventory[y][x] = false
+		end
+	end
 	pl.Clothing 		= {}
 	pl.CurrentClothing 	= {}
 	pl.Skills 			= {}
 	pl.Levels 			= {}
 	pl.Cars 			= {}
-	pl.TotalWeight 		= 0
 	pl:SetMoney(DEFAULT_CASH)
 	
 	local steamID = pl:SteamID();
@@ -57,7 +62,7 @@ function SaveRPAccount(pl)
 	if !pl.LoadedRolePlay then return end
 	
 	local safemoney 	= pl:GetMoneyOffset()
-	local safeinv 		= table.ToSave(pl.Inventory)
+	local safeinv 		= util.TableToKeyValues(pl.Inventory)
 	local safeid 		= pl:SteamID()
 	local skills 		= table.ToSave(pl.Skills)
 	local levels 		= table.ToSave(pl.Levels)

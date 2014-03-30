@@ -159,7 +159,10 @@ function GM:PlayerSpawn(pl)
 	GAMEMODE:PlayerSetModel(pl)
 	GAMEMODE:PlayerLoadout(pl)
 end
-
+function PlayerReady(pl)
+	hook.Call("OnPlayerReady",GAMEMODE,pl)
+end
+concommand.Add("player_ready",PlayerReady)
 function GM:GetFallDamage(ply,speed)
 	speed = speed - 580
 	return speed * (100/444)
@@ -363,13 +366,7 @@ function GM:PlayerDeath( Victim, Inflictor, Attacker )
 		if(v.CanPutAway)then
 			if(DROP_GUNS_ON_DEATH)then
 				CreateRolePlayItem(v.WepType,Victim,true,true)
-			end
-			Victim.TotalWeight = Victim.TotalWeight - GetItems()[v.WepType].Weight
-			if(Victim.TotalWeight < 0)then Victim.TotalWeight = 0 end
-			umsg.Start("losegun",self)
-				umsg.String(v.WepType)
-			umsg.End()
-			
+			end			
 		end
 	end
 	

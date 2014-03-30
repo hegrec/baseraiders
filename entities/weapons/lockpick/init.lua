@@ -30,13 +30,6 @@ function SWEP:TryUnlock(tr)
 		self.Owner:AddStars(1)
 	else
 		self.Owner:EmitSound("physics/metal/metal_sheet_impact_bullet1.wav")
-		
-		local tbl =  GetItems()["Lock Pick"]
-		umsg.Start("losegun",self.Owner)
-			umsg.String("Lock Pick")
-		umsg.End()
-		self.Owner.TotalWeight = self.Owner.TotalWeight - tbl.Weight
-		if(self.Owner.TotalWeight < 0)then self.Owner.TotalWeight = 0 end
-		self.Owner:StripWeapon("lockpick")
+		self.Owner:TakeItem("Lock Pick")
 	end
 end

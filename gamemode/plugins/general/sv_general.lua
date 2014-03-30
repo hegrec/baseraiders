@@ -1,9 +1,13 @@
 hook.Add("PlayerInitialSpawn","GiveTbl",function(pl) pl.AmmoReserves = {} pl.AmmoClips = {} end)
 function UseGun(pl,cmd,args)
 	if(!pl:Alive())then return end
-	local index = table.concat(args," ")
-	if !pl:HasItem(index) then return end
+	local posX = tonumber(args[1])
+	local posY = tonumber(args[2])
+	print(posX,posY)
+	local index = pl:GetItem(posX,posY)
+	if !index then return end
 	local tbl = GetItems()[index]
+	if !tbl then return end
 	if pl:HasWeapon(tbl.SWEPClass) then return end --Don't waste them
 	local t = {}
 	t.start = pl:GetPos()+Vector(0,0,10)
@@ -13,7 +17,6 @@ function UseGun(pl,cmd,args)
 	if IsValid(t.Entity) && t.Entity:GetClass() == "func_tracktrain" then pl:SendNotify("It is a sin to pull a weapon out in an elevator","NOTIFY_ERROR",5) return end
 	pl:SelectWeapon("hands")
 	local wep = pl:Give(tbl.SWEPClass)
-	pl:TakeItem(index,1,true)
 	if tbl.Ammo then
 		if !IsValid(wep) then return end
 		pl:RemoveAmmo(pl:GetAmmoCount(tbl.Ammo),tbl.Ammo)
@@ -76,16 +79,6 @@ function PutAway(pl,txt,wep)
 end
 AddChatCommand("putaway",PutAway)
 AddChatCommand("holster",PutAway)
-
-hook.Add("ChangedJob","StoreWeps",
-function(pl,job)
-	for i,v in pairs(pl:GetWeapons()) do
-		if v.CanPutAway then
-			PutAway(pl,nil,v)
-		end
-	end
-end)
-
 DEFAULT_RESERVE = 10 --this is ten bulks of each gun and regens every 10 minutes, This creates demand and players will buy guns from other players
 
 

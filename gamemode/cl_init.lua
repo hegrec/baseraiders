@@ -127,6 +127,7 @@ function GM:InitPostEntity()
 	
 	LoadColor()
 	LoadHeartBeat()
+	RunConsoleCommand("player_ready")
 	
 end
 

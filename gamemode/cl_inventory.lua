@@ -1,7 +1,3 @@
-
-Inventory = {}
-local EquippedGuns = {} --hold this for the visual weight bar 
-
 local inv
 local function ShowInv(pl,cmd,args)
 	if !ValidPanel(inv) then inv = vgui.Create("Inventory") end
@@ -9,10 +5,10 @@ local function ShowInv(pl,cmd,args)
 	local y = ScrH()-(inv:GetTall()+100)
 	if !inv.Open then 
 		inv:MoveTo(0,y,0.2,0,1)
-		gui.EnableScreenClicker(true)
+		inv:MakePopup()
 	else
 		inv:MoveTo(-inv:GetWide(),y,0.2,0,1)
-		gui.EnableScreenClicker(false)
+		inv:Remove()
 	end
 	inv.Open = !inv.Open
 	
@@ -24,42 +20,51 @@ hook.Add("OnContextMenuClose","hideinv",ShowInv)
 
 local INVENTORY = {}
 function INVENTORY:Init()
-	self:SetSize(500,280)
+	self:SetSize(INV_X*INV_TILE_SIZE,INV_Y*INV_TILE_SIZE)
 	self:SetPos(-self:GetWide(),ScrH()-(self:GetTall()+100))
-	self.TargetPos = ScrW()
-	self:SetTitle("Inventory")
-	self:SetDraggable(false)
-	self:ShowCloseButton(false)
-	self.List = vgui.Create("DPanelList",self)
-	self.List:StretchToParent(5,35,5,5);
-	self.List:EnableHorizontal(true);
-	self.List:EnableVerticalScrollbar()
-	self.TotalWeight = 0
+	self.ItemSpots = {}
+	for y=1,INV_Y do
+		self.ItemSpots[y] = {}
+		for x=1,INV_X do
+			self.ItemSpots[y][x] = false
+		end
+	end
 	self.Open = false
-	self.animPress = Derma_Anim( "Popout", self, self.PressedAnim )
-	self.animPress2 = Derma_Anim( "Popin", self, self.PressedAnim2 )
-	
-	for i,v in pairs(Inventory) do
-		self:MakeItem(i,v)
+	for y=1,INV_Y do
+		for x=1,INV_X do
+			if LocalPlayer().Inventory[y][x] != false and LocalPlayer().Inventory[y][x] != true then
+				self:AddItem(LocalPlayer().Inventory[y][x],x,y)
+			end
+		end
 	end
 end
-
-function INVENTORY:MakeItem(index,amt,noweight)
-	local type = GetItems()[index]
-	
-	for i,v in pairs(self.List.Items) do
-		if v.itemType == index then self.List.Items[i].amt = v.amt+amt if !noweight then self:CalculateWeight() end return end
+function INVENTORY:Paint()
+	draw.RoundedBox(0,0,0,self:GetWide(),self:GetTall(),Color(200,200,200,255))
+	surface.SetDrawColor(Color(20,20,20,255))
+	for y=1,INV_Y-1 do
+		surface.DrawLine(0,y*INV_TILE_SIZE,self:GetWide(),y*INV_TILE_SIZE)
+		for x=1,INV_X-1 do
+			surface.DrawLine(x*INV_TILE_SIZE,0,x*INV_TILE_SIZE,self:GetTall())
+		end
 	end
-	local panel = vgui.Create("DModelPanel")
+end
+function INVENTORY:AddItem(index,x,y)
+	local type = GetItems()[index]
 
+	local panel = vgui.Create("DModelPanel",self)
+	self.ItemSpots[y][x] = panel
+	
+	local tsize = type.Size
+	if tsize == nil then tsize = {2,2} end
+	local xSize,ySize = unpack(tsize)
 	panel:SetModel(type.Model)
 	panel:SetTooltip(index) 
-	panel:SetSize(80,80)
-	panel.amt = amt
+	panel.LayoutEntity = function(s,ent) ent:SetAngles(Angle(90,0,0)) end
+	panel:SetSize(INV_TILE_SIZE*xSize,INV_TILE_SIZE*ySize)
 	panel.itemType = index
 	local CamPos = type.CamPos
 	if !CamPos then
-		CamPos = Vector(10,10,10)
+		CamPos = panel.Entity:OBBMaxs()
 	end
 	panel:SetCamPos(CamPos)
 	local lookat = type.LookAt
@@ -67,131 +72,149 @@ function INVENTORY:MakeItem(index,amt,noweight)
 		lookat = Vector(0,0,0)
 	end
 	panel:SetLookAt(lookat)
-	panel.PaintOver = function() draw.SimpleText(panel.amt,"ScoreboardSub",60,60,Color(255,255,255,255),2,4) end
 	panel.OnMousePressed = 
-	function()
-		local menu = DermaMenu()
-		if !type.NoDrop then
-			menu:AddOption("Drop",function() RunConsoleCommand("dropitem",index) end)
+	function(p,mouse)
+		if mouse == MOUSE_RIGHT then
+			local menu = DermaMenu()
+			if !type.NoDrop then
+				menu:AddOption("Drop",function() RunConsoleCommand("dropitem",x,y) end)
+			end
+			if type.SWEPClass then
+				menu:AddOption("Equip",function() RunConsoleCommand("use_gun",x,y) end)
+			end
+			if type.MenuAdds then
+				type.MenuAdds(menu,index,x,y)
+			end
+			menu:Open()
+		elseif mouse == MOUSE_LEFT then
+			SetDraggableItem(index,x,y)
 		end
-		if type.MenuAdds then
-			type.MenuAdds(menu,index)
-		end
-		menu:Open()
 	end
-	self.List:AddItem(panel);
-	self:CalculateWeight()
-	if self.IsUsed then hook.Call("InventoryAddedItem",GAMEMODE,panel) end
+	panel:SetPos((x-1)*INV_TILE_SIZE,(y-1)*INV_TILE_SIZE)
 	
 end
-function INVENTORY:TakeItem(index,amt)
-	local ii;
-	local itemp;
-	for i,v in pairs(inv.List.Items) do
-		if v.itemType == index then 
-			inv.List.Items[i].amt = v.amt-amt
-			ii=i
-			itemp = v
-			break
-		end
-	end
-	if inv.List.Items[ii] and inv.List.Items[ii].amt <= 0 then 
-		inv.List:RemoveItem(itemp);
-		inv.List:InvalidateLayout()
-	end
-	self:CalculateWeight()
+function INVENTORY:GetItemSlot(mX,mY)
+	return math.floor(mX/INV_TILE_SIZE)+1,math.floor(mY/INV_TILE_SIZE)+1
 end
-function INVENTORY:CalculateWeight()
-	local weight = 0
-	for i,v in pairs(Inventory) do
-		weight = weight + GetItems()[i].Weight*v
-	end
-	for i,v in pairs(EquippedGuns) do
-		weight = weight + GetItems()[i].Weight
-	end
-	self.TotalWeight = weight
-end
-
-function INVENTORY:PaintOver()
-	draw.RoundedBox(0,2,24,self:GetWide()-4,7,Color(0,0,0,255))
-	local g = 255-self.TotalWeight/MAX_INVENTORY*255
-	draw.RoundedBox(0,2,24,self.TotalWeight/MAX_INVENTORY*(self:GetWide()-4),7,Color(self.TotalWeight/MAX_INVENTORY*255,g,0,255))
-end
-function INVENTORY:SetCustomUse(bool)
-	self.IsUsed = bool
-	if !bool then
-		self:SetSize(500,280)
-		self:SetPos(ScrW(),ScrH()-400)
-		self.TargetPos = ScrW()
-		self:SetParent(nil)
-		self.List:StretchToParent(5,35,5,5);
-		self:InvalidateLayout()
+function INVENTORY:TakeItem(x,y)
+	if ValidPanel(self.ItemSpots[y][x]) then
+		self.ItemSpots[y][x]:Remove()
+		self.ItemSpots[y][x] = false
 	end
 end
-vgui.Register("Inventory",INVENTORY,"DFrame")
+vgui.Register("Inventory",INVENTORY,"DPanel")
 
 local function ReceiveItem( um )
 	local index = um:ReadString()
-	local amt = um:ReadShort()
+	local y = um:ReadChar()
+	local x = um:ReadChar()
+	
+	local tbl = GetItems()[index]
+	
+	LocalPlayer().Inventory[y][x] = index
+	local tsize = tbl.Size
+	if tsize == nil then tsize = {2,2} end
+	local sx,sy = unpack(tsize)
+	for yPos=y,y+(sy-1) do
+		
+		for xPos=x,x+(sx-1) do
+			if not (xPos==x and yPos==y) then 
+				LocalPlayer().Inventory[yPos][xPos] = true
+			end
+		end
+	end
 	
 	
-	Inventory[index] = Inventory[index] or 0
-	Inventory[index] = Inventory[index] + amt
-	
-	if inv then
-		inv:MakeItem(index,amt)
+	if ValidPanel(inv) then
+		inv:AddItem(index,x,y)
 	end
 	
 end
 usermessage.Hook("recvItem",ReceiveItem)
-
-local function ReceiveGun( um )--USED WITH /HOLSTER ONLY
-	local index = um:ReadString()
-	
-	
-	Inventory[index] = Inventory[index] or 0
-	Inventory[index] = Inventory[index] + 1
-	
-	
-	EquippedGuns[index] = nil
-	inv:MakeItem(index,1)
-	
-end
-usermessage.Hook("recvGun",ReceiveGun)
-
 local function LoseItem( um )
-	local index = um:ReadString()
-	local amt = um:ReadShort()
-	
-	Inventory[index] = Inventory[index] or 0
-	Inventory[index] = Inventory[index] - amt
-	
-	if inv then
-		inv:TakeItem(index,amt)
+	local y = um:ReadChar()
+	local x = um:ReadChar()
+	local index = LocalPlayer().Inventory[y][x]
+	local tbl = GetItems()[index]
+	local tsize = tbl.Size
+	if tsize == nil then tsize = {2,2} end
+	local sx,sy = unpack(tsize)
+	for yPos=y,y+(sy-1) do
+		for xPos=x,x+(sx-1) do
+			LocalPlayer().Inventory[yPos][xPos] = false
+		end
+	end
+	if ValidPanel(inv) then
+		inv:TakeItem(x,y)
 	end
 end
 usermessage.Hook("loseItem",LoseItem)
 
-local function UseGun( um )
-	local index = um:ReadString()
-	
-	Inventory[index] = Inventory[index] - 1
-	EquippedGuns[index] = true
-	inv:TakeItem(index,1)
-	
-end
-usermessage.Hook("usegun",UseGun)
 
-local function LoseGun( um )
-	local index = um:ReadString()
-	EquippedGuns[index] = nil
-	inv:CalculateWeight()
-end
-usermessage.Hook("losegun",LoseGun)
+hook.Add("InitPostEntity","CreateInventory",function() LocalPlayer().Inventory = {}
+for y=1,INV_Y do
+		LocalPlayer().Inventory[y] = {}
+		for x=1,INV_X do
+			LocalPlayer().Inventory[y][x] = false
+		end
+	end
 
-hook.Add("InitPostEntity","CreateInventory",function() inv = vgui.Create("Inventory") end)
-	
-	
+
+inv = vgui.Create("Inventory")
+ end)
+ 
+local draggingEntity
+ hook.Add("GUIMousePressed","hoverclick",function(code,pos)
+	local ent = properties.GetHovered(LocalPlayer():EyePos(),LocalPlayer():GetAimVector())
+	if (ent and ent:IsValid()) then
+		if ent:GetNWString("ItemName") then
+			draggingEntity = ent
+			SetDraggableItem(ent:GetNWString("ItemName"))
+			
+		end
+	end
+end)
+
+local draggableItem
+function SetDraggableItem(item,x,y)
+	if ValidPanel(draggableItem) then draggableItem:Remove() end
+	local type = GetItems()[item]
+	local panel = vgui.Create("DModelPanel")
+	local tsize = type.Size
+	if tsize == nil then tsize = {2,2} end
+	local xSize,ySize = unpack(tsize)
+	panel:SetModel(type.Model)
+	panel.LayoutEntity = function(s,ent) ent:SetAngles(Angle(90,0,0)) end
+	panel:SetSize(INV_TILE_SIZE*xSize,INV_TILE_SIZE*ySize)
+	panel.itemType = item
+	local CamPos = type.CamPos
+	if !CamPos then
+		CamPos = panel.Entity:OBBMaxs()
+	end
+	panel:SetCamPos(CamPos)
+	local lookat = type.LookAt
+	if !lookat then
+		lookat = Vector(0,0,0)
+	end
+	panel:SetLookAt(lookat)
+	panel:SetMouseInputEnabled(false)
+	panel.DropDragger = function(p)
+		local cX,cY = inv:CursorPos()
+		if cX>0 and cX < inv:GetWide() and cY>0 and cY < inv:GetTall() then
+			local xSlot,ySlot = inv:GetItemSlot(cX,cY)
+			if (draggingEntity and draggingEntity:IsValid()) then
+				RunConsoleCommand("pickupItem",draggingEntity:EntIndex(),xSlot,ySlot)
+			else
+				RunConsoleCommand("moveItem",x,y,xSlot,ySlot)
+			end
+		else
+			print("dropping item")
+		end
+	end
+	panel:MakePopup()
+	panel.Think = function(p) if !input.IsMouseDown(MOUSE_LEFT) then p:DropDragger() draggingEntity = nil p:Remove() else p:SetPos(gui.MouseX(),gui.MouseY()) end end
+	draggableItem = panel
+end
 	
 function GetInventoryPanel()
 	return inv

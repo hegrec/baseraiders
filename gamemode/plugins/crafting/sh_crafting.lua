@@ -112,16 +112,11 @@ ITEM.Description = "Helps gather wood"
 ITEM.Weight = 0.8
 ITEM.LookAt = vector_origin
 ITEM.CamPos = Vector(10,40,20)
-ITEM.Args = {
-	CanPutAway = true
-}
 ITEM.CanHold = true
-ITEM.MenuAdds = function(menu,index)
-	menu:AddOption("Equip",function() RunConsoleCommand("use_gun",index) end)
-end
+
 ITEM.SWEPClass = "axe"
 
-local ITEM = items.DefineItem("pickaxe")
+local ITEM = items.DefineItem("Pickaxe")
 ITEM.Group = "Tools"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_stone_pickaxe.mdl"
@@ -133,9 +128,6 @@ ITEM.Args = {
 	CanPutAway = true
 }
 ITEM.CanHold = true
-ITEM.MenuAdds = function(menu,index)
-	menu:AddOption("Equip",function() RunConsoleCommand("use_gun",index) end)
-end
 ITEM.SWEPClass = "pick"
 
 local ITEM = items.DefineItem("Shovel")
