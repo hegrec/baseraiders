@@ -1,0 +1,12 @@
+"wod"
+{
+	"base"		"base"
+	"title"		"War on Drugs"
+	"maps"		"^wod_"
+	"menusystem"	"1"
+
+	"settings"
+	{
+		// TODO: put some settings here
+	}
+}
