@@ -58,8 +58,10 @@ function INVENTORY:AddItem(index,x,y)
 	if tsize == nil then tsize = {2,2} end
 	local xSize,ySize = unpack(tsize)
 	panel:SetModel(type.Model)
-	panel:SetTooltip(index) 
-	panel.LayoutEntity = function(s,ent) ent:SetAngles(type.Angle) end
+	panel:SetTooltip(index)
+	local ang = type.Angle
+	if (!ang) then ang = Angle(0,0,0) end
+	panel.LayoutEntity = function(s,ent) ent:SetAngles(ang) end
 	panel:SetSize(INV_TILE_SIZE*xSize,INV_TILE_SIZE*ySize)
 	panel.itemType = index
 	local CamPos = type.CamPos
