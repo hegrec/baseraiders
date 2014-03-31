@@ -89,7 +89,8 @@ function crafting.MakeFire(pl,cmd,args)
 	local fire = ents.Create("darkland_fire")
 	fire:SetPos(pl:GetEyeTrace().HitPos)
 	fire:Spawn()
-	pl:TakeItem("Wood")
+	local x,y = pl:HasItem("Wood")
+	pl:TakeItem(x,y)
 
 end
 concommand.Add("make_fire",crafting.MakeFire)

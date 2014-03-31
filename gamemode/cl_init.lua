@@ -141,6 +141,12 @@ function TW(s,f)
 	local w = surface.GetTextSize(s)
 	return w
 end 
+
+local extraHUDFuncs = {}
+function AddCustomHUD(class,func)
+	extraHUDFuncs[class] = func
+end
+
 function GM:HUDPaint()
 	if !Me then return end
 	GAMEMODE:PaintNotes()
@@ -148,24 +154,35 @@ function GM:HUDPaint()
 	local h = ScrH()
 	draw.SimpleTextOutlined("$"..GetMoney(),"g_Logo",ScrW()-5,ScrH()-5,Color(0,200,0,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
 	
-	local nearby_ents = ents.FindInSphere(Me:GetShootPos(),300)
+	
+	local nearby_ents = ents.FindInSphere(Me:GetShootPos(),500)
 	
 	for i,v in pairs(nearby_ents) do
 		--if HasLineOfSight(v) then
+			
 			local text = ""
+			local extra = function() end
 			if (v:GetNWString("ItemName") != "") then
 				text = v:GetNWString("ItemName")
+				if GetItems()[text].ExtraHUD then
+					extra = GetItems()[text].ExtraHUD
+				end
+			elseif extraHUDFuncs[v:GetClass()] then
+				extra = extraHUDFuncs[v:GetClass()]
 			elseif v:IsPlayer() then
 				text = v:Name()
 			elseif v:GetClass() == "power_socket" then
 				text = v:GetNWInt("WattsAvailable").." Watts Left"
+			elseif v:GetClass() == "money" then
+				text = "$"..v:GetNWInt("Amount")
 			end
-		
-			local pos = (v:GetPos()+Vector(0,0,10)):ToScreen()
+			local maxdist = 500
+			local pos = (v:GetPos()+Vector(0,0,v:OBBMaxs().z)):ToScreen()
 			local cx,cy = ScrW()/2,ScrH()/2
 			local dist = math.sqrt((cx-pos.x)*(cx-pos.x)+(cy-pos.y)*(cy-pos.y))
 			
-			local alpha = math.min(255,(300-dist)/300*255)
+			local alpha = math.min(255,(maxdist-dist)/maxdist*255)
+			extra(v,pos,alpha)
 			if v != Me then
 				draw.SimpleTextOutlined(text,"ScoreboardSub",pos.x,pos.y,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
 

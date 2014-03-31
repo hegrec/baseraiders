@@ -2,7 +2,7 @@
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 function ENT:Initialize()
-	self.Entity:SetModel("models/baseraiders/log.mdl")
+	self.Entity:SetModel("models/props_wasteland/gaspump001a.mdl")
 	self.Entity:PhysicsInit(SOLID_VPHYSICS)
 	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
 	self.Entity:SetSolid(SOLID_VPHYSICS)
@@ -10,9 +10,14 @@ function ENT:Initialize()
 	
 	local phys = self.Entity:GetPhysicsObject()
 	if (phys:IsValid()) then
-		phys:Wake()
+		phys:EnableMotion(false)
 	end
-	
-	self.Entity:Ignite(60)
-	timer.Simple(59,function() self:Remove() end)
+end
+
+function ENT:SetTerritory(territoryID)
+	self:SetNWInt("TerritoryID",territoryID)
+end
+
+function ENT:SetOwningGang(gangID)
+	self.gangID = gangID
 end

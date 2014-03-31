@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	$basetexture "models/baseraiders/log"
+	$model "1"
+	$bumpmap "models/baseraiders/log_NRM"
+}

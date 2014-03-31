@@ -2,7 +2,7 @@ local meta = FindMetaTable("Player")
 function meta:HasItem(index)
 	for y=1,INV_Y do
 		for x=1,INV_X do
-			if (self.Inventory[y][x] == index) then return true end
+			if (self.Inventory[y][x] == index) then return x,y end
 		end
 	end
 	return false
@@ -120,7 +120,6 @@ function DropItem(ply,cmd,args)
 	
 	
 	ply:TakeItem(x,y)
-	print(ply:HasItem(index))
 	if (tbl.SWEPClass && !ply:HasItem(index)) then --make sure we unequip the item if we have no more
 		ply:StripWeapon(tbl.SWEPClass)
 	end
@@ -129,7 +128,8 @@ function DropItem(ply,cmd,args)
 	local tr = ply:GetEyeTrace()
 	local pos = tr.HitPos + (tr.HitNormal*10)
 	local ent = SpawnRoleplayItem(index,pos,ply)
-	ent:SetPos(tr.HitPos + (tr.HitNormal*(ent:OBBMaxs()*2)))
+	print(ent:OBBMaxs())
+	ent:SetPos(tr.HitPos + tr.HitNormal)
 end
 concommand.Add("dropitem",DropItem)
 

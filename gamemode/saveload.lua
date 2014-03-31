@@ -20,7 +20,7 @@ function BeginRPProfile(pl)
 	local steamID = pl:SteamID();
 	
 	
-	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res) end)
+	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model,GangID FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res) end)
 end
 hook.Add("PlayerInitialSpawn","RPLoadProfile",BeginRPProfile)
 
@@ -39,7 +39,8 @@ function RPLoadCallback(pl, tbl)
 	hook.Call("OnLoadSkills",GAMEMODE,pl,tbl["Skills"],tbl["Levels"])
 	hook.Call("OnLoadInventory",GAMEMODE,pl,tbl["Inventory"])
 	hook.Call("OnLoadClothing",GAMEMODE,pl,tbl["Clothing"],tbl["CurrentHat"],tbl["CurrentSkin"])
-	hook.Call("OnLoadVehicles",GAMEMMODE,pl,tbl["Vehicle"])
+	hook.Call("OnLoadVehicles",GAMEMODE,pl,tbl["Vehicle"])
+	hook.Call("OnLoadGang",GAMEMODE,pl,tbl["GangID"])
 	pl:Spawn()
 	pl.LoadedRolePlay = true -- Let the script know that vars can be accessed
 	local steamid = pl:SteamID()

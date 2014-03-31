@@ -59,11 +59,47 @@ function ShowCreateGang()
 
 end
 
+function gangHubStuff(ent,pos,alpha)
 
-
+	local name = territories[ent:GetNWInt("TerritoryID")].Name
+	local gangname = GetGlobalString("t_owner_"..ent:GetNWInt("TerritoryID"))
+	draw.SimpleTextOutlined("Owned By: "..gangname,"HUDBars",pos.x,pos.y-20,Color(255,255,255,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
+	draw.SimpleTextOutlined("Controlling: "..name,"HUDBars",pos.x,pos.y-40,Color(255,255,255,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
+end
+AddCustomHUD("planted_gang_hub",gangHubStuff)
 
 function CreateGangTab()
 	local store = vgui.Create("GangTab")
 	Panels["Menu"].Sheet:AddSheet("Gang",store,"gui/silkicons/application_view_tile",nil,nil,nil,2)
 end
 hook.Add("OnMenusCreated","GangTab",CreateGangTab)
+
+
+
+function territorieshud()
+	local width = 150
+	local height = 60
+	for i,v in pairs(territories) do
+		draw.RoundedBox(0,5+(i-1)*(width+10),5,width,height,Color(0,255,0,255))
+		draw.RoundedBox(0,2+(5+(i-1)*(width+10)),7,width-4,height-4,Color(50,50,50,255))
+		draw.SimpleTextOutlined(v.Name,"HUDBars",10+(i-1)*(width+10),10,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,255))
+		
+		local str = "Not Captured"
+		if (GetGlobalString("t_owner_"..i) != "") then
+			str = GetGlobalString("t_owner_"..i)
+		end
+		local held_for = "N/A"
+		draw.SimpleTextOutlined(str,"Default",10+(i-1)*(width+10),30,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,255))
+		draw.SimpleTextOutlined("Held For: "..held_for,"Default",10+(i-1)*(width+10),45,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,255))
+	end
+	if (LocalPlayer():GetNWString("GangName") != "") then
+		draw.SimpleTextOutlined("Gang: "..LocalPlayer():GetNWString("GangName"),"g_Logo",ScrW()-5,ScrH()-60,Color(200,200,200,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
+	end
+	if LocalPlayer():GetNWInt("TerritoryID") != 0 then
+		local name = territories[LocalPlayer():GetNWInt("TerritoryID")].Name
+		draw.SimpleTextOutlined(name,"g_Logo",ScrW()-5,ScrH()-100,Color(200,200,200,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
+	else
+		draw.SimpleTextOutlined("Public","g_Logo",ScrW()-5,ScrH()-100,Color(200,200,200,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
+	end
+end
+hook.Add("HUDPaint","territorieshud",territorieshud)

@@ -186,7 +186,9 @@ function SetDraggableItem(item,x,y)
 	if tsize == nil then tsize = {2,2} end
 	local xSize,ySize = unpack(tsize)
 	panel:SetModel(type.Model)
-	panel.LayoutEntity = function(s,ent) ent:SetAngles(Angle(90,0,0)) end
+	local ang = type.Angle
+	if (!ang) then ang = Angle(0,0,0) end
+	panel.LayoutEntity = function(s,ent) ent:SetAngles(ang) end
 	panel:SetSize(INV_TILE_SIZE*xSize,INV_TILE_SIZE*ySize)
 	panel.itemType = item
 	local CamPos = type.CamPos

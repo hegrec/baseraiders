@@ -5,7 +5,7 @@ ITEM.EntityClass = "weed_plant"
 ITEM.Model = "models/props_c17/pottery09a.mdl"
 ITEM.Description = "Classic drug Marijuana used by a lot of people"
 ITEM.BulkPrice = 600
-ITEM.BulkAmt = 1
+ITEM.BulkAmt = 1 
 ITEM.Weight = 0
 
 
@@ -15,6 +15,7 @@ ITEM.EntityClass = "darkland_light"
 ITEM.Model = "models/props/cs_office/light_security.mdl"
 ITEM.Description = "Classic drug Marijuana used by a lot of people"
 ITEM.Weight = 1
+ITEM.Watts = 200
 ITEM.Args = {}
 
 local ITEM = items.DefineItem("Mushrooms")

@@ -25,13 +25,21 @@ function resource.AddFolder(path)
 end
 
 resource.AddFile("sound/darklandrp/heartbeat.wav")
+resource.AddFile("materials/models/baseraiders/log.vtf")
+resource.AddFile("materials/models/baseraiders/log_lod0.vmt")
+resource.AddFile("materials/models/baseraiders/log_lod1.vmt")
+resource.AddFile("materials/models/baseraiders/log_NRM.vtf")
+
 resource.AddMaterial("materials/gui/silkicons/error")
 resource.AddMaterial("materials/gui/silkicons/pill")
 
 resource.AddMaterial("materials/katharsmodels/contraband/contraband_one")
 resource.AddMaterial("materials/katharsmodels/contraband/contraband_two")
 resource.AddMaterial("materials/katharsmodels/contraband/contraband_normal")
+
 resource.AddModel("models/katharsmodels/contraband/zak_wiet/zak_wiet")
+resource.AddModel("models/baseraiders/log")
+
 
 resource.AddModel("models/props_foliage/spikeplant01")
 resource.AddMaterial("materials/models/props_foliage/spikeplant01")
