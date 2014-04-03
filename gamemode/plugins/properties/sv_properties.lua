@@ -1,24 +1,43 @@
-properties = {}
-properties.properties = {}
+properties = properties or {}
+
+
 local temp = {}
 local tempfloor = {}
 function properties.Add(ply,args)
 	if !ply:IsSuperAdmin() then return end
 	local price = tonumber(args[1])
 	table.remove(args,1)
+	local rent = tonumber(args[1]) == 1
+	table.remove(args,1)
 	local name = table.concat(args," ")
-	if !price || !name then ply:SendNotify("/addproperty <price> <name>","NOTIFY_ERROR",4) return end
+	if !price || !name then ply:SendNotify("/addproperty <price> <rent 0|1> <name>","NOTIFY_ERROR",4) return end
 	
 	local num = table.insert(properties.properties,{})
 	properties.properties[num].price = price
 	properties.properties[num].owner = "None"
+	properties.properties[num].rent = rent
 	properties.properties[num].name = name
 	properties.properties[num].doors = {}
-	properties.properties[num].floors = {}
+	properties.properties[num].sockets = {}
 	temp[ply] = properties.properties[num]
 	ply:SendNotify("You started a property","NOTIFY_ERROR",4)
 end
 AddChatCommand("addproperty",properties.Add)
+
+function properties.AddSocket(ply,args)
+	if !ply:IsSuperAdmin() || !temp[ply] then return end
+	
+	local tr = ply:GetEyeTrace()
+	
+	
+	local ent = ents.Create("power_socket")
+	ent:SetPos(tr.HitPos+tr.HitNormal*5)
+	ent:SetAngles(tr.HitNormal:Angle())
+	ent:Spawn()	
+	table.insert(temp[ply].sockets,{tr.HitPos+tr.HitNormal*5,tr.HitNormal:Angle()})
+	ply:SendNotify("You added a socket to "..temp[ply].name,"NOTIFY_ERROR",4)
+end
+AddChatCommand("addpropertysocket",properties.AddSocket)
 
 function properties.AddDoor(ply,args)
 	if !ply:IsSuperAdmin() || !temp[ply] then return end
@@ -36,6 +55,9 @@ function properties.FinishProperty(ply,args)
 		ent:Fire("lock","",0.1)
 		ent.Locked = true
 		ent:SetNWBool("Property",true)
+		if temp[ply].rent then
+			ent:SetNWBool("Rental",true)
+		end
 		ent:SetNWString("Title",temp[ply].name)
 		ent:SetNWInt("Cost",temp[ply].price)
 	end
@@ -51,6 +73,7 @@ function properties.Save()
 end
 
 function properties.Load()
+	properties.properties = {}
 	if file.Exists("darklandrp/properties/"..game.GetMap()..".txt", "DATA") then
 		local str = file.Read("darklandrp/properties/"..game.GetMap()..".txt", "DATA")
 		local tbl = util.KeyValuesToTable(str)
@@ -64,6 +87,15 @@ function properties.Load()
 			temptbl.doors = {}
 			for i,v in pairs(v.doors) do
 				table.insert(temptbl.doors,tonumber(v))
+			end
+			temptbl.sockets = {}
+			for i,v in pairs(v.sockets) do
+			
+				local ent = ents.Create("power_socket")
+				ent:SetPos(v[1])
+				ent:SetAngles(v[2])
+				ent:Spawn()	
+				table.insert(temptbl.sockets,tonumber(v))
 			end
 			table.insert(properties.properties,temptbl)
 			
@@ -117,12 +149,15 @@ function GiveProperty(ply,ent)
 			end
 		end
 	end
-	properties.properties[num].owner = ply:SteamID()
-	properties.Save()
+	if !properties.properties[num].rent then
+		properties.properties[num].owner = ply:SteamID()
+		properties.Save()
+	else
+		properties.properties[num].renter = ply:SteamID()
+	end
 	for i,v in pairs(properties.properties[num].doors) do
 		local ent = ents.GetByIndex(v+game.MaxPlayers())
 		ent.DoorOwner = ply:SteamID()
-		ent:SetNWBool("Unownable",true)
 		ent:SetNWBool("Bought",true)
 		ply:GiveObject(ent)
 		umsg.Start("boughtDoor",ply)

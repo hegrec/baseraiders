@@ -11,23 +11,39 @@ function ENT:Initialize()
 	self:SetNWInt("WattsAvailable",1000)
 	self.powering = {}
 end 
-function ENT:PowerEntity(ent)
+function ENT:PowerEntity(ent,activator)
 	local item = ent:GetItemName()
 	if !item then return end
 	local tbl = GetItems()[item]
 	if !tbl then return end
 	
+	
+	
 	local watts = tbl.Watts
+	
+	if (power.GetCityPowerLeft()<watts) then activator:SendNotify("The power grid is currently maxed out. Better use a generator!","NOTIFY_ERROR",5) return end
 	 
 	if (self:GetWattsLeft()>=watts) then 
 		self.powering[ent:EntIndex()] = watts
 		self:SetNWInt("WattsAvailable",self:GetNWInt("WattsAvailable")-watts)
+		self:RecalculateUsedPower()
 		return true
 	end
 	
+	
 	return false
 end
-function ENT:UnpowerEntity(ent)
+function ENT:RecalculateUsedPower()
+	local sockets = ents.FindByClass("power_socket")
+	local total = 0
+	for i,v in ipairs(sockets) do
+		for ndx,watts in pairs(v.powering) do
+			total = total + watts
+		end
+	end
+	SetGlobalInt("PowerUsed",total)
+end
+function ENT:UnpowerEntity(ent,activator)
 	local item = ent:GetItemName()
 	if !item then return end
 	local tbl = GetItems()[item]
@@ -36,7 +52,7 @@ function ENT:UnpowerEntity(ent)
 	local watts = tbl.Watts
 	self.powering[ent:EntIndex()] = nil
 	self:SetNWInt("WattsAvailable",self:GetNWInt("WattsAvailable")+watts)
-
+	self:RecalculateUsedPower()
 end
 
 function ENT:Think()
@@ -49,4 +65,5 @@ function ENT:Think()
 			ent:TurnOff()
 		end
 	end
+	self:RecalculateUsedPower()
 end

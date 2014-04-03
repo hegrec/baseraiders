@@ -1,5 +1,4 @@
 
-power = {}
 power.sockets = {}
 function power.AddSocket(ply,args)
 	if !ply:IsSuperAdmin() then return end

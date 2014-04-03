@@ -62,7 +62,6 @@ end
 vgui.Register("Menu",MAIN,"DFrame")
 
 function ShowMain(pl,cmd,args)
-	print("showing main")
 	if(ValidPanel(Panels["Menu"]))then
 		Panels["Menu"]:Remove()
 	end

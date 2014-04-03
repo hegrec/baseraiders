@@ -1,6 +1,17 @@
 WOOD_BOOST = 1000
 MAX_WOOD_BOOST = 5
 BASE_POWER = 10000
+
+power = {}
+function power.GetCityMaxPower()
+	return BASE_POWER+GetGlobalInt("PowerBoost")
+end
+function power.GetCityPowerLeft()
+	return power.GetCityMaxPower()-GetGlobalInt("PowerUsed")
+end
+function power.GetCityPowerUsed()
+	return GetGlobalInt("PowerUsed")
+end
 local ITEM = items.DefineItem("Generator")
 ITEM.Group = "Items"
 ITEM.EntityClass = "darkland_generator"

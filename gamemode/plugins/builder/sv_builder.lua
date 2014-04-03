@@ -433,6 +433,7 @@ function GM:PlayerSpawnedProp(ply, model, ent)
 		ent:Remove()
 		ply:AddMoney(PROP_COST)
 	end
+	ent:SetNWInt("Health",MAX_PROP_HEALTH)
 	ply:AddCount( "props", ent )
 end
 

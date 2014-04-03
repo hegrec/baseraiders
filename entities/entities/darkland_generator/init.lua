@@ -60,7 +60,7 @@ function ENT:Use(pl)
 	
 end
 
-function ENT:PowerEntity(ent)
+function ENT:PowerEntity(ent,activator)
 	local item = ent:GetItemName()
 	
 	if !item then return false end
@@ -69,7 +69,6 @@ function ENT:PowerEntity(ent)
 	
 	if !self.On then return false end
 	local watts = tbl.Watts
-	 print(self.On)
 	if (self:GetWattsLeft()>=watts) then 
 		self.powering[ent:EntIndex()] = watts
 		self:SetNWInt("WattsAvailable",self:GetNWInt("WattsAvailable")-watts)
@@ -78,7 +77,7 @@ function ENT:PowerEntity(ent)
 	
 	return false
 end
-function ENT:UnpowerEntity(ent)
+function ENT:UnpowerEntity(ent,activator)
 	local item = ent:GetItemName()
 	if !item then return end
 	local tbl = GetItems()[item]

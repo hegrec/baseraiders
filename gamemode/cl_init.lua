@@ -104,7 +104,7 @@ local function LoadHeartBeat()
 	)
 end
 function GM:Initialize()
-	HUDMessages = {}
+
 
 	BLOOD_EFFECT = 30
 	Money = 0
@@ -157,6 +157,7 @@ function GM:HUDPaint()
 	
 	local radius = 140
 	local cx,cy = w-150,h-150
+	surface.SetDrawColor(255,255,255,255)
 	surface.SetTexture(surface.GetTextureID("baseraiders/minimap"))
 	surface.DrawTexturedRect(cx-radius,cy-radius,radius*2,radius*2)
 	for i,v in pairs(territories) do
@@ -200,12 +201,15 @@ function GM:HUDPaint()
 	draw.SimpleTextOutlined("$"..GetMoney(),"g_Logo",ScrW()-305,ScrH()-5,Color(0,200,0,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
 	
 	
-	local nearby_ents = ents.FindInSphere(Me:GetShootPos(),500)
+	local nearby_ents = ents.FindInSphere(Me:GetShootPos(),300)
 	
 	for i,v in pairs(nearby_ents) do
+		local pos = v:LocalToWorld(v:OBBCenter())
+
+	
 		local tr = {}
 		tr.start = LocalPlayer():EyePos()
-		tr.endpos = v:GetPos()
+		tr.endpos = pos
 		tr.filter = LocalPlayer()
 		tr = util.TraceLine(tr)
 		if tr.Entity == v then
@@ -226,7 +230,7 @@ function GM:HUDPaint()
 				text = "$"..v:GetNWInt("Amount")
 			end
 			local maxdist = 500
-			local pos = (v:GetPos()+Vector(0,0,v:OBBMaxs().z)):ToScreen()
+			pos = pos:ToScreen()
 			local cx,cy = ScrW()/2,ScrH()/2
 			local dist = math.sqrt((cx-pos.x)*(cx-pos.x)+(cy-pos.y)*(cy-pos.y))
 			
@@ -275,18 +279,7 @@ function GM:HUDPaint()
 			draw.SimpleText(str,"ScoreboardSub",ScrW()*0.5,ScrH()-10,Color(255,255,255,255),1,1)
 		end
 	end
-
-	if(tr.Entity:IsValid() and HUDMessage(tr.Entity:GetClass()) != "")then
-		local dpos = tr.Entity:LocalToWorld(tr.Entity:OBBCenter()):ToScreen()
-		local col = Color(20,255,20,255)
-		draw.SimpleTextOutlined(HUDMessage(tr.Entity:GetClass()),"ScoreboardSub",dpos.x,dpos.y+20,Color(20,0,20,255),1,1,1,col)
-	end	
 	--Height()
-end
---TODO: USE THIS SYSTEM FOR MODULES TO RELIEVE THE HUDPAINT ABOVE
-function HUDMessage(entclass)
-	if(HUDMessages[entclass])then return HUDMessages[entclass] end
-	return ""
 end
 
 function GM:PostDrawOpaqueRenderables(bdepth,bsky)
@@ -298,28 +291,19 @@ function GM:PostDrawOpaqueRenderables(bdepth,bsky)
 	cam.Start3D2D(pos, ang, 0.6)
 	draw.SimpleText("Power Plant","Billboard",0,0,Color(255,255,255,255),1)
 	draw.RoundedBox(0,0,30,500,30,Color(0,0,0,255))
-	local powerboost = GetPowerBoost()
-	local maxboost = MAX_WOOD_BOOST*WOOD_BOOST
-	local maxpower = BASE_POWER+maxboost
 	
+	local percentage = power.GetCityPowerUsed()/power.GetCityMaxPower()
 	local maxsize = 500-4
-	
-	local power = BASE_POWER+powerboost
-	local percentage = power/maxpower
-	
 	
 	
 	draw.RoundedBox(0,2,32,maxsize*percentage,26,Color(200,0,0,255))
-	draw.SimpleText(power.."/"..maxpower.." KW","Billboard",10,32,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM)
+	draw.SimpleText(power.GetCityPowerUsed().."/"..power.GetCityMaxPower().." KW","Billboard",10,32,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM)
 	cam.End3D2D()
 	
 	
 end
 function GetPowerBoost()
 	return GetGlobalInt("PowerBoost")
-end
-function AddHUDMessage(entclass,msg)
-	HUDMessages[entclass] = msg
 end
 
 function GM:HUDShouldDraw(name)

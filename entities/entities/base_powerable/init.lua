@@ -18,7 +18,7 @@ function ENT:TurnOn(activator)
 	local nearby = ents.FindInSphere(self:GetPos(),POWER_DISTANCE)
 	for i,v in pairs(nearby) do
 		if v:GetClass() == "power_socket" || v:GetClass() == "darkland_generator" then
-			if v:PowerEntity(self) then
+			if v:PowerEntity(self,activator) then
 				self:SetPoweredBy(v)
 				return
 			end
@@ -43,7 +43,7 @@ function ENT:GetPoweredBy()
 end
 function ENT:TurnOff(activator)
 
-	self:GetPoweredBy():UnpowerEntity(self)
+	self:GetPoweredBy():UnpowerEntity(self,activator)
 	self:SetPoweredBy(nil)
 
 end

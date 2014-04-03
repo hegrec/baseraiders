@@ -15,7 +15,6 @@ end
 local meta = FindMetaTable("Player")
 
 function meta:GetSkill(skill)
-	print("Running!");
 	if SERVER then
 		if !self.Skills then return 0 end
 		return self.Skills[skill] or 0

@@ -1,6 +1,6 @@
 PROP_COST = 100
 SPAWN_DELAY = 1
-
+MAX_PROP_HEALTH = 1000
 local CanPickUpEnts = {
 "prop_physics",
 "sign",

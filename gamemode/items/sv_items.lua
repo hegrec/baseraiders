@@ -104,7 +104,6 @@ function PickupItem(ply,cmd,args)
 	local x = tonumber(args[2])
 	local y = tonumber(args[3])
 	local itemType = ent:GetNWString("ItemName")
-	print(itemType)
 	if ply:GiveItem(itemType,x,y) then
 		ent:Remove()
 	end
@@ -165,7 +164,7 @@ hook.Add("OnLoadInventory","LoadInv",InventoryLoad)
 --Used when the player spawns
 function InventoryLoadToClient(pl,str)
 	local t = pl.tempInv
-	
+	if !t then return end
 	for y=1,INV_Y do
 		for x=1,INV_X do
 			if (t[y] and t[y][x]) then

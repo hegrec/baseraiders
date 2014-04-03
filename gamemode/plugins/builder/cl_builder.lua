@@ -36,3 +36,13 @@ local function MakeBuddyMenu()
 end
 hook.Add("PopulateToolMenu", "MakeBuddyMenu", MakeBuddyMenu)
 
+function propshud(ent,pos,alpha)
+
+	
+	draw.SimpleTextOutlined(ent:GetNWInt("Health").."/"..MAX_PROP_HEALTH.." HP","HUDBars",pos.x,pos.y-20,Color(255,255,255,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
+	
+	
+	
+	
+end
+AddCustomHUD("prop_physics",propshud)

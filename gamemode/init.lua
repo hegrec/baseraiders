@@ -239,8 +239,22 @@ function Unstun(ply)
 	ply:Unstun()
 end
 
-function GM:EntityTakeDamage(ent, inflictor, attacker, amount, dmginfo) 
-	
+function GM:EntityTakeDamage(target, dmginfo) 
+	local amt = dmginfo:GetDamage()
+	if (target:GetClass() == "prop_physics") then
+		target:SetNWInt("Health",target:GetNWInt("Health")-amt)
+		if (target:GetNWInt("Health")<=0) then
+		
+			local vPoint = target:GetPos()
+			local effectdata = EffectData()
+			effectdata:SetStart( vPoint ) -- not sure if ( we need a start and origin ( endpoint ) for this effect, but whatever
+			effectdata:SetOrigin( vPoint )
+			effectdata:SetScale( 1 )
+			util.Effect( "HelicopterMegaBomb", effectdata )
+			target:EmitSound("ambient/explosions/explode_4.wav")
+			target:Remove()
+		end
+	end
 end
 
 hook.Add("DarklandProfileLoaded","GiveDonatorStuff",function(pl)

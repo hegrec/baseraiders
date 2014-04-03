@@ -191,8 +191,6 @@ local function boughtClothes( um )
 end
 usermessage.Hook("boughtClothes",boughtClothes)
 
---AddHUDMessage("closet","Closet") 
-
 local currentHat = ""
 local currentSkin = ""
 local CLOSET = {}

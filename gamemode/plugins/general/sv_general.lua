@@ -3,7 +3,6 @@ function UseGun(pl,cmd,args)
 	if(!pl:Alive())then return end
 	local posX = tonumber(args[1])
 	local posY = tonumber(args[2])
-	print(posX,posY)
 	local index = pl:GetItem(posX,posY)
 	if !index then return end
 	local tbl = GetItems()[index]

@@ -1,9 +1,0 @@
-"VertexLitGeneric"
-{
-	"$baseTexture" "katharsmodels/vipermk2/vipermk2_sheet6"
-	"$bumpmap" "katharsmodels/vipermk2/vipermk2_sheet_normal"
-	"$phong" "1"
-	"$phongboost" "0.2"	
-	"$phongfresnelranges"	"[2 2 2]"
-	"$phongexponenttexture"	"katharsmodels/vipermk2/vipermk2_sheet_spec"
-}
