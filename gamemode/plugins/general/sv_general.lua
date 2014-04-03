@@ -69,7 +69,6 @@ function PutAway(pl,txt,wep)
 	if IsValid(wep) then w = wep end
 	if !w.CanPutAway then pl:SendNotify("You can't put that into your inventory","NOTIFY_ERROR",4) return end
 	if(pl.holstertime + 2 > CurTime())then pl:SendNotify("You can't put that away yet","NOTIFY_ERROR",4) return end
-	pl:GiveItem(w.WepType,1,true)
 	local t = GetItems()[w.WepType].Ammo
 	if t then
 		pl.AmmoReserves[t] = pl:GetAmmoCount(t);

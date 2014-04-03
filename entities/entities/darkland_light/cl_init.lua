@@ -1,17 +1,27 @@
 include("shared.lua")
 
 
+
 function ENT:Draw()
 	self:DrawModel()
 	if (!self:GetNWBool("Powered")) then return end
+	local amt = 1
+	local tbl = GetItems()[self:GetNWString("ItemName")]
+	local offset = Vector(0,0,0)
+	if tbl then
+		amt = tbl.LightFactor
+		offset = tbl.LightOffset
+	end
+	
+	
 	local light = DynamicLight(self:EntIndex())
-	light.Pos = self.Entity:GetPos()
+	light.Pos = self.Entity:GetPos()+offset
 	light.Dir = Vector(0,0,0)
 	light.r = 255
 	light.g = 255
 	light.b = 255
-	light.Brightness = 0.5
-	light.Size = 300
-	light.Decay = 0
+	light.Brightness = 0.01
+	light.Size = 100*amt
+	light.Decay = 1000
 	light.DieTime = CurTime()+0.1
 end

@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/nater/weedplant_dirt"
+	"$bumpmap" "models/nater/weedplant_dirt_bump"
+	"$surfaceprop" "Dirt"
+}

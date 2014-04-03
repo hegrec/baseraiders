@@ -12,4 +12,5 @@ function ENT:Initialize()
 		phys:Wake()
 	end
 	self:SetUseType(SIMPLE_USE)
+	self:SetNWInt("LightFactor",self.tbl.LightFactor)
 end 

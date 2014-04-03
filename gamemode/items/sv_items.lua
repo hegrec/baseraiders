@@ -1,47 +1,7 @@
 local meta = FindMetaTable("Player")
-function meta:HasItem(index)
-	for y=1,INV_Y do
-		for x=1,INV_X do
-			if (self.Inventory[y][x] == index) then return x,y end
-		end
-	end
-	return false
-end
-function meta:GetItem(x,y)
-	return self.Inventory[y] and self.Inventory[y][x]
-end
-function meta:GetAmount(index)
-	return self.Inventory[index] or 0
-end
 
- function meta:CanHold( item ) --note that item must be an actual item, not a InvItem panel.
-	local tbl = GetItems()[item]
-	if !tbl then return false end
-	for y=1,INV_Y do
-		for x=1,INV_X do
-			if (self:ItemFits(item,x,y)) then return x,y end
-		end
-	end
-	
-	return false
-end
-function meta:ItemFits(item,x,y)
-	local tbl = GetItems()[item]
-	if !tbl then return false end
-	local tsize = tbl.Size
-	if tsize == nil then tsize = {2,2} end
 
-	local sx,sy = unpack(tsize)
-	for yPos=y,y+(sy-1) do
-		if (yPos>INV_Y) then return false end
-		for xPos=x,x+(sx-1) do
-			if (xPos>INV_X) then return false end
 
-			if self.Inventory[yPos][xPos] then return false end
-		end
-	end
-	return true
-end
 function meta:GiveItem(index,x,y)
 	local tbl = GetItems()[index]
 	if !tbl then return end
@@ -49,8 +9,6 @@ function meta:GiveItem(index,x,y)
 		x,y = self:CanHold(index)
 	end
 	if (x == false) then return false end
-	
-	
 	
 	if !self:ItemFits(index,x,y) then
 		self:SendNotify("That item doesn't fit.","NOTIFY_ERROR",4)
@@ -83,6 +41,10 @@ end
 
 
 function meta:TakeItem(x,y)
+	if (y == nil) then
+		x,y = self:HasItem(x)
+	end
+	if !y then return end
 	local item = self.Inventory[y][x]
 	if item ==false or item == true then return end
 	local tbl = GetItems()[item]
@@ -128,7 +90,6 @@ function DropItem(ply,cmd,args)
 	local tr = ply:GetEyeTrace()
 	local pos = tr.HitPos + (tr.HitNormal*10)
 	local ent = SpawnRoleplayItem(index,pos,ply)
-	print(ent:OBBMaxs())
 	ent:SetPos(tr.HitPos + tr.HitNormal)
 end
 concommand.Add("dropitem",DropItem)
@@ -187,6 +148,7 @@ function SpawnRoleplayItem(index,spawnpos,plOwner)
 	end
 	ent:Spawn()
 	ent:Activate()
+	ent:SetPos(ent:GetPos()-Vector(0,0,ent:OBBMins().z)) 
 	return ent
 end
 

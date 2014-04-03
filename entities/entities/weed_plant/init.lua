@@ -4,27 +4,21 @@ include("shared.lua")
 DRUG_GROW = 120
 
 function ENT:Initialize()
-	self:PhysicsInitBox(Vector(-5,-5,-1),Vector(5,5,10))
+	self:SetModel("models/nater/weedplant_pot_planted.mdl")
+	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
+	
 	
 	local phys = self.Entity:GetPhysicsObject()
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
 	self:SetUseType(SIMPLE_USE)
-	self.Entity:SetNWInt("Charges",0)
+	self.Entity:SetNWInt("GrowthPercentage",0)
 	self:SetNWBool("NeedsWater",false)
 	self.Entity:SetHealth(100)
-	constraint.Keepupright( self.Entity, phys:GetAngles(), 0, 999999 )
-	
-	--local ent = ents.Create("prop_dynamic")
-	
-	--ent:SetModel("models/props_foliage/spikeplant01.mdl")
-	--ent:SetPos(self.Entity:GetPos()+self.Entity:GetUp()*15)
-	--ent:SetParent(self.Entity)
-	--ent:Spawn()
-	--self:SetNWEntity("plant",ent)
+	self.CurrentStage = 1
 end 
 
 function ENT:OnTakeDamage(dmg) 
@@ -52,23 +46,45 @@ function ENT:Use(activator, caller)
 		return
 	end
 
-	local amt = math.floor((self:GetCharges()*self:GetCharges())*0.05)
-	if !activator:GiveItem("Weed",amt) then return end
-	if amt < 1 then activator:SendNotify("The plant did not have enough to harvest a single bag! Wait until it is more full.","NOTIFY_ERROR",5)
-	else self.Entity:SetNWInt("Charges",0) 
-	end
+
+	if self:GetGrowthPercentage() < 100 then activator:SendNotify("This plant is not finished growing.","NOTIFY_ERROR",5) return end
+	activator:GiveItem("Weed",4)
+	local pot = ents.Create("empty_pot")
+	pot:SetPos(self:GetPos())
+	pot:SetModel("models/nater/weedplant_pot.mdl")
+	pot:SetAngles(self:GetAngles())
+	pot.tbl = GetItems()["Empty Pot"]
+	pot:SetNWString("ItemName","Empty Pot")
+	pot:Spawn()
+	self:Remove()
 end 
 ENT.NextGrow = 0
 function ENT:Think()
 	if self.NextGrow > CurTime() then return end
-	self.NextGrow = CurTime()+DRUG_GROW
-	local charges = self:GetCharges()
+	self.NextGrow = CurTime()+0.1
+	local lightmod = self:GetLightAmount()
+	self:SetNWInt("GrowthPercentage",self:GetGrowthPercentage()+0.1*lightmod)
 	
-	if charges < self.MaxGrow && !self:NeedsWater() then
-		self:SetNWInt("Charges",self:GetCharges()+1)
-		return
-	else
-		self:SetNWInt("Charges",0)
-		self:SetNWBool("NeedsWater",true)
+	if (self:GetGrowthPercentage()>=100 && self.CurrentStage < 8) then
+		self:SetModel("models/nater/weedplant_pot_growing7.mdl")
+		self.CurrentStage = 8
+	elseif (self:GetGrowthPercentage()>=85 && self.CurrentStage < 7) then
+		self:SetModel("models/nater/weedplant_pot_growing6.mdl")
+		self.CurrentStage = 7
+	elseif (self:GetGrowthPercentage()>=60 && self.CurrentStage < 6) then
+		self:SetModel("models/nater/weedplant_pot_growing5.mdl")
+		self.CurrentStage = 6
+	elseif (self:GetGrowthPercentage()>=45 && self.CurrentStage < 5) then
+		self:SetModel("models/nater/weedplant_pot_growing4.mdl")
+		self.CurrentStage = 5
+	elseif (self:GetGrowthPercentage()>=25 && self.CurrentStage < 4) then
+		self:SetModel("models/nater/weedplant_pot_growing3.mdl")
+		self.CurrentStage = 4
+	elseif (self:GetGrowthPercentage()>=15 && self.CurrentStage < 3) then
+		self:SetModel("models/nater/weedplant_pot_growing2.mdl")
+		self.CurrentStage = 3
+	elseif (self:GetGrowthPercentage()>=5 && self.CurrentStage < 2) then
+		self:SetModel("models/nater/weedplant_pot_growing1.mdl")
+		self.CurrentStage = 2	
 	end
 end

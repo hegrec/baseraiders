@@ -41,10 +41,13 @@ end
 function INVENTORY:Paint()
 	draw.RoundedBox(0,0,0,self:GetWide(),self:GetTall(),Color(200,200,200,255))
 	surface.SetDrawColor(Color(20,20,20,255))
-	for y=1,INV_Y-1 do
+	for y=1,INV_Y do
 		surface.DrawLine(0,y*INV_TILE_SIZE,self:GetWide(),y*INV_TILE_SIZE)
-		for x=1,INV_X-1 do
+		for x=1,INV_X do
 			surface.DrawLine(x*INV_TILE_SIZE,0,x*INV_TILE_SIZE,self:GetTall())
+			if (LocalPlayer().Inventory[y][x]) then
+				draw.RoundedBox(0,(x-1)*INV_TILE_SIZE,(y-1)*INV_TILE_SIZE,INV_TILE_SIZE,INV_TILE_SIZE,Color(0,0,0,100))
+			end
 		end
 	end
 end
@@ -171,6 +174,7 @@ local draggingEntity
 	if (ent and ent:IsValid()) then
 		if ent:GetNWString("ItemName") then
 			draggingEntity = ent
+			print(ent)
 			SetDraggableItem(ent:GetNWString("ItemName"))
 			
 		end
@@ -181,6 +185,7 @@ local draggableItem
 function SetDraggableItem(item,x,y)
 	if ValidPanel(draggableItem) then draggableItem:Remove() end
 	local type = GetItems()[item]
+	if !type then print("ITEM NOT FOUND: ",item) return end
 	local panel = vgui.Create("DModelPanel")
 	local tsize = type.Size
 	if tsize == nil then tsize = {2,2} end

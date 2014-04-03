@@ -45,6 +45,29 @@ resource.AddModel("models/props_foliage/spikeplant01")
 resource.AddMaterial("materials/models/props_foliage/spikeplant01")
 
 resource.AddModel("models/weapons/v_fists")
+resource.AddModel("models/nater/weedplant_pot")
+resource.AddModel("models/nater/weedplant_pot_dirt")
+resource.AddModel("models/nater/weedplant_pot_growing1")
+resource.AddModel("models/nater/weedplant_pot_growing2")
+resource.AddModel("models/nater/weedplant_pot_growing3")
+resource.AddModel("models/nater/weedplant_pot_growing4")
+resource.AddModel("models/nater/weedplant_pot_growing5")
+resource.AddModel("models/nater/weedplant_pot_growing6")
+resource.AddModel("models/nater/weedplant_pot_growing7")
+resource.AddModel("models/nater/weedplant_pot_leaf")
+resource.AddModel("models/nater/weedplant_pot_planted")
+resource.AddMaterial("materials/models/nater/weedplant_bud")
+resource.AddMaterial("materials/models/nater/weedplant_bud_bump")
+resource.AddMaterial("materials/models/nater/weedplant_dirt")
+resource.AddMaterial("materials/models/nater/weedplant_dirt_bump")
+resource.AddMaterial("materials/models/nater/weedplant_leaf_new")
+resource.AddMaterial("materials/models/nater/weedplant_leaf_new_bump")
+resource.AddMaterial("materials/models/nater/weedplant_leaf_texture")
+resource.AddMaterial("materials/models/nater/weedplant_texture")
+resource.AddMaterial("materials/models/nater/weedplant_texture_bump")
+
+
+
 
 resource.AddModel("models/darkland/human/male/darkland_male_01")
 resource.AddModel("models/darkland/human/male/darkland_male_02")
@@ -154,7 +177,12 @@ end
 
 function GM:OnShovel(pl,tr)
 	if math.random() < 0.2 then
-		SpawnRoleplayItem("Sandblock",tr.HitPos+tr.HitNormal*10)
+		if math.random() < 0.5 then
+			SpawnRoleplayItem("Sandblock",tr.HitPos+tr.HitNormal*10)
+		else
+			SpawnRoleplayItem("Clay",tr.HitPos+tr.HitNormal*10)
+		end
+		
 	end
 end
 

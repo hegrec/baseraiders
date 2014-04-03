@@ -60,11 +60,27 @@ function ShowCreateGang()
 end
 
 function gangHubStuff(ent,pos,alpha)
-
-	local name = territories[ent:GetNWInt("TerritoryID")].Name
-	local gangname = GetGlobalString("t_owner_"..ent:GetNWInt("TerritoryID"))
-	draw.SimpleTextOutlined("Owned By: "..gangname,"HUDBars",pos.x,pos.y-20,Color(255,255,255,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
-	draw.SimpleTextOutlined("Controlling: "..name,"HUDBars",pos.x,pos.y-40,Color(255,255,255,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
+	local name = "Loading..."
+	local gangname = ent:GetGangName()
+	if territories[ent:GetNWInt("TerritoryID")] then
+		name = territories[ent:GetNWInt("TerritoryID")].Name
+	end
+	if GetGlobalInt("t_contester_id_"..ent:GetNWInt("TerritoryID")) != 0 then
+		local charge_per = ent:GetNWInt("ChargePercentage")/100
+		draw.RoundedBox(0,pos.x-100,pos.y-60,200,24,Color(0,0,0,alpha))
+		draw.RoundedBox(0,pos.x-98,pos.y-58,charge_per*(200-4),24-4,Color(50,200,50,alpha))
+		
+	end
+	draw.SimpleTextOutlined(gangname.."'s Gang Hub","HUDBars",pos.x,pos.y-20,Color(255,255,255,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
+	if GetGlobalInt("t_contester_id_"..ent:GetNWInt("TerritoryID")) != 0 then
+		draw.SimpleTextOutlined("Contested Territory!","HUDBars",pos.x,pos.y-40,Color(255,255,255,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
+	else
+		draw.SimpleTextOutlined("Controlling: "..name,"HUDBars",pos.x,pos.y-40,Color(255,255,255,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
+	end
+	
+	
+	
+	
 end
 AddCustomHUD("planted_gang_hub",gangHubStuff)
 
@@ -79,16 +95,35 @@ hook.Add("OnMenusCreated","GangTab",CreateGangTab)
 function territorieshud()
 	local width = 150
 	local height = 60
+	
 	for i,v in pairs(territories) do
-		draw.RoundedBox(0,5+(i-1)*(width+10),5,width,height,Color(0,255,0,255))
+	
+		local color = Color(200,200,200,255)
+		if GetGlobalInt("t_owner_id_"..i) == 0 then
+			color = Color(200,200,200,255)
+		elseif (GetGlobalInt("t_owner_id_"..i) == LocalPlayer():GetNWInt("GangID")) then
+			color = Color(0,200,0,255)
+		elseif (GetGlobalInt("t_contester_id_"..i) != 0) then
+			color = Color(200,200,0,255)
+		elseif (GetGlobalInt("t_owner_id_"..i) != 0) then
+			color = Color(200,0,0,255)
+		end
+		draw.RoundedBox(0,5+(i-1)*(width+10),5,width,height,color)
 		draw.RoundedBox(0,2+(5+(i-1)*(width+10)),7,width-4,height-4,Color(50,50,50,255))
 		draw.SimpleTextOutlined(v.Name,"HUDBars",10+(i-1)*(width+10),10,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,255))
 		
 		local str = "Not Captured"
+		local held_for = "N/A"
 		if (GetGlobalString("t_owner_"..i) != "") then
 			str = GetGlobalString("t_owner_"..i)
+			
+			
 		end
-		local held_for = "N/A"
+		if GetGlobalInt("t_holdstart_"..i) != 0 then
+			held_for = string.ToMinutesSeconds(CurTime()-GetGlobalInt("t_holdstart_"..i))
+		end
+		
+		
 		draw.SimpleTextOutlined(str,"Default",10+(i-1)*(width+10),30,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,255))
 		draw.SimpleTextOutlined("Held For: "..held_for,"Default",10+(i-1)*(width+10),45,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,255))
 	end

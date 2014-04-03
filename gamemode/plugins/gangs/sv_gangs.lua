@@ -41,12 +41,22 @@ end
 
 function gangs.LeaveGang(pl,cmd,args)
 	if (pl:GetNWInt("GangID")==0) then return end
+	if pl:GetNWBool("GangLeader") then 
+		pl:SendNotify("You must declare a new leader before leaving or disband your gang altogether!","NOTIFY_ERROR",6)
+		return
+	end 
+	pl:SetNWInt("GangID",0)
+	pl:SetNWString("GangName","")
+	pl:SetNWBool("GangLeader",false)
 	Query("UPDATE rp_playerdata set GangID=0 WHERE SteamID='"..pl:SteamID().."'")
 end
 concommand.Add("leavegang",gangs.LeaveGang)
 
 function gangs.DisbandGang(pl,cmd,args)
 	if (pl:GetNWInt("GangID")==0) then return end
+	if !pl:GetNWBool("GangLeader") then 
+		return
+	end
 	local gangID = pl:GetNWInt("GangID")
 	Query("UPDATE rp_playerdata set GangID=0 WHERE GangID="..gangID)
 	Query("DELETE FROM rp_gangdata WHERE ID="..gangID)
@@ -62,19 +72,21 @@ end
 concommand.Add("disbandgang",gangs.DisbandGang)
 
 function gangs.PlantHub(pl,cmd,args)
-	if (pl:GetNWInt("TerritoryID") == 0) then
-		pl:SendNotify("You must plant your gang hub in a territory!","NOTIFY_ERROR",4)
-		return
-	end
 	if (pl:GetNWInt("GangID") == 0) then
 		pl:SendNotify("You must be in a gang to plant a gang hub!","NOTIFY_ERROR",4)
 		return
 	end
-	if (territories[pl:GetNWInt("TerritoryID")].ActiveHub and territories[pl:GetNWInt("TerritoryID")].ActiveHub.gangID == pl:GetNWInt("GangID")) then
-		pl:SendNotify("Your gang already owns this territory","NOTIFY_ERROR",4)
+	if (pl:GetNWInt("TerritoryID") == 0) then
+		pl:SendNotify("You must plant your gang hub in a territory!","NOTIFY_ERROR",4)
 		return
 	end
-	
+	if (territories[pl:GetNWInt("TerritoryID")].ActiveHub and territories[pl:GetNWInt("TerritoryID")].ActiveHub:GetGangID() == pl:GetNWInt("GangID")) then
+		pl:SendNotify("Your gang already controls this territory","NOTIFY_ERROR",4)
+		return
+	end
+	local x,y = pl:HasItem("Unplanted Gang Hub")
+	if !x or !y then return end
+	pl:TakeItem(x,y)
 	
 	local hub = ents.Create("planted_gang_hub")
 	local tr = {}
@@ -83,7 +95,11 @@ function gangs.PlantHub(pl,cmd,args)
 	tr.filter = player.GetAll()
 	tr = util.TraceLine(tr)
 	
-	
+	--if there is a hub and it is not the planter's initiate contest mode only if a contest is not in place
+	if (territories[pl:GetNWInt("TerritoryID")].ActiveHub and territories[pl:GetNWInt("TerritoryID")].ContestingHub) then
+		pl:SendNotify("A power struggle is already occurring! Wait for things to return to normal","NOTIFY_ERROR",4)
+		return
+	end
 	
 	local tr2 = {}
 	tr2.start = tr.HitPos
@@ -93,28 +109,117 @@ function gangs.PlantHub(pl,cmd,args)
 	
 
 	hub:SetPos(tr2.HitPos)
-	hub:SetOwningGang(pl:GetNWInt("GangID"))
-	hub:SetTerritory(pl:GetNWInt("TerritoryID"))
+	hub:SetGangID(pl:GetNWInt("GangID"))
+	hub:SetGangName(pl:GetNWString("GangName"))
+	hub:SetNWInt("TerritoryID",pl:GetNWInt("TerritoryID"))
 	hub:Spawn()
 	
-	local x,y = pl:HasItem("Gang Hub")
-	pl:TakeItem(x,y)
 	
-	territories[pl:GetNWInt("TerritoryID")].ActiveHub = hub
-	SetGlobalString("t_owner_"..pl:GetNWInt("TerritoryID"),pl:GetNWString("GangName"))
+	
+	
+	if (territories[pl:GetNWInt("TerritoryID")].ActiveHub and territories[pl:GetNWInt("TerritoryID")].ActiveHub:IsValid()) then
+		territories[pl:GetNWInt("TerritoryID")].ContestingHub = hub
+		SetGlobalString("t_contester_"..pl:GetNWInt("TerritoryID"),pl:GetNWString("GangName"))
+		SetGlobalString("t_contester_id_"..pl:GetNWInt("TerritoryID"),pl:GetNWString("GangID"))
+	else
+		territories[pl:GetNWInt("TerritoryID")].ActiveHub = hub
+		SetGlobalInt("t_holdstart_"..pl:GetNWInt("TerritoryID"),CurTime())
+		SetGlobalString("t_owner_"..pl:GetNWInt("TerritoryID"),pl:GetNWString("GangName"))
+		SetGlobalString("t_owner_id_"..pl:GetNWInt("TerritoryID"),pl:GetNWString("GangID"))
+	end
 end
 concommand.Add("plant_hub",gangs.PlantHub)
 
+local territory_entities = {}
+
+
+function gangs.SpawnHUBResources()
+	for i,v in pairs(territories) do
+		local hub = v.ActiveHub
+		if hub and hub:IsValid() and !v.ContestingHub then
+			
+			
+			territory_entities[i] = territory_entities[i] or {}
+			local leftover = {}
+			for i,v in ipairs(territory_entities[i]) do
+				if v:IsValid() then
+					table.insert(leftover,v)
+				end
+			end
+			territory_entities[i] = leftover
+			if #territory_entities[i] < 5 then
+				local pos = hub:GetPos()+hub:GetForward()*hub:OBBMaxs():Length()+Vector(0,0,10)
+				
+				local tr = {}
+				tr.start = pos
+				tr.endpos = pos + Vector(0,0,1000)
+				tr.filter = territory_entities[i]
+				tr = util.TraceLine(tr)
+				
+				
+				local tr2 = {}
+				tr2.start = tr.HitPos-Vector(0,0,1)
+				tr2.endpos = pos - Vector(0,0,3000)
+				tr2 = util.TraceLine(tr2)
+				
+				
+				
+				
+				local ent = SpawnRoleplayItem(v.HubSpawns,tr2.HitPos)
+				table.insert(territory_entities[i],ent)
+			end
+		end
+	end
+end
+timer.Create("g_HubSpawnResources",30,0,gangs.SpawnHUBResources)
+
+
+function gangs.CaptureTerritory(territoryID,capturing_hub)
+	local t = territories[territoryID]
+	t.ContestingHub = nil
+	t.ActiveHub:Explode()
+	t.ActiveHub = capturing_hub
+	SetGlobalInt("t_holdstart_"..territoryID,CurTime())
+	SetGlobalString("t_contester_"..territoryID,"")
+	SetGlobalString("t_contester_id_"..territoryID,0)
+	SetGlobalString("t_owner_"..territoryID,capturing_hub:GetGangName())
+	SetGlobalString("t_owner_id_"..territoryID,capturing_hub:GetGangID())
+end
+
+function gangs.HoldTerritory(territoryID,defending_hub)
+
+	local t = territories[territoryID]
+	t.ContestingHub:Explode()
+	t.ContestingHub = nil
+	SetGlobalString("t_contester_"..territoryID,"")
+	SetGlobalString("t_contester_id_"..territoryID,0)
+end
+
+
+function gangs.ChargeContestingHubs()
+
+	for i,v in pairs(territories) do
+		local contesting_hub = v.ContestingHub
+		if (contesting_hub and contesting_hub:IsValid()) then
+			if contesting_hub:Charge() then
+				gangs.CaptureTerritory(i,contesting_hub)
+			elseif v.ActiveHub:Charge() then
+				gangs.HoldTerritory(i,v.ActiveHub)
+			end
+		end
+	end
+end
+timer.Create("g_ChargeContestingHubs",0.1,0,gangs.ChargeContestingHubs)
 function gangs.OnLoadPlayerGang(pl,gangID)
 	Query("SELECT * FROM rp_gangdata WHERE ID="..gangID,function(res)
 		res = res[1]
-		PrintTable(res)
-		print(gangID)
-		pl:SetNWString("GangName",res.Name)
-		pl:SetNWInt("GangID",gangID)
-		
-		if (res.OwnerSteamID == pl:SteamID()) then
-			pl:SetNWBool("GangLeader",true)
+		if res then
+			pl:SetNWString("GangName",res.Name)
+			pl:SetNWInt("GangID",gangID)
+			
+			if (res.OwnerSteamID == pl:SteamID()) then
+				pl:SetNWBool("GangLeader",true)
+			end
 		end
 	end)
 end

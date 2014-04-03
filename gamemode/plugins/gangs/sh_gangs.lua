@@ -1,6 +1,7 @@
 GANG_CREATION_COST = 10000
 
 
+hook.Add("Initialize","noreload",function()
 territories = {}
 territories[1] = {
 	Name = "Power Plant",
@@ -29,17 +30,18 @@ territories[4] = {
 	Min = Vector(6180.249023, -2999.526367, -199.968750),
 	Max = Vector(6689.968750, -2442.475342, 54.833847)
 }
+end)
 
 
 
 
-
-local ITEM = items.DefineItem("Gang Hub")
+local ITEM = items.DefineItem("Unplanted Gang Hub")
 ITEM.Group = "Gang Stuff"
-ITEM.EntityClass = "gang_hub"
+ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/props_wasteland/gaspump001a.mdl"
 ITEM.Description = "Raw material for making other materials"
 ITEM.Size = {2,3}
+ITEM.Craftable = {"Circuit Board",1,"Metal Casing",2}
 ITEM.LookAt = Vector(0,0,20)
 ITEM.CamPos = Vector(40,40,40)
 ITEM.CanHold = true

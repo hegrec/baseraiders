@@ -95,4 +95,4 @@ function CreateDonateTab()
 	list:AddItem(p2)
 	Panels["Menu"].Sheet:AddSheet("Donations",list,"gui/silkicons/heart",nil,nil,nil,6) 
 end
-hook.Add("OnMenusCreated","CreateDonateTab",CreateDonateTab)
+--hook.Add("OnMenusCreated","CreateDonateTab",CreateDonateTab)

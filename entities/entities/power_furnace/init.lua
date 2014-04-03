@@ -10,6 +10,7 @@ function ENT:Initialize()
 	if phys:IsValid() then
 		phys:EnableMotion( false )
 	end
+	self.PoweringWood = {}
 end
 
 function ENT:SetMarker(str)
@@ -21,12 +22,12 @@ end
 function ENT:SetMinVector(v)
 	self.minVec = v
 end
-ENT.PoweringWood = {}
+
 function ENT:StartTouch(ent)
 	if ent:GetItemName() == "Wood" then
 		self.PoweringWood[ent] = true
 		ent:Ignite(60)
-		timer.Simple(59,function()ent:Remove() end)
+		timer.Simple(59,function()if ent:IsValid() then ent:Remove() end end)
 	end
 end
 function ENT:EndTouch(ent)

@@ -158,7 +158,12 @@ function GM:HUDPaint()
 	local nearby_ents = ents.FindInSphere(Me:GetShootPos(),500)
 	
 	for i,v in pairs(nearby_ents) do
-		--if HasLineOfSight(v) then
+		local tr = {}
+		tr.start = LocalPlayer():EyePos()
+		tr.endpos = v:GetPos()
+		tr.filter = LocalPlayer()
+		tr = util.TraceLine(tr)
+		if tr.Entity == v then
 			
 			local text = ""
 			local extra = function() end
@@ -185,9 +190,35 @@ function GM:HUDPaint()
 			extra(v,pos,alpha)
 			if v != Me then
 				draw.SimpleTextOutlined(text,"ScoreboardSub",pos.x,pos.y,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
-
+				if (v:IsPlayer() and v:GetNWString("GangName") != "") then
+					draw.SimpleTextOutlined("Gang: "..v:GetNWString("GangName"),"ScoreboardSub",pos.x,pos.y-20,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+				elseif v:GetClass() == "darkland_light" then
+					local powered = v:IsPowered()
+					if powered then
+						draw.SimpleTextOutlined("Powered","HUDBars",pos.x,pos.y-20,Color(20,200,20,alpha),1,1,1,Color(0,0,0,alpha))
+					else
+						draw.SimpleTextOutlined("Unpowered","HUDBars",pos.x,pos.y-20,Color(200,20,20,alpha),1,1,1,Color(0,0,0,alpha))
+					end
+				elseif v:GetClass() == "weed_plant" then
+					local amt = v:GetLightAmount()
+					if amt == 0 then
+						draw.SimpleTextOutlined("No light","HUDBars",pos.x,pos.y-20,Color(200,20,20,alpha),1,1,1,Color(0,0,0,alpha))
+					else
+						if amt == 1 then
+							draw.SimpleTextOutlined("Dim light","HUDBars",pos.x,pos.y-20,Color(200,200,20,alpha),1,1,1,Color(0,0,0,alpha))
+						elseif amt == 2 then
+							draw.SimpleTextOutlined("Good light","HUDBars",pos.x,pos.y-20,Color(20,200,200,alpha),1,1,1,Color(0,0,0,alpha))
+						elseif amt == 3 then
+							draw.SimpleTextOutlined("Perfect light","HUDBars",pos.x,pos.y-20,Color(20,200,20,alpha),1,1,1,Color(0,0,0,alpha))
+						end
+						local charge_per = math.min(1,v:GetGrowthPercentage()/100)
+					
+						draw.RoundedBox(0,pos.x-100,pos.y-60,200,8,Color(0,0,0,alpha))
+						draw.RoundedBox(0,pos.x-98,pos.y-58,charge_per*(200-4),8-4,Color(50,200,50,alpha))
+					end
+				end
 			end
-		--end
+		end
 	end
 	local tr = LocalPlayer():EyeTrace(MAX_INTERACT_DIST*3)
 	

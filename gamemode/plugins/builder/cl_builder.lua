@@ -32,7 +32,7 @@ end
 hook.Add("SpawnMenuOpen","RedoBuddy",function() if buddypanel then BuddyPanel(buddypanel) end end)
 
 local function MakeBuddyMenu()
-	spawnmenu.AddToolMenuOption("Utilities", "Darkland RP", "My Buddies", "My Buddies", "", "", BuddyPanel)
+	spawnmenu.AddToolMenuOption("Utilities", "Baseraiders", "My Buddies", "My Buddies", "", "", BuddyPanel)
 end
 hook.Add("PopulateToolMenu", "MakeBuddyMenu", MakeBuddyMenu)
 

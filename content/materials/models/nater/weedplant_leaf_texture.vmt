@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/nater/weedplant_leaf_texture"
+	"$surfaceprop" "Grass"
+}
