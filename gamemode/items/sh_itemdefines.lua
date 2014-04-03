@@ -27,9 +27,6 @@ function meta:GetItem(x,y)
 	return self.Inventory[y] and self.Inventory[y][x]
 end
 
-function meta:GetItem(x,y)
-	return self.Inventory[y] and self.Inventory[y][x]
-end
 function meta:GetAmount(index)
 	local amt = 0
 	for y=1,INV_Y do

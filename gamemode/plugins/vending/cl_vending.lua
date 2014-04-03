@@ -1,1 +1,1 @@
-AddHUDMessage("vendingmachine","Vending Machine") 
+--AddHUDMessage("vendingmachine","Vending Machine") 

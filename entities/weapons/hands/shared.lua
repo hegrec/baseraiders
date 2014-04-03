@@ -66,7 +66,6 @@ function SWEP:PrimaryAttack()
 	end
 end
 function SWEP:SecondaryAttack() 
-	if(self.Owner:IsWarranted())then return end
 	self.Weapon:SetNextSecondaryFire(CurTime() + 1)
 	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
 	self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)

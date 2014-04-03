@@ -59,6 +59,6 @@ function CreateSkillsTab()
 		list:AddItem(p)
 	end
 	
-	Panels["Menu"].Sheet:AddSheet("Skills",list,"gui/silkicons/pill") 
+	Panels["Menu"].Sheet:AddSheet("Skills",list,"gui/silkicons/pill",nil,nil,nil,3) 
 end
 hook.Add("OnMenusCreated","CreateSkillsTab",CreateSkillsTab)

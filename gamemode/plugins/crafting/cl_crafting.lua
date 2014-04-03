@@ -42,6 +42,7 @@ function PANEL:AddCraftable(name,tbl)
 	local lblName = vgui.Create("DLabel",pnl)
 	lblName:SetPos(5,5)
 	lblName:SetText(name)
+	lblName:SetFont("HUDBars")
 	lblName:SizeToContents()
 	lblName:SetTextColor(Color(0,0,0,255))
 	

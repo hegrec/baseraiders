@@ -19,7 +19,7 @@ Dialog["Book Salesman"][4] = {
 Replies["Book Salesman"] = {}
 Replies["Book Salesman"][1] = {
 	Text		= "I would like to buy some stuff.",
-	OnUse		= function(pl) if !pl:IsFelon() and !pl:IsWarranted() then return 2 else return 3 end end
+	OnUse		= function(pl) if !pl:IsFelon() then return 2 else return 3 end end
 }
 Replies["Book Salesman"][2] = {
 	Text		= "I'm just exploring.",

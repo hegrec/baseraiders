@@ -66,7 +66,7 @@ resource.AddMaterial("materials/models/nater/weedplant_leaf_texture")
 resource.AddMaterial("materials/models/nater/weedplant_texture")
 resource.AddMaterial("materials/models/nater/weedplant_texture_bump")
 
-
+resource.AddMaterial("materials/baseraiders/minimap")
 
 
 resource.AddModel("models/darkland/human/male/darkland_male_01")
@@ -240,15 +240,7 @@ function Unstun(ply)
 end
 
 function GM:EntityTakeDamage(ent, inflictor, attacker, amount, dmginfo) 
-	if(IsValid(attacker) and attacker:IsPlayer() and attacker:GetActiveWeapon():IsValid() && attacker:GetActiveWeapon():GetClass() == "weapon_stunstick") && ent:IsPlayer()	then
-		if(!ent:IsWarranted())then
-			dmginfo:SetDamage(0)
-		else
-			dmginfo:ScaleDamage(0.25)
-			ent:Stun()
-			timer.Simple(3,Unstun,ent)
-		end
-	end
+	
 end
 
 hook.Add("DarklandProfileLoaded","GiveDonatorStuff",function(pl)

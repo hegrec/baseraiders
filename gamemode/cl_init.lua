@@ -39,19 +39,8 @@ include("vgui/DScrollPanel2.lua")
 
 include( 'cl_scoreboard2.lua' )
 
-Me = LocalPlayer();
-
 --Declare em'
 util.PrecacheModel("models/darkland/human/male/darkland_male_01.mdl")
-Panels = {};
-HUDMessages = {}
-
-local BLOOD_EFFECT = 30
-local HeartBeatName
-local ColorName
-
-local Money = 0
-local Model = nil
 
 debugoverlay = nil
 
@@ -59,7 +48,7 @@ surface.CreateFont("g_Logo", {font="Arial", size=36, weight=1000});
 surface.CreateFont("HUDNames", {font='Arial', size=22, weight=1000});
 surface.CreateFont("HUDBars", {font='Arial', size=18, weight=600});
 
-local NextBeat = nil
+
 
 local function RandomString(len)
 	local str = ""
@@ -114,10 +103,24 @@ local function LoadHeartBeat()
 		end
 	)
 end
+function GM:Initialize()
+	HUDMessages = {}
 
+	BLOOD_EFFECT = 30
+	Money = 0
+	Model = nil
+	NextBeat = nil
+	Panels = {};
+
+
+end
 local getinfo = debug.getinfo
 --Gamemode done and you have spawned
 function GM:InitPostEntity()
+	
+	Me = LocalPlayer();
+
+	
 	Panels["Menu"] = vgui.Create("Menu")
 	hook.Call("OnMenusCreated",GAMEMODE) //Allow for menu plugins to be called at the right time
 	//GAMEMODE:SetPlayerSpeed(Me,WALK_SPEED,RUN_SPEED)
@@ -146,13 +149,55 @@ local extraHUDFuncs = {}
 function AddCustomHUD(class,func)
 	extraHUDFuncs[class] = func
 end
-
 function GM:HUDPaint()
 	if !Me then return end
 	GAMEMODE:PaintNotes()
 	local w = ScrW()
 	local h = ScrH()
-	draw.SimpleTextOutlined("$"..GetMoney(),"g_Logo",ScrW()-5,ScrH()-5,Color(0,200,0,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
+	
+	local radius = 140
+	local cx,cy = w-150,h-150
+	surface.SetTexture(surface.GetTextureID("baseraiders/minimap"))
+	surface.DrawTexturedRect(cx-radius,cy-radius,radius*2,radius*2)
+	for i,v in pairs(territories) do
+		
+		local pos = (v.Min+v.Max)/2
+		local yaw = LocalPlayer():GetAngles().yaw
+		local vDir = pos-LocalPlayer():GetPos()
+		local dist = vDir:Length()
+		vDir:Normalize()
+		vDir:Rotate(Angle(0,180-yaw,0))
+		local theta = math.atan2(vDir.y,vDir.x)
+		
+		local str = ""
+		local words = string.Explode(" ",v.Name)
+		for ii,vv in pairs(words) do
+			str = str .. string.sub(vv,1,1)
+		end
+
+		
+
+		local multiplier = math.min(radius-20,dist/2)
+		px = cx+(math.sin(theta) * multiplier)
+		py = cy+(math.cos(theta) * multiplier)
+
+		
+		local color = Color(200,200,200,255)
+		if GetGlobalInt("t_owner_id_"..i) == 0 then
+			color = Color(200,200,200,255)
+		elseif (GetGlobalInt("t_owner_id_"..i) == LocalPlayer():GetNWInt("GangID")) then
+			color = Color(0,200,0,255)
+		elseif (GetGlobalInt("t_contester_id_"..i) != 0) then
+			color = Color(200,200,0,255)
+		elseif (GetGlobalInt("t_owner_id_"..i) != 0) then
+			color = Color(200,0,0,255)
+		end
+		
+		
+		
+		draw.SimpleTextOutlined(str,"g_Logo",px,py,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,3,Color(0,0,0,255))
+	end
+	draw.SimpleTextOutlined("$"..GetMoney(),"g_Logo",ScrW()-305,ScrH()-5,Color(0,200,0,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
 	
 	
 	local nearby_ents = ents.FindInSphere(Me:GetShootPos(),500)
@@ -164,7 +209,6 @@ function GM:HUDPaint()
 		tr.filter = LocalPlayer()
 		tr = util.TraceLine(tr)
 		if tr.Entity == v then
-			
 			local text = ""
 			local extra = function() end
 			if (v:GetNWString("ItemName") != "") then
@@ -239,12 +283,41 @@ function GM:HUDPaint()
 	end	
 	--Height()
 end
-
+--TODO: USE THIS SYSTEM FOR MODULES TO RELIEVE THE HUDPAINT ABOVE
 function HUDMessage(entclass)
 	if(HUDMessages[entclass])then return HUDMessages[entclass] end
 	return ""
 end
 
+function GM:PostDrawOpaqueRenderables(bdepth,bsky)
+
+
+	local pos = territories[1].PowerLabel
+	
+	local ang = Angle(0,-90,90)
+	cam.Start3D2D(pos, ang, 0.6)
+	draw.SimpleText("Power Plant","Billboard",0,0,Color(255,255,255,255),1)
+	draw.RoundedBox(0,0,30,500,30,Color(0,0,0,255))
+	local powerboost = GetPowerBoost()
+	local maxboost = MAX_WOOD_BOOST*WOOD_BOOST
+	local maxpower = BASE_POWER+maxboost
+	
+	local maxsize = 500-4
+	
+	local power = BASE_POWER+powerboost
+	local percentage = power/maxpower
+	
+	
+	
+	draw.RoundedBox(0,2,32,maxsize*percentage,26,Color(200,0,0,255))
+	draw.SimpleText(power.."/"..maxpower.." KW","Billboard",10,32,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM)
+	cam.End3D2D()
+	
+	
+end
+function GetPowerBoost()
+	return GetGlobalInt("PowerBoost")
+end
 function AddHUDMessage(entclass,msg)
 	HUDMessages[entclass] = msg
 end

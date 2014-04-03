@@ -15,7 +15,7 @@ end
 
 function PANEL:Init()
 	
-	self:SetShowIcons( true )
+	self:SetShowIcons( false )
 
 	self.tabScroller 	= vgui.Create( "DHorizontalScroller2", self )
 	self.tabScroller:SetOverlap( 5 )
@@ -43,7 +43,7 @@ function PANEL:AddSheet( label, panel, material, NoStretchX, NoStretchY, Tooltip
 	
 	Sheet.Tab = vgui.Create( "DTab", self )
 	Sheet.Tab:SetTooltip( Tooltip )
-	Sheet.Tab:Setup( label, self, panel, material )
+	Sheet.Tab:Setup( label, self, panel, nil )
 	
 	Sheet.Panel = panel
 	Sheet.Panel.NoStretchX = NoStretchX

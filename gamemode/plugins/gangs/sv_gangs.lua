@@ -1,5 +1,7 @@
-gangs = {}
-
+gangs = gangs or {}
+hook.Add("Initialize","dfdsfasads",function()
+gangs.gangcache = {}
+end)
 function gangs.CreateGang(pl,cmd,args)
 
 	local name = args[1]
@@ -21,24 +23,105 @@ function gangs.CreateGang(pl,cmd,args)
 	end)
 end
 concommand.Add("creategang",gangs.CreateGang)
+function gangs.OnLoadPlayerGang(pl,gangID)
+	Query("SELECT * FROM rp_gangdata WHERE ID="..gangID,function(res)
+		res = res[1]
+		if !res then return end
+		gangs.gangcache[res.ID] = gangs.gangcache[res.ID] or {}
+		gangs.gangcache[res.ID].Name = res.Name
+		gangs.gangcache[res.ID].GangBank = util.JSONToTable(res.GangBank) or {}
+		gangs.gangcache[res.ID].OwnerSteamID = res.OwnerSteamID
+		pl:SetNWString("GangName",res.Name)
+		pl:SetNWInt("GangID",gangID)
+		
+		if (res.OwnerSteamID == pl:SteamID()) then
+			pl:SetNWBool("GangLeader",true)
+		end
+	end)
+	--load up the gang members
+	if !gangs.gangcache[gangID] then
+		Query("SELECT d.PlayerName as name FROM rp_playerdata r JOIN da_misc d on r.SteamID=d.SteamID WHERE r.GangID="..gangID,function(res)
+		if !res then return end
+		if #res>0 then gangs.gangcache[gangID] = gangs.gangcache[gangID] or {} end
+		gangs.gangcache[gangID].Members = {}
+		for i,v in pairs(res) do
+			table.insert(gangs.gangcache[gangID].Members,v.name)
+		
+		
+		end
+		
+		
+		Query("SELECT d.PlayerName as name FROM rp_gangdata r JOIN da_misc d on r.OwnerSteamID=d.SteamID WHERE r.ID="..gangID,function(res)
+		MsgN("loading leader")
+		MsgN(res)
+		if !res then return end
+		gangs.gangcache[gangID].OwnerName = res[1].name
+		end)
+		
+		end)
+		
+		
+	end
+end
+hook.Add("OnLoadGang","PlayerLoadGang",gangs.OnLoadPlayerGang)
 
+function gangs.LoadGangInfo(pl,cmd,args)
 
+	if (pl:GetNWInt("GangID") == 0) then return end
+	local g = gangs.gangcache[pl:GetNWInt("GangID")]
+	umsg.Start("sendGangInfo",pl)
+	umsg.String(g.Name)
+	umsg.String(g.OwnerName)
+	umsg.Char(#g.Members)
+	for i,v in pairs(g.Members) do
+		umsg.String(v)
+	end
+	umsg.End()
+end
+concommand.Add("loadGangInfo",gangs.LoadGangInfo)
 local insertIDHolder = {}
 function gangs.ConfirmCreation(pl,name)
 	local q = Query("INSERT INTO rp_gangdata (OwnerSteamID,Name) VALUES ('"..pl:SteamID().."','"..escape(name).."')",function(res,s,sss) 
 
 		
-		local lastID = insertIDHolder[pl]:lastInsert()
-		insertIDHolder[pl] = nil
+		local lastID = insertIDHolder[pl:EntIndex()]:lastInsert()
+		insertIDHolder[pl:EntIndex()] = nil
 		Query("UPDATE rp_playerdata set GangID="..lastID.." WHERE SteamID='"..pl:SteamID().."'")
 		pl:SetNWString("GangName",name)
 		pl:SetNWInt("GangID",lastID)
 		pl:SetNWBool("GangLeader",true)
+		
+		
+		gangs.gangcache[lastID] = gangs.gangcache[lastID] or {}
+		gangs.gangcache[lastID].Name = name
+		gangs.gangcache[lastID].GangBank = {}
+		gangs.gangcache[lastID].OwnerSteamID = pl:SteamID()
+		gangs.gangcache[lastID].Members = {pl:Name()}
+		
+		
+		gangs.LoadGangInfo(pl)
 	end)
-	insertIDHolder[pl] = q
+	insertIDHolder[pl:EntIndex()] = q
 end
-
-
+local ganginvites = {}
+function gangs.InvitePlayer(pl,args)
+	local playername = args[1]
+	local found = false
+	for i,v in pairs(player.GetAll()) do
+		if (v:Name() == playername) then
+		
+		end
+	end
+	
+	
+	
+	if !found then pl:SendNotify("Player '"..playername.."' not found","NOTIFY_ERROR",4) return end
+	ganginvites[pl:GetGangID()] = ganginvites[pl:GetGangID()] or {}
+	table.insert(ganginvites[pl:GetGangID()],found)
+	
+	
+end
+AddChatCommand("invitegang",gangs.InvitePlayer)
 function gangs.LeaveGang(pl,cmd,args)
 	if (pl:GetNWInt("GangID")==0) then return end
 	if pl:GetNWBool("GangLeader") then 
@@ -51,6 +134,92 @@ function gangs.LeaveGang(pl,cmd,args)
 	Query("UPDATE rp_playerdata set GangID=0 WHERE SteamID='"..pl:SteamID().."'")
 end
 concommand.Add("leavegang",gangs.LeaveGang)
+function gangs.UseGangBank(pl,cmd,args)
+
+	local ent = ents.GetByIndex(args[1])
+	if !pl:GetEyeTrace().Entity==ent then return end
+	local gangID = ent:GetGangID()
+	local gang = gangs.gangcache[gangID]
+	umsg.Start("sendGangBank",pl)
+	umsg.String(gang.Name)
+	umsg.End()
+	for i,v in pairs(gang.GangBank) do
+	umsg.Start("sendGangBankItem",pl)
+		umsg.String(i)
+		umsg.Short(v)
+	umsg.End()
+	end
+	
+
+end
+concommand.Add("useGangBank",gangs.UseGangBank)
+function gangs.ItemToHub(pl,cmd,args)
+	local x = tonumber(args[1])
+	local y = tonumber(args[2])
+	local item = pl:GetItem(x,y)
+	local tbl = GetItems()[item]
+	if !tbl then return end
+	
+	local hub = pl:GetEyeTrace().Entity 
+	if hub:GetClass() != "planted_gang_hub" then return end
+	if !pl:HasItem(item) then return end
+	pl:TakeItem(x,y)
+	local gangID = hub:GetGangID()
+	local gang = gangs.gangcache[gangID]
+	
+	local found = false
+	for i,v in pairs(gang.GangBank) do
+		if i == item then
+			found = true
+			gang.GangBank[i] = gang.GangBank[i] + 1
+			break
+		end
+	end
+	if !found then gang.GangBank[item] = 1 end
+	
+	for i,v in pairs(gang.GangBank) do
+	umsg.Start("sendGangBankItem",pl)
+		umsg.String(i)
+		umsg.Short(v)
+	umsg.End()
+	end
+	Query("UPDATE rp_gangdata set GangBank='"..escape(util.TableToJSON(gang.GangBank)).."' WHERE ID="..gangID)
+end
+concommand.Add("item_to_hub",gangs.ItemToHub)
+function gangs.HubToInv(pl,cmd,args)
+	local item = args[1]
+	
+	local tbl = GetItems()[item]
+	if !tbl then return end
+	
+	local hub = pl:GetEyeTrace().Entity 
+	if hub:GetClass() != "planted_gang_hub" then return end
+	if !pl:CanHold(item) then pl:SendNotify("You don't have room for that","NOTIFY_ERROR",3) return end
+	local gangID = hub:GetGangID()
+	local gang = gangs.gangcache[gangID]
+	local found = false
+	for i,v in pairs(gang.GangBank) do
+		if i == item && gang.GangBank[i] >= 1 then
+			found = true
+			gang.GangBank[i] = gang.GangBank[i] - 1
+			if gang.GangBank[i] < 1 then
+				gang.GangBank[i] = 0
+			end
+			break
+		end
+	end
+	if (found) then
+		pl:GiveItem(item)
+	end
+	for i,v in pairs(gang.GangBank) do
+	umsg.Start("sendGangBankItem",pl)
+		umsg.String(i)
+		umsg.Short(v)
+	umsg.End()
+	end
+	Query("UPDATE rp_gangdata set GangBank='"..escape(util.TableToJSON(gang.GangBank)).."' WHERE ID="..gangID)
+end
+concommand.Add("hub_to_inv",gangs.HubToInv)
 
 function gangs.DisbandGang(pl,cmd,args)
 	if (pl:GetNWInt("GangID")==0) then return end
@@ -210,20 +379,7 @@ function gangs.ChargeContestingHubs()
 	end
 end
 timer.Create("g_ChargeContestingHubs",0.1,0,gangs.ChargeContestingHubs)
-function gangs.OnLoadPlayerGang(pl,gangID)
-	Query("SELECT * FROM rp_gangdata WHERE ID="..gangID,function(res)
-		res = res[1]
-		if res then
-			pl:SetNWString("GangName",res.Name)
-			pl:SetNWInt("GangID",gangID)
-			
-			if (res.OwnerSteamID == pl:SteamID()) then
-				pl:SetNWBool("GangLeader",true)
-			end
-		end
-	end)
-end
-hook.Add("OnLoadGang","PlayerLoadGang",gangs.OnLoadPlayerGang)
+
 --TERRITORY STUFF
 function gangs.LoadTerritories()
 	for i,v in pairs(territories) do
@@ -254,12 +410,12 @@ function gangs.LoadTerritories()
 	local start = territories[1].MinFurnace-tr.HitPos
 	local endpos = territories[1].MaxFurnace-tr.HitPos
 	local name = "Power Plant"
-	local ent = ents.Create("power_furnace")
-	ent:SetPos(pos)
-	ent:SetMaxVector(start)
-	ent:SetMinVector(endpos)
-	ent:SetMarker(name)
-	ent:Spawn()
+	power_plant = ents.Create("power_furnace")
+	power_plant:SetPos(pos)
+	power_plant:SetMaxVector(start)
+	power_plant:SetMinVector(endpos)
+	power_plant:SetMarker(name)
+	power_plant:Spawn()
 
 end
 hook.Add("InitPostEntity","loadterritories",gangs.LoadTerritories)

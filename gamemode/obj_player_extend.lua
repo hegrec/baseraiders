@@ -9,10 +9,10 @@ function meta:EyeTrace(len)
 	return tr
 end
 
-function meta:IsWarranted()
-	return (self:GetNWInt("stars") > 0)
-	--return self:GetNWBool("warranted")
-end 
+function meta:GetGangID()
+	return self:GetNWInt("GangID")
+end
+
 
 function meta:CanReach(ent)
 	return self:GetPos():Distance(ent:GetPos()) < MAX_INTERACT_DIST

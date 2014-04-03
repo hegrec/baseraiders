@@ -38,69 +38,52 @@ local Rules = {
 "which can, will, or will function as a machine to prop trap/kill/push/etc.",
 "2b. No using props or signs as shields during a raid, or any other time.",
 	},
-"",
-"3. Mayor Rules", 
-	{
-"3a. Only issue valid warrants. Do not abuse. If you have to think twice, ask an",
-"admin for advice before demoting or issuing warrants.",
-"3b. Mayors may not demote a police officer if they are trying to get drug labs,",
-"including the mayors.",
-"3c. Mayors cannot be corrupt, meaning they cannot work with gangsters and mobboss",
-"3d. Mayors are allowed to have drug labs, but they cannot demote police who are",
-"trying to destroy them.",
-"3e. Mayors are not allowed to make up rules of their own. They are allowed to call",
-"a lockdown via the /broadcast command, but this only applies to the upper levels",
-"of the Nexus, the lobby is always open to everyone.",
-	},
-"",
-"4. Police (Civil Protection - CP) Rules", 
-	{
-"4a. You must have valid reason to request a warrant from the Mayor. Just because",
-"you want in somewhere, doesnt give you the right to get a warrant.",
-"4b. Only Police are allowed to protect the Mayor.",
-"4c. Do not steal others property when in their homes serving a warrant.",
-"4d. Can kill Mob Boss and Gangsters only for valid RP reasons when they are",
-"protecting the Mayor when there is a hit issued or during lockdowns.",
-"4e. Do not abuse radio/warrant commands, and/or to break NLR.",
-	},
-"",
-"5. Mob Boss/Gangster Rules", 
-	{
-"5a. Can kill Police and Mayor only for valid RP reasons.", 
-"5b. Only Gangsters/Mob Boss are allowed to raid a persons house/property. Any other class",
-"which is raiding will be banned."
-	},
-"",
-"6. Rules of Building (Plat and/or Builder class)", 
-	{
-"6a. Do not build to get on to the roofs, build on the roofs, or anything that will",
-"allow yourself, or others to get on the roofs in any way.",
-"6b. Do not build ANYTHING which prevents Police from doing their job, or gangsters from",
-"raiding. This includes elevated houses or floating bases, ",
-"doors with more than 3 moving parts controlled by buttons, and ANYTHING else which could prevent police from properly",
-"serving a warrant, or a gangster raiding. Public building of bases is not allowed. There is",
-"plenty of ready available real estate you can purchase within the map via a buyable door",
-"then use the door lock mod to protect your house.",
-"6c. Building any base which has tunnels that make you duck in any way, building",
-"floating props of any kind, firing slits which are too small (1 foot is minimum), or any other",
-"method to give a distinct unfair advantage. Ask the admins before or right after you build it for",
-"yes/no answer",
-"or any other reason. Use them to decorate, not to lag.",
-"6d. Do not build in the middle of the road to obstruct normal traffic flow.", 
-"6e. Do not build long mazes or complex(use common sense and is subject to an admin's discretion)",
-"custom bases inside your house. If you have a base which is questionable by any ",
-"admin, it may be removed without letting you know.",
-"6f. If you build any prop or structure that shuts, not allowing people through easily",
-"a public button MUST be placed ON the entrance of the door/wall, EASILY in view",
-"6g. Do not spam props or signs. Do not block signs or cameras with props.",
-"6h. No doors/props which solely requires a grav gun to get in correctly.",
-"6i. No building in public areas, unless it is decorations.",
-"6j. Do not build any prop which allows you to avoid fall damage",
-"6k. You must be able to see the tumbler (the lock) for a combination lock",
-	},
 }
+local helptext = [[
+
+Welcome to Baseraiders!
+
+This is a cooperative gamemode where you craft items and 
+hold territory against enemy gangs.
+
+CRAFTING
+To craft items, use a crafting table, there is one at spawn.
+
+FORAGING
+You can speak with the main npc to get foraging tools.
+
+GANGS
+When you can afford a gang, you can begin capturing territories
+]]
+
 
 function CreateRulesTab()
+	local RulesList = vgui.Create( "DPanelList" );
+	RulesList:EnableVerticalScrollbar();
+	RulesList:SetSpacing( 1 );
+	RulesList:SetPadding( 7 );
+	RulesList:EnableVerticalScrollbar(true)
+	
+	local pnl = vgui.Create("DPanel")
+	RulesList:AddItem(pnl)
+	pnl:SetTall(512)
+	
+	local welcomeText = Label("Baseraiders",pnl)
+	welcomeText:SetFont("ScoreboardSub")
+	welcomeText:SetPos(5,5)
+	welcomeText:SizeToContents()
+	welcomeText:SetTextColor(Color(200,0,0,255))
+	
+	local welcomeText = Label(helptext,pnl)
+	welcomeText:SetFont("HUDBars")
+	welcomeText:SetPos(5,35)
+	welcomeText:SizeToContents()
+	welcomeText:SetTextColor(Color(0,0,0,255))
+	
+
+	Panels["Menu"].Sheet:AddSheet( "Welcome", RulesList, "gui/silkicons/error",nil,nil,nil,1);
+
+
 	local RulesList = vgui.Create( "DPanelList" );
 	RulesList:EnableVerticalScrollbar();
 	RulesList:SetSpacing( 1 );
@@ -143,6 +126,11 @@ function CreateRulesTab()
 		end
 	end
 
-	Panels["Menu"].Sheet:AddSheet( "Server Rules", RulesList, "gui/silkicons/error" );
+	Panels["Menu"].Sheet:AddSheet( "Server Rules", RulesList, "gui/silkicons/error",nil,nil,nil,4 );
+	
+	
+
 end
 hook.Add( "OnMenusCreated", "CreateRulesTab", CreateRulesTab );
+
+

@@ -87,7 +87,11 @@ function DropItem(ply,cmd,args)
 	end
 	
 	
-	local tr = ply:GetEyeTrace()
+	local tr = {}
+	tr.start = ply:GetShootPos()
+	tr.endpos = tr.start+ply:GetAimVector()*120
+	tr.filter = ply
+	tr = util.TraceLine(tr)
 	local pos = tr.HitPos + (tr.HitNormal*10)
 	local ent = SpawnRoleplayItem(index,pos,ply)
 	ent:SetPos(tr.HitPos + tr.HitNormal)

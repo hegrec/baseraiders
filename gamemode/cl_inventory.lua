@@ -1,21 +1,20 @@
-local inv
-local function ShowInv(pl,cmd,args)
-	if !ValidPanel(inv) then inv = vgui.Create("Inventory") end
-	inv:SetVisible(true)
-	local y = ScrH()-(inv:GetTall()+100)
-	if !inv.Open then 
-		inv:MoveTo(0,y,0.2,0,1)
-		inv:MakePopup()
-	else
-		inv:MoveTo(-inv:GetWide(),y,0.2,0,1)
-		inv:Remove()
-	end
-	inv.Open = !inv.Open
-	
+hook.Add("Initialize","dfsagdfds",function()
+Inventory = nil
+end)
+function ShowInv(pl,cmd,args)
+	if !ValidPanel(Inventory) then Inventory = vgui.Create("Inventory") end
+	local y = ScrH()-(Inventory:GetTall()+100)
+	Inventory:MoveTo(0,y,0.2,0,1)
+	Inventory:MakePopup()	
 end
 hook.Add("ContextMenuOpen","showinv",ShowInv)
-hook.Add("OnContextMenuClose","hideinv",ShowInv)
 
+function HideInv()
+	if !ValidPanel(Inventory) then return end
+	Inventory:Remove()
+end
+
+hook.Add("OnContextMenuClose","hideinv",HideInv)
 
 
 local INVENTORY = {}
@@ -87,6 +86,9 @@ function INVENTORY:AddItem(index,x,y)
 			if type.SWEPClass then
 				menu:AddOption("Equip",function() RunConsoleCommand("use_gun",x,y) end)
 			end
+			if LocalPlayer():GetEyeTrace().Entity:GetClass() == "planted_gang_hub" then
+				menu:AddOption("Transfer to Hub",function() RunConsoleCommand("item_to_hub",x,y) end)
+			end
 			if type.MenuAdds then
 				type.MenuAdds(menu,index,x,y)
 			end
@@ -130,8 +132,8 @@ local function ReceiveItem( um )
 	end
 	
 	
-	if ValidPanel(inv) then
-		inv:AddItem(index,x,y)
+	if ValidPanel(Inventory) then
+		Inventory:AddItem(index,x,y)
 	end
 	
 end
@@ -149,8 +151,8 @@ local function LoseItem( um )
 			LocalPlayer().Inventory[yPos][xPos] = false
 		end
 	end
-	if ValidPanel(inv) then
-		inv:TakeItem(x,y)
+	if ValidPanel(Inventory) then
+		Inventory:TakeItem(x,y)
 	end
 end
 usermessage.Hook("loseItem",LoseItem)
@@ -163,9 +165,6 @@ for y=1,INV_Y do
 			LocalPlayer().Inventory[y][x] = false
 		end
 	end
-
-
-inv = vgui.Create("Inventory")
  end)
  
 local draggingEntity
@@ -174,7 +173,6 @@ local draggingEntity
 	if (ent and ent:IsValid()) then
 		if ent:GetNWString("ItemName") then
 			draggingEntity = ent
-			print(ent)
 			SetDraggableItem(ent:GetNWString("ItemName"))
 			
 		end
@@ -208,16 +206,15 @@ function SetDraggableItem(item,x,y)
 	panel:SetLookAt(lookat)
 	panel:SetMouseInputEnabled(false)
 	panel.DropDragger = function(p)
-		local cX,cY = inv:CursorPos()
-		if cX>0 and cX < inv:GetWide() and cY>0 and cY < inv:GetTall() then
-			local xSlot,ySlot = inv:GetItemSlot(cX,cY)
+		local cX,cY = Inventory:CursorPos()
+		if cX>0 and cX < Inventory:GetWide() and cY>0 and cY < Inventory:GetTall() then
+			local xSlot,ySlot = Inventory:GetItemSlot(cX,cY)
 			if (draggingEntity and draggingEntity:IsValid()) then
 				RunConsoleCommand("pickupItem",draggingEntity:EntIndex(),xSlot,ySlot)
 			else
 				RunConsoleCommand("moveItem",x,y,xSlot,ySlot)
 			end
 		else
-			print("dropping item")
 		end
 	end
 	panel:MakePopup()
@@ -226,5 +223,5 @@ function SetDraggableItem(item,x,y)
 end
 	
 function GetInventoryPanel()
-	return inv
+	return Inventory
 end

@@ -11,22 +11,8 @@ Commands["Global"] = {
 "/givemoney <amount> - Aim at a player and use this to give money",
 "/save - Saves your account manually (Auto saves every 5 minutes)"
 }
-Commands["Mayor"] = {
-"/warrant <name> - put a warrant on a player",
-"/unwarrant <name> - remove a warrant of a player",
-"/demote <name> - demote a player",
-"/broadcast - send a message to all players"
-}
-Commands["Cop"] = {
-"/request - send a request to mayor for a warrant",
-"/radio - talk to other law enforcement officials"
-}
-Commands["Mobboss"] = {
-"/hit - puts a hit out on mayor",
-"/gang - talk to other gang members",
-}
 Commands["Gang"] = {
-"/gang - talk to other gang members",
+"/g - talk to other gang members",
 }
 
 function CreateCmdsTab()

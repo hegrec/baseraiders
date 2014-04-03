@@ -1,5 +1,5 @@
 GM.DarklandID = 2
-GM.Name = "War on Drugs!";
+GM.Name = "Gang Raiders";
 
 GM.Author = "Darkspider";
 DeriveGamemode("sandbox")

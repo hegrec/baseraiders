@@ -124,7 +124,7 @@ function CreateAdminTab()
 	atab:AddItem(logview)
 
 	populateLog()
-	Panels["Menu"].Sheet:AddSheet("Admin Tab",atab,"gui/silkicons/wrench") 
+	Panels["Menu"].Sheet:AddSheet("Admin Tab",atab,"gui/silkicons/wrench",nil,nil,nil,16) 
 end
 hook.Add("OnMenusCreated","ZCreateAdminTab",CreateAdminTab)
 

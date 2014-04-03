@@ -13,8 +13,12 @@ function ENT:Initialize()
 		phys:EnableMotion(false)
 	end
 	self:SetNWInt("ChargePercentage",0)
+	self:SetUseType(SIMPLE_USE)
 end
+function ENT:Use(ent)
+	ent:ConCommand("useGangBank "..self:EntIndex())
 
+end
 function ENT:SetTerritory(territoryID)
 	self:SetNWInt("TerritoryID",territoryID)
 end

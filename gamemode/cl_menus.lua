@@ -62,10 +62,12 @@ end
 vgui.Register("Menu",MAIN,"DFrame")
 
 function ShowMain(pl,cmd,args)
-	if(!Panels["Menu"])then
-		Panels["Menu"] = vgui.Create("Menu")
+	print("showing main")
+	if(ValidPanel(Panels["Menu"]))then
+		Panels["Menu"]:Remove()
 	end
-	Panels["Menu"]:SetVisible(!Panels["Menu"]:IsVisible())
+	Panels["Menu"] = vgui.Create("Menu")
+	hook.Call("OnMenusCreated",GAMEMODE)
 end
 concommand.Add("show_main",ShowMain)
 
