@@ -17,7 +17,7 @@ end
 
 function ENT:Think()
 	if CurTime()>self.NextMoney then
-		self.NextMoney = CurTime()+0.1
+		self.NextMoney = CurTime()+30
 		if (self:IsPowered()) then
 			self:SpawnMoney()
 		end
