@@ -36,7 +36,11 @@ function SWEP:PrimaryAttack()
 	tr = util.TraceLine(tr)
 	if IsValid(tr.Entity) and tr.Entity:IsDoor() and !tr.Entity.Locked then
 		tr.Entity.Roommates = tr.Entity.Roommates or {}
-		if tr.Entity.DoorOwner == self.Owner:SteamID() || table.HasValue(tr.Entity.Roommates,self.Owner) then
+		local territoryDoor = tr.Entity:GetNWInt("Territory") != 0
+		local mygangcontrols = territories[tr.Entity:GetNWInt("Territory")] && territories[tr.Entity:GetNWInt("Territory")].ActiveHub && territories[tr.Entity:GetNWInt("Territory")].ActiveHub:GetGangID() == self.Owner:GetGangID()
+		local nocontest = territories[tr.Entity:GetNWInt("Territory")] && !territories[tr.Entity:GetNWInt("Territory")].ContestingHub
+		
+		if tr.Entity.DoorOwner == self.Owner:SteamID() || table.HasValue(tr.Entity.Roommates,self.Owner) || (territoryDoor && mygangcontrols && nocontest) then
 			self.Owner:EmitSound("doors/door_latch1.wav")
 			tr.Entity:Fire("lock","",0)
 			tr.Entity.Locked = true
@@ -60,7 +64,11 @@ function SWEP:SecondaryAttack()
 	tr = util.TraceLine(tr)
 	if IsValid(tr.Entity) and tr.Entity:IsDoor() and tr.Entity.Locked then
 		tr.Entity.Roommates = tr.Entity.Roommates or {}
-		if tr.Entity.DoorOwner == self.Owner:SteamID() || table.HasValue(tr.Entity.Roommates,self.Owner) then
+		local territoryDoor = tr.Entity:GetNWInt("Territory") != 0
+		local mygangcontrols = territories[tr.Entity:GetNWInt("Territory")] && territories[tr.Entity:GetNWInt("Territory")].ActiveHub && territories[tr.Entity:GetNWInt("Territory")].ActiveHub:GetGangID() == self.Owner:GetGangID()
+		local nocontest = territories[tr.Entity:GetNWInt("Territory")] && !territories[tr.Entity:GetNWInt("Territory")].ContestingHub
+		
+		if tr.Entity.DoorOwner == self.Owner:SteamID() || table.HasValue(tr.Entity.Roommates,self.Owner) || (territoryDoor && mygangcontrols && nocontest) then
 			self.Owner:EmitSound("doors/latchunlocked1.wav")
 			tr.Entity:Fire("unlock","",0)
 			tr.Entity.Locked = nil

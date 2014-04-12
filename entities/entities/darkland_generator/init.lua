@@ -10,7 +10,7 @@ function ENT:Initialize()
 		phys:Wake()
 	end
 	self:SetUseType(SIMPLE_USE)
-	self:SetNWInt("Gallons",0)
+	self:SetGallons(0)
 	self:SetNWInt("WattsAvailable",0)
 	self.nextGallonDecrease = CurTime()
 	self.On = false
@@ -19,16 +19,18 @@ end
 
 function ENT:StartTouch(ent)
 
-	if ent:GetNWString("ItemName") == "Gasoline" then
+	if ent:GetItemName() == "Gasoline" then
 		ent:Remove()
 		self:AddGallons(1)
 	end
 
 end
+function ENT:SetGallons(i)
+	self:SetDTInt(4,i)
+end
 
 function ENT:AddGallons(i)
-	self:SetNWInt("Gallons",self:GetNWInt("Gallons")+i)
-	
+	self:SetGallons(self:GetGallons()+i)
 end
 function ENT:Use(pl)
 
@@ -44,9 +46,9 @@ function ENT:Use(pl)
 		self:EmitSound("ambient/machines/spindown.wav")
 	else
 		
-		if self:GetNWInt("Gallons") > 1 then
+		if self:GetGallons() > 1 then
 			self.On = true
-			self:SetNWInt("Gallons",self:GetNWInt("Gallons")-1)
+			self:SetGallons(self:GetGallons()-1)
 			self.nextGallonDecrease = CurTime()+30
 			self:SetNWInt("WattsAvailable",1000)
 			self:EmitSound("generator_idle")
@@ -92,8 +94,8 @@ end
 function ENT:Think()
 	if (CurTime()>self.nextGallonDecrease and self.On) then
 		self.nextGallonDecrease = CurTime()+30
-		self:SetNWInt("Gallons",self:GetNWInt("Gallons")-1)
-		if self:GetNWInt("Gallons") < 1 then
+		self:SetGallons(self:GetGallons()-1)
+		if self:GetGallons() < 1 then
 			self:StopSound("ambient/machines/engine1.wav")
 			self:EmitSound("ambient/machines/spindown.wav")
 			for i,v in pairs(self.powering) do

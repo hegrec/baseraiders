@@ -1,12 +1,13 @@
 include("shared.lua")
 
-
-
+function ENT:Initialize()
+	self:SetRenderBounds(Vector(-1000,-1000,-1000),Vector(1000,1000,1000))
+end
 function ENT:Draw()
 	self:DrawModel()
-	if (!self:GetNWBool("Powered")) then return end
+	if (!self:GetPowered()) then return end
 	local amt = 1
-	local tbl = GetItems()[self:GetNWString("ItemName")]
+	local tbl = GetItems()[self:GetItemName()]
 	local offset = Vector(0,0,0)
 	if tbl then
 		amt = tbl.LightFactor

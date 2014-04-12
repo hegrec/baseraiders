@@ -1,6 +1,6 @@
-spawnpoints = {}
-spawnpoints.entities = {}
-spawnpoints.positions = {}
+spawnpoints = spawnpoints or {}
+spawnpoints.entities = spawnpoints.entities or {}
+spawnpoints.positions = spawnpoints.positions or {}
 function spawnpoints.AddSpawn(ply,args)
 	if !ply:IsSuperAdmin() then return end
 	local pos = ply:GetPos()
@@ -47,8 +47,10 @@ hook.Add("InitPostEntity","LoadSpawns2",spawnpoints.LoadSpawns)
 function spawnpoints.SelectSpawn(pl)
 		
 	local spawns = spawnpoints.entities
+	print("selecting spawn")
 	--//First check for any entirely free spawnpoints
 	for _, spawn in pairs( spawns ) do
+		print(spawn)
 		if ( spawn && spawn:IsValid() && spawn:IsInWorld() ) then
 			local blockers = ents.FindInBox(spawn:GetPos() + Vector(-16, -16, 0), spawn:GetPos() + Vector(16, 16, 60))
 			if (#blockers < 2) then return spawn end

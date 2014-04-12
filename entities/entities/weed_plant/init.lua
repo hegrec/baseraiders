@@ -54,7 +54,7 @@ function ENT:Use(activator, caller)
 	pot:SetModel("models/nater/weedplant_pot.mdl")
 	pot:SetAngles(self:GetAngles())
 	pot.tbl = GetItems()["Empty Pot"]
-	pot:SetNWString("ItemName","Empty Pot")
+	pot:SetItemName("Empty Pot")
 	pot:Spawn()
 	self:Remove()
 end 
@@ -62,7 +62,7 @@ ENT.NextGrow = 0
 function ENT:Think()
 	if self.NextGrow > CurTime() then return end
 	self.NextGrow = CurTime()+0.1
-	local lightmod = self:GetLightAmount()
+	local lightmod = self:GetLightAmount()/2
 	self:SetNWInt("GrowthPercentage",self:GetGrowthPercentage()+0.1*lightmod)
 	
 	if (self:GetGrowthPercentage()>=100 && self.CurrentStage < 8) then

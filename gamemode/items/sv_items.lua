@@ -48,7 +48,9 @@ function meta:TakeItem(x,y)
 	local item = self.Inventory[y][x]
 	if item ==false or item == true then return end
 	local tbl = GetItems()[item]
-	
+	if (tbl.SWEPClass && !self:HasItem(item)) then --make sure we unequip the item if we have no more
+		self:StripWeapon(tbl.SWEPClass)
+	end
 
 	local tsize = tbl.Size
 	if tsize == nil then tsize = {2,2} end
@@ -60,6 +62,9 @@ function meta:TakeItem(x,y)
 		for xPos=x,x+(sx-1) do
 			self.Inventory[yPos][xPos] = false
 		end
+	end
+	if (tbl.SWEPClass && !self:HasItem(item)) then --make sure we unequip the item if we have no more
+		self:StripWeapon(tbl.SWEPClass)
 	end
 	
 	umsg.Start("loseItem",self)
@@ -82,9 +87,7 @@ function DropItem(ply,cmd,args)
 	
 	
 	ply:TakeItem(x,y)
-	if (tbl.SWEPClass && !ply:HasItem(index)) then --make sure we unequip the item if we have no more
-		ply:StripWeapon(tbl.SWEPClass)
-	end
+
 	
 	
 	local tr = {}
@@ -92,9 +95,20 @@ function DropItem(ply,cmd,args)
 	tr.endpos = tr.start+ply:GetAimVector()*120
 	tr.filter = ply
 	tr = util.TraceLine(tr)
-	local pos = tr.HitPos + (tr.HitNormal*10)
+	
+	local tr2 = {}
+	tr2.start = tr.HitPos
+	tr2.endpos = tr2.start-Vector(0,0,300)
+	tr2 = util.TraceLine(tr2)
+	
+	
+	local pos = tr2.HitPos
 	local ent = SpawnRoleplayItem(index,pos,ply)
-	ent:SetPos(tr.HitPos + tr.HitNormal)
+	
+	local angle = ply:GetAngles()
+	angle.yaw = angle.yaw-180
+	
+	ent:SetAngles(angle)
 end
 concommand.Add("dropitem",DropItem)
 
@@ -103,7 +117,7 @@ function PickupItem(ply,cmd,args)
 	local ent = ents.GetByIndex(args[1])
 	local x = tonumber(args[2])
 	local y = tonumber(args[3])
-	local itemType = ent:GetNWString("ItemName")
+	local itemType = ent:GetItemName()
 	if ply:GiveItem(itemType,x,y) then
 		ent:Remove()
 	end
@@ -141,7 +155,7 @@ function SpawnRoleplayItem(index,spawnpos,plOwner)
 		ent.steamid = plOwner:SteamID()
 	end
 	ent:SetModel(tbl.Model)
-	ent:SetNWString("ItemName",index)
+	ent:SetItemName(index)
 	
 	ent:SetPos(spawnpos)
 	ent.tbl = tbl
@@ -150,8 +164,8 @@ function SpawnRoleplayItem(index,spawnpos,plOwner)
 		for i,v in pairs(tbl.Args) do ent[i] = v end
 	end
 	ent:Spawn()
+	ent:SetPos(ent:GetPos()-Vector(0,0,ent:OBBMins().z))
 	ent:Activate()
-	ent:SetPos(ent:GetPos()-Vector(0,0,ent:OBBMins().z)) 
 	return ent
 end
 

@@ -8,7 +8,7 @@ function DoorBuy(ply, cmd, args)
 	local tr = Me:EyeTrace(50)
 	local door = tr.Entity
 
-	if !IsValid(door) or !door:IsDoor() or (door:GetNWBool("Unownable") && !door:GetNWBool("Property")) then return end
+	if !IsValid(door) or !door:IsDoor() or door:GetNWInt("Territory") != 0 or (door:GetNWBool("Unownable") && !door:GetNWBool("Property")) then return end
 	if !door:GetNWBool("Bought") then
 		local str = "door"
 		if door:GetNWBool("Property") then str = "property" end
@@ -96,7 +96,7 @@ function DOORPROP:Init()
 	self.Divider:SetSize(self:GetWide(),2)
 	self.Divider:SetPos(0,250)
 	
-	local doorlvl = ents.GetByIndex(doornum):GetLevel()
+	local doorlvl = ents.GetByIndex(doornum):GetDoorLevel()
 	self.DoorLvlLab = vgui.Create("DLabel",self)
 	self.DoorLvlLab:SetText("Current door level: "..doorlvl)
 	self.DoorLvlLab:SizeToContents()
@@ -210,18 +210,23 @@ hook.Add("HUDPaint","doorHUDStuff",function()
 		local dpos 			= tr.Entity:LocalToWorld(tr.Entity:OBBCenter()):ToScreen()
 		local unownable		= tr.Entity:GetNWBool("Unownable")
 		local title 		= tr.Entity:GetNWString("Title")
+		local territory		= tr.Entity:GetNWInt("Territory")
 		local property 		= tr.Entity:GetNWBool("Property")
 		local buyable 		= !tr.Entity:GetNWBool("Bought")
 		local col = Color(20,255,20,255)
 		if(title == "")then title = DEFAULT_DOOR_TITLE end
-		if unownable && !property then 
-			draw.SimpleTextOutlined("Unownable","ScoreboardSub",dpos.x,dpos.y-20,Color(20,0,20,255),1,1,1,Color(200,20,20,255))
-		elseif property && !unownable then
+		if property && buyable then
 			draw.SimpleTextOutlined("Property Available","ScoreboardSub",dpos.x,dpos.y-20,Color(20,0,20,255),1,1,1,Color(20,200,20,255))
-		else
-			draw.SimpleTextOutlined("Level "..tr.Entity:GetLevel(),"ScoreboardSub",dpos.x,dpos.y+40,Color(20,0,20,255),1,1,1,col)
+		elseif territory != 0 then
+			local t = territories[territory].Name
+			draw.SimpleTextOutlined(t,"ScoreboardSub",dpos.x,dpos.y+40,Color(20,0,20,255),1,1,1,col)
 		end
-		draw.SimpleTextOutlined(title,"ScoreboardSub",dpos.x,dpos.y+20,Color(20,0,20,255),1,1,1,col)
+		if territory == 0 then
+			draw.SimpleTextOutlined(title,"ScoreboardSub",dpos.x,dpos.y+20,Color(20,0,20,255),1,1,1,col)
+		end
 	end
 end
 )
+
+
+

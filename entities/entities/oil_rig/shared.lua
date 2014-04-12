@@ -6,5 +6,5 @@ pos = Vector(0,0,0),
 ang = Angle(0,0,0),
 }
 function ENT:GetBarrelPos()
-	return self:GetPos()+self:GetRight()*-110
+	return self:GetPos()+self:GetRight()*-60+Vector(0,0,1)
 end

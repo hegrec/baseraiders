@@ -85,12 +85,18 @@ function FinalTrade(pl,trader)
 		end
 	end
 	for k,v in pairs(pl.TradeList) do
-		trader:GiveItem(k,v)
-		pl:TakeItem(k,v)
+		for i=1,v do
+			trader:GiveItem(k)
+			pl:TakeItem(k)
+		end
+		
 	end
 	for k,v in pairs(trader.TradeList) do
-		pl:GiveItem(k,v)
-		trader:TakeItem(k,v)
+		
+		for i=1,v do
+			pl:GiveItem(k)
+		trader:TakeItem(k)
+		end
 	end
 	if pl.PartnerMoney then
 		pl:AddMoney(tonumber(pl.PartnerMoney))

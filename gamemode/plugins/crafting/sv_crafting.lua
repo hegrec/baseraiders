@@ -30,12 +30,12 @@ function crafting.StartCrafting(ply,cmd,args)
 	umsg.Bool(isSmelter)
 	umsg.End()
 end
-concommand.Add("startCrafting",crafting.StartCrafting)
+concommand.Add("start_crafting",crafting.StartCrafting)
 
 function crafting.CraftingFinished(ply,cmd,args)
 	ply:Freeze(false)
 end
-concommand.Add("craftingFinished",crafting.CraftingFinished)
+concommand.Add("crafting_finished",crafting.CraftingFinished)
 
 
 function crafting.CraftItem(ply,cmd,args)
@@ -54,19 +54,33 @@ function crafting.CraftItem(ply,cmd,args)
 		local amtReq = tonumber(tbl[var][i+1])
 		
 		local myAmount = ply:GetAmount(tbl[var][i])
-		if myAmount<amtReq then return end
+		
+		local text = "enough "
+		if (myAmount == 0) then text = "any " end
+		
+		
+		if myAmount<amtReq then ply:SendNotify("You don't have "..text..tbl[var][i].."s","NOTIFY_ERROR",3) return end
 		
 	end
+	if !ply:CanHold(item) then
+		ply:SendNotify("You don't have room for this in your inventory","NOTIFY_ERROR",3)
+	return end
 	--we had all reqs, remove em and give new item now
 	for i=1,#tbl[var],2 do
 		local amtReq = tonumber(tbl[var][i+1])
-		ply:TakeItem(tbl[var][i],amtReq,false)	
+		for ii=1,amtReq do
+			ply:TakeItem(tbl[var][i])	
+		end
 	end
 	ply:GiveItem(item)
-	
-	
+	ply:AddExperience(2)
+	umsg.Start("experienceUp")
+		umsg.Vector(ply:EyePos()+(ply:GetAimVector()*25-Vector(0,0,10)))
+		umsg.String("+2xp")
+	umsg.End()
+
 end
-concommand.Add("craftItem",crafting.CraftItem)
+concommand.Add("craft_item",crafting.CraftItem)
 
 function crafting.SaveCrafters()
 	if (crafting.craftman == nil) then return end
@@ -98,7 +112,6 @@ function crafting.LoadCrafters()
 	if file.Exists("darklandrp/crafting/crafters/"..game.GetMap()..".txt", "DATA") then
 		local str = file.Read("darklandrp/crafting/crafters/"..game.GetMap()..".txt", "DATA")	
 		local t = string.Explode(" ",str)
-		PrintTable(t)
 		local ent = ents.Create("npc_generic")
 		
 		ent:SetNPCName("Craftmaster Flex")

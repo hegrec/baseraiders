@@ -4,32 +4,52 @@ include("shared.lua")
 function ENT:Initialize()
 	self.Entity:SetModel("models/props_combine/combinethumper001a.mdl")
 	self.Entity:PhysicsInit(SOLID_VPHYSICS)
-	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
-	self.Entity:SetSolid(SOLID_VPHYSICS)
+	self.Entity:SetMoveType(MOVETYPE_NONE)
+	self.Entity:SetSolid(SOLID_NONE)
  
-	local phys = self.Entity:GetPhysicsObject()
-	if (phys:IsValid()) then
-		phys:EnableMotion(false)
-	end
 	self:SetUseType(SIMPLE_USE)
-	self:SetNoDraw(true)
+	
+	
 	self.ent = ents.Create("prop_thumper")
 	self.ent:SetPos(self:GetPos())
+	self.ent.tbl = self.tbl
 	self.ent:SetAngles(self:GetAngles())
-	self.ent:SetNWString("ItemName",self.tbl.Name)
+	self.ent:SetItemName(self:GetItemName())
 	self.ent:Spawn()
 	self.ent:Activate()
-	
+	self.barrels = {}
 	
 	self:SetNWInt("FillPercentage",0)
 end
-function ENT:Remove()
-	self.ent:Remove()
-end
 function ENT:Think()
-	--if (self.activeBarrel and self.activeBarrel:IsValid() and self.activeBarrel:GetPos():Distance(pos)<20 )then return end
 
-	self:SetNWInt("FillPercentage",self:GetNWInt("FillPercentage")+1)
+	local i=1
+	while (i<#self.barrels) do
+		if !self.barrels[i]:IsValid() then
+			table.remove(self.barrels,i)
+		else
+			i = i + 1
+		end
+	end
+	if #self.barrels >= 5 then return end
+	
+	
+	
+	local tracedata = {}
+
+	tracedata.start = self:GetBarrelPos()
+	tracedata.endpos = self:GetBarrelPos() + Vector(0,0,45)
+	tracedata.filter = {self,self.ent}
+	tracedata.mins = Vector( -14.5,-14.5,0)
+	tracedata.maxs = Vector(14.5,14.5,0)
+	tracedata.mask = MASK_SHOT_HULL
+	local tr = util.TraceHull( tracedata )
+	if tr.Entity:IsValid() then
+		return
+	end
+	if !self.ent:IsValid() then self:Remove() return end
+	self.ent:SetAngles(self:GetAngles())
+	self:SetNWInt("FillPercentage",self:GetNWInt("FillPercentage")+0.5)
 	
 	if self:GetNWInt("FillPercentage")>= 100 then
 		local pos = self:GetBarrelPos()
@@ -47,7 +67,7 @@ function ENT:Think()
 		tr2 = util.TraceLine(tr2)
 
 		local ent = SpawnRoleplayItem("Crude Oil",tr2.HitPos)
-		self.activeBarrel = ent
+		table.insert(self.barrels,ent)
 		self:SetNWInt("FillPercentage",0)
 	end
 end

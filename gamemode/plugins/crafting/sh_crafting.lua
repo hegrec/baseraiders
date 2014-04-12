@@ -81,6 +81,18 @@ ITEM.CanHold = true
 ITEM.MenuAdds = function(menu,index)
 	menu:AddOption("Create Fire",function() RunConsoleCommand("make_fire") end)
 end
+local ITEM = items.DefineItem("Smelting Furnace")
+ITEM.Group = "Raw Materials"
+ITEM.EntityClass = "smelting_furnace"
+ITEM.Model = "models/props_wasteland/kitchen_counter001b.mdl"
+ITEM.Description = "Smelt items in your base with this"
+ITEM.Size = {4,2}
+ITEM.CanHeal = true
+ITEM.Craftable = {"Metal",20}
+ITEM.LookAt = Vector(0,0,15)
+ITEM.CamPos = Vector(10,70,20)
+ITEM.Angle = Angle(0,0,0)
+ITEM.CanHold = true
 
 local ITEM = items.DefineItem("Wood Crafting Table")
 ITEM.Group = "Raw Materials"

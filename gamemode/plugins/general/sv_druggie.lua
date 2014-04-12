@@ -55,19 +55,3 @@ function UseDrug(pl,cmd,args)
 	GetItems()[itemID].OnUse(pl)
 end
 concommand.Add("use_drug",UseDrug)
-
-druggie.reserve = {}
-druggie.drugNeeds = {}
-MAX_DRUG_NEED = 200
---set amount of seeds / spores / whatever
-function SetDrugReserve()
-
-	for i,v in pairs(GetItems()) do
-		if v.Group == "Drugs" then
-			druggie.reserve[i]		= 10
-			druggie.drugNeeds[i] 	= 0
-		end
-	end
-end	
-hook.Add("Initialize","SetDrugReserve",SetDrugReserve) --do it at the start
-timer.Create("_lowerDrugAmount",900,0,SetDrugReserve) --and every 15 mins

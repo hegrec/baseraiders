@@ -1,9 +1,9 @@
-properties = properties or {}
+brproperties = brproperties or {}
 
 
 local temp = {}
 local tempfloor = {}
-function properties.Add(ply,args)
+function brproperties.Add(ply,args)
 	if !ply:IsSuperAdmin() then return end
 	local price = tonumber(args[1])
 	table.remove(args,1)
@@ -12,19 +12,19 @@ function properties.Add(ply,args)
 	local name = table.concat(args," ")
 	if !price || !name then ply:SendNotify("/addproperty <price> <rent 0|1> <name>","NOTIFY_ERROR",4) return end
 	
-	local num = table.insert(properties.properties,{})
-	properties.properties[num].price = price
-	properties.properties[num].owner = "None"
-	properties.properties[num].rent = rent
-	properties.properties[num].name = name
-	properties.properties[num].doors = {}
-	properties.properties[num].sockets = {}
-	temp[ply] = properties.properties[num]
+	local num = table.insert(brproperties.properties,{})
+	brproperties.properties[num].price = price
+	brproperties.properties[num].owner = "None"
+	brproperties.properties[num].rent = rent
+	brproperties.properties[num].name = name
+	brproperties.properties[num].doors = {}
+	brproperties.properties[num].sockets = {}
+	temp[ply] = brproperties.properties[num]
 	ply:SendNotify("You started a property","NOTIFY_ERROR",4)
 end
-AddChatCommand("addproperty",properties.Add)
+AddChatCommand("addproperty",brproperties.Add)
 
-function properties.AddSocket(ply,args)
+function brproperties.AddSocket(ply,args)
 	if !ply:IsSuperAdmin() || !temp[ply] then return end
 	
 	local tr = ply:GetEyeTrace()
@@ -37,17 +37,17 @@ function properties.AddSocket(ply,args)
 	table.insert(temp[ply].sockets,{tr.HitPos+tr.HitNormal*5,tr.HitNormal:Angle()})
 	ply:SendNotify("You added a socket to "..temp[ply].name,"NOTIFY_ERROR",4)
 end
-AddChatCommand("addpropertysocket",properties.AddSocket)
+AddChatCommand("addpropertysocket",brproperties.AddSocket)
 
-function properties.AddDoor(ply,args)
+function brproperties.AddDoor(ply,args)
 	if !ply:IsSuperAdmin() || !temp[ply] then return end
 	
 	table.insert(temp[ply].doors,ply:GetEyeTrace().Entity:EntIndex()-game.MaxPlayers())
 	ply:SendNotify("You added a door to "..temp[ply].name,"NOTIFY_ERROR",4)
 end
-AddChatCommand("newdoor",properties.AddDoor)
+AddChatCommand("newdoor",brproperties.AddDoor)
 
-function properties.FinishProperty(ply,args)
+function brproperties.FinishProperty(ply,args)
 	if !ply:IsSuperAdmin() || !temp[ply] then return end
 	for i,v in pairs(temp[ply].doors) do
 		local ent = ents.GetByIndex(v+game.MaxPlayers())
@@ -62,18 +62,19 @@ function properties.FinishProperty(ply,args)
 		ent:SetNWInt("Cost",temp[ply].price)
 	end
 	temp[ply] = nil
-	properties.Save()
+	brproperties.Save()
 	ply:SendNotify("You added a property","NOTIFY_ERROR",4)
 end
-AddChatCommand("finishproperty",properties.FinishProperty)
+AddChatCommand("finishproperty",brproperties.FinishProperty)
 
-function properties.Save()
-	local str = util.TableToKeyValues(table.Sanitise(properties.properties))
+function brproperties.Save()
+	local str = util.TableToKeyValues(table.Sanitise(brproperties.properties))
 	file.Write("darklandrp/properties/"..game.GetMap()..".txt",str)
 end
 
-function properties.Load()
-	properties.properties = {}
+function brproperties.Load()
+	brproperties.properties = {}
+	
 	if file.Exists("darklandrp/properties/"..game.GetMap()..".txt", "DATA") then
 		local str = file.Read("darklandrp/properties/"..game.GetMap()..".txt", "DATA")
 		local tbl = util.KeyValuesToTable(str)
@@ -97,10 +98,10 @@ function properties.Load()
 				ent:Spawn()	
 				table.insert(temptbl.sockets,tonumber(v))
 			end
-			table.insert(properties.properties,temptbl)
+			table.insert(brproperties.properties,temptbl)
 			
 		end
-		for i,v in pairs(properties.properties) do
+		for i,v in pairs(brproperties.properties) do
 			for q,w in pairs(v.doors) do
 				local ent = ents.GetByIndex(w+game.MaxPlayers())
 			 	ent:Fire("lock","",0)
@@ -119,11 +120,11 @@ function properties.Load()
 				
 	end
 end
-hook.Add("InitPostEntity","LoadProperties", properties.Load)
+hook.Add("InitPostEntity","LoadProperties", brproperties.Load)
 
 local meta = FindMetaTable("Entity")
 function meta:IsProperty()
-	for i,v in pairs(properties.properties) do
+	for i,v in pairs(brproperties.properties) do
 		if table.HasValue(v.doors,self:EntIndex()-game.MaxPlayers()) then
 			return true
 		end
@@ -132,7 +133,7 @@ function meta:IsProperty()
 end
 
 function FindPropertyNumByOwner(steamid)
-	for i,v in pairs(properties.properties) do
+	for i,v in pairs(brproperties.properties) do
 		if v.owner == steamid then
 			return i
 		end
@@ -142,20 +143,20 @@ end
 
 function GiveProperty(ply,ent)
 	local num
-	for i,v in pairs(properties.properties) do
+	for i,v in pairs(brproperties.properties) do
 		for q,w in pairs(v.doors) do
 			if w == ent:EntIndex()-game.MaxPlayers() then
 				num = i
 			end
 		end
 	end
-	if !properties.properties[num].rent then
-		properties.properties[num].owner = ply:SteamID()
-		properties.Save()
+	if !brproperties.properties[num].rent then
+		brproperties.properties[num].owner = ply:SteamID()
+		brproperties.Save()
 	else
-		properties.properties[num].renter = ply:SteamID()
+		brproperties.properties[num].renter = ply:SteamID()
 	end
-	for i,v in pairs(properties.properties[num].doors) do
+	for i,v in pairs(brproperties.properties[num].doors) do
 		local ent = ents.GetByIndex(v+game.MaxPlayers())
 		ent.DoorOwner = ply:SteamID()
 		ent:SetNWBool("Bought",true)
@@ -169,16 +170,16 @@ end
 
 function TakeProperty(ply,ent)
 	local num
-	for i,v in pairs(properties.properties) do
+	for i,v in pairs(brproperties.properties) do
 		for q,w in pairs(v.doors) do
 			if w == ent:EntIndex()-game.MaxPlayers() then
 				num = i
 			end
 		end
 	end
-	properties.properties[num].owner = "None"
-	properties.Save()
-	for i,v in pairs(properties.properties[num].doors) do
+	brproperties.properties[num].owner = "None"
+	brproperties.Save()
+	for i,v in pairs(brproperties.properties[num].doors) do
 		local ent = ents.GetByIndex(v+game.MaxPlayers())
 		ent:Fire("Close","",0)
 		ent:Fire("lock","",0.1)
@@ -191,7 +192,8 @@ function TakeProperty(ply,ent)
 end
 
 hook.Add("PlayerInitialSpawn","GivePropertyRights",function(pl)
-	for i,v in pairs(properties.properties) do
+	brproperties.properties = brproperties.properties or {}
+	for i,v in pairs(brproperties.properties) do
 		if (v.owner == pl:SteamID()) then
 			for ii,vv in pairs(v.doors) do
 				umsg.Start("boughtDoor",ply)

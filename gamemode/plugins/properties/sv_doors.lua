@@ -5,7 +5,7 @@
 	if(!IsValid(ent))then return end --who is fucking with the command....or who fucked up coding >.>
 	
 	if ent.DoorOwner && ent.DoorOwner != "" then ply:SendNotify("This door is already owned","NOTIFY_ERROR",4) return end --already owned by someone
-	if ent:GetNWBool("Unownable") then ply:SendNotify("You can not own this door","NOTIFY_ERROR",4) return end --already owned by someone
+	if ent:GetNWBool("Unownable") || ent:GetNWInt("Territory") != 0 then ply:SendNotify("You can not own this door","NOTIFY_ERROR",4) return end --already owned by someone
 	
 	local tr = {}
 	tr.start = ply:GetShootPos()
@@ -66,7 +66,7 @@ function SellDoor(ply,cmd,args)
 	
 	RemoveObject(ent)
 	ply:SendNotify("You sold a door for $"..(cost / 2),"NOTIFY_GENERIC",4)
-	ent:SetLevel(1)
+	ent:SetDoorLevel(1)
 	
 	ent:SetNWString("Title","For Rent")
 	timer.Simple(1,function() ent:SetNWString("Title",nil) end)
@@ -172,7 +172,7 @@ function UpgradeDoor(ply, cmd, args)
 	
 	if(ent.DoorOwner != ply:SteamID())then ply:SendNotify("You do not own this door! p.s. You are a cheater.","NOTIFY_ERROR",4) return end --you are not the owner of this door
 	
-	local lvl = ent:GetLevel()
+	local lvl = ent:GetDoorLevel()
 	if(lvl >= 5)then
 		ply:SendNotify("This door is already fully upgraded","NOTIFY_ERROR",4) 
 		return
@@ -185,7 +185,7 @@ function UpgradeDoor(ply, cmd, args)
 	
 	ply:AddMoney(upgradecosts[lvl + 1] * -1)
 	
-	ent:SetLevel(lvl + 1)
+	ent:SetDoorLevel(lvl + 1)
 	
 	ply:SendNotify("You upgraded the locks on this door to level "..lvl + 1,"NOTIFY_GENERIC",4)
 end
@@ -202,7 +202,7 @@ function DoorStripOwner(door)
 	door:SetNWString("Owner","")
 	timer.Simple(1,function() door:SetNWInt("Owner",nil) door:SetNWString("Owner",nil) end)
 	door:Fire("unlock","",0)
-	door:SetLevel(1)
+	door:SetDoorLevel(1)
 	
 	door:SetNWString("Title","For Rent") --need to do this to let clients know about it before deleting it (setting to nil will not tell clients)
 	timer.Simple(1,function() door:SetNWString("Title",nil) end)

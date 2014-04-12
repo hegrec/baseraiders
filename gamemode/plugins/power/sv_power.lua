@@ -30,7 +30,6 @@ function power.LoadSockets()
 	if file.Exists("darklandrp/sockets/"..game.GetMap()..".txt", "DATA") then
 		local str = file.Read("darklandrp/sockets/"..game.GetMap()..".txt", "DATA")	
 		local t = util.KeyValuesToTable(str)
-		PrintTable(t)
 		for i,v in pairs(t) do
 
 			local v = string.Explode(" ",v)

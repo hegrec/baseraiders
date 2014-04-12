@@ -17,7 +17,7 @@ end
 
 function ENT:StartTouch(ent)
 
-	if ent:GetNWString("ItemName") == "Marijuana Seed" then
+	if ent:GetItemName() == "Marijuana Seed" then
 		ent:Remove()
 		local plant = ents.Create("weed_plant")
 		plant:SetPos(self:GetPos())

@@ -23,7 +23,7 @@ function meta:GetSkill(skill)
 end
 
 
-function meta:GetLevel(skill)
+function meta:GetSkillLevel(skill)
 	if SERVER then
 		if !self.Levels then return 1 end
 		return self.Levels[skill] or 1
@@ -36,14 +36,14 @@ function GetSkillList()
 end
 
 skills["Stamina"] = {
-getNeeded = function(pl) return pl:GetLevel("Stamina") * 275 end, --How much do you need per level to level up
-levelUp = function(pl) pl:SetWalkSpeed(WALK_SPEED+pl:GetLevel("Stamina")*2) end, --Apply new stuff on level up
+getNeeded = function(pl) return pl:GetSkillLevel("Stamina") * 275 end, --How much do you need per level to level up
+levelUp = function(pl) pl:SetWalkSpeed(WALK_SPEED+pl:GetSkillLevel("Stamina")*2) end, --Apply new stuff on level up
 maxLevel = 30,
 hookUsed = "PlayerFootstep"
 }
 
 skills["Security"] = {
-getNeeded = function(pl) return pl:GetLevel("Security") * 5 end, --How much do you need per level to level up
+getNeeded = function(pl) return pl:GetSkillLevel("Security") * 5 end, --How much do you need per level to level up
 levelUp = function(pl) end,--Apply new stuff on level up
 maxLevel = 5,
 hookUsed = "OnLockPickSuccess",
@@ -51,7 +51,7 @@ custFunc = function(pl) pl:SendLua('hook.Call("OnLockPickSuccess",GAMEMODE,Me)')
 }
 /*
 skills["Intelligence"] = {
-	getNeeded = function(pl) return pl:GetLevel("Intelligence") * 50 end,
+	getNeeded = function(pl) return pl:GetSkillLevel("Intelligence") * 50 end,
 	levelUp = function(pl) end,
 	maxLevel = 10,
 	hookUsed = "OnIntelligenceUp",
@@ -59,7 +59,7 @@ skills["Intelligence"] = {
 }
 
 skills["Engineering"] = {
-	getNeeded = function(pl) return pl:GetLevel("Engineering") * 50 end,
+	getNeeded = function(pl) return pl:GetSkillLevel("Engineering") * 50 end,
 	levelUp = function(pl) end,
 	maxLevel = 5,
 	hookUsed = "OnEngineeringUp",

@@ -30,7 +30,7 @@ include("npcchat/cl_conversation.lua")
 
 include("skills/sh_skills.lua")
 include("skills/cl_skills.lua")
-
+include("vgui/DCategoryCollapse2.lua")
 include("vgui/DColorMixerNoAlpha.lua")
 include("vgui/DMultiModelPanel.lua")
 include("vgui/DHorizontalScroller2.lua")
@@ -48,6 +48,7 @@ surface.CreateFont("g_Logo", {font="Arial", size=36, weight=1000});
 surface.CreateFont("HUDNames", {font='Arial', size=22, weight=1000});
 surface.CreateFont("HUDBars", {font='Arial', size=18, weight=600});
 
+surface.CreateFont("TerritoryTitle", {font='Arial', size=38, weight=600});
 
 
 local function RandomString(len)
@@ -59,50 +60,26 @@ local function RandomString(len)
 	return str
 end
 
-local function LoadColor()
-	ColorName = RandomString(math.random(5,32))
-	hook.Add("RenderScreenspaceEffects",ColorName,--color
+
+	hook.Add("RenderScreenspaceEffects","test",--color
 		function()
 			if LocalPlayer():Health() <= BLOOD_EFFECT then 
 				local frac = LocalPlayer():Health()/BLOOD_EFFECT
 				local tab = {}
-				tab[ "$pp_colour_addr" ] = math.max(0.2-frac*0.2,0)
+				tab[ "$pp_colour_addr" ] = math.max(0.1-frac*0.2,0)
 				tab[ "$pp_colour_addg" ] = 0
 				tab[ "$pp_colour_addb" ] = 0
-				tab[ "$pp_colour_brightness" ] = 0-(1-frac)*0.5
+				tab[ "$pp_colour_brightness" ] = 0-(0.3-frac)*0.5
 				tab[ "$pp_colour_contrast" ] = 1
 				tab[ "$pp_colour_colour" ] = 1
 				tab[ "$pp_colour_mulr" ] = 0
 				tab[ "$pp_colour_mulg" ] = 0
 				tab[ "$pp_colour_mulb" ] = 0
 				DrawColorModify( tab )
-				DrawMotionBlur( math.max(0.1,frac*0.5), 0.99, 0.006) 
+				DrawMotionBlur( math.max(0.1,frac*0.5), 0.5, 0.001) 
 			end
-		end
-	)
-end
+		end)
 
-local function LoadHeartBeat()
- 	HeartBeatName = RandomString(math.random(5,32))
-	hook.Add("Think",HeartBeatName, --heartbeat
-		function()
-			if(LocalPlayer():Health() > BLOOD_EFFECT)then--they aren't hurt enough
-				if(NextBeat)then NextBeat = nil end
-				return
-			end 
-			if(LocalPlayer():Health() <= 0)then--they died
-				if(NextBeat)then NextBeat = nil end
-				return
-			end 
-			if(NextBeat and SysTime() >= NextBeat)then
-				LocalPlayer():EmitSound("darklandrp/heartbeat.wav",100,100) --why the fuck does this loop?!
-				NextBeat = nil
-			elseif(!NextBeat)then
-				NextBeat = (LocalPlayer():Health() * 3 / BLOOD_EFFECT) + 2 + SysTime()--length of heartbeat
-			end
-		end
-	)
-end
 function GM:Initialize()
 
 
@@ -121,23 +98,15 @@ function GM:InitPostEntity()
 	Me = LocalPlayer();
 
 	
-	Panels["Menu"] = vgui.Create("Menu")
-	hook.Call("OnMenusCreated",GAMEMODE) //Allow for menu plugins to be called at the right time
+	ShowMain()
 	//GAMEMODE:SetPlayerSpeed(Me,WALK_SPEED,RUN_SPEED)
 	LocalPlayer():SetWalkSpeed(WALK_SPEED);
 	LocalPlayer():SetRunSpeed(RUN_SPEED);
 	//Get dizzy and stuff near death
-	
-	LoadColor()
-	LoadHeartBeat()
 	RunConsoleCommand("player_ready")
 	
 end
 
-local meta = FindMetaTable("Player")
-function meta:HasItem(index)
-	return Inventory[index] && Inventory[index] > 0
-end
 
 function TW(s,f)
 	surface.SetFont(f)
@@ -155,8 +124,8 @@ function GM:HUDPaint()
 	local w = ScrW()
 	local h = ScrH()
 	
-	local radius = 140
-	local cx,cy = w-150,h-150
+	local radius = 100
+	local cx,cy = 110,h-110
 	surface.SetDrawColor(255,255,255,255)
 	surface.SetTexture(surface.GetTextureID("baseraiders/minimap"))
 	surface.DrawTexturedRect(cx-radius,cy-radius,radius*2,radius*2)
@@ -184,39 +153,47 @@ function GM:HUDPaint()
 
 		
 		local color = Color(200,200,200,255)
-		if GetGlobalInt("t_owner_id_"..i) == 0 then
+		if !territories[i].OwnerGangName then
 			color = Color(200,200,200,255)
-		elseif (GetGlobalInt("t_owner_id_"..i) == LocalPlayer():GetNWInt("GangID")) then
+		elseif (territories[i].OwnerGangID == LocalPlayer():GetGangID()) then
 			color = Color(0,200,0,255)
-		elseif (GetGlobalInt("t_contester_id_"..i) != 0) then
+		elseif (territories[i].ContesterGangID) then
 			color = Color(200,200,0,255)
-		elseif (GetGlobalInt("t_owner_id_"..i) != 0) then
+		elseif (territories[i].OwnerGangID != 0) then
 			color = Color(200,0,0,255)
 		end
 		
 		
 		
-		draw.SimpleTextOutlined(str,"g_Logo",px,py,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,3,Color(0,0,0,255))
+		draw.SimpleTextOutlined(str,"ScoreboardSub",px,py,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,3,Color(0,0,0,255))
 	end
-	draw.SimpleTextOutlined("$"..GetMoney(),"g_Logo",ScrW()-305,ScrH()-5,Color(0,200,0,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
+
+	draw.SimpleTextOutlined("$"..GetMoney(),"g_Logo",215,ScrH()-5,Color(0,200,0,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
 	
 	
 	local nearby_ents = ents.FindInSphere(Me:GetShootPos(),300)
 	
 	for i,v in pairs(nearby_ents) do
 		local pos = v:LocalToWorld(v:OBBCenter())
-
-	
 		local tr = {}
 		tr.start = LocalPlayer():EyePos()
 		tr.endpos = pos
 		tr.filter = LocalPlayer()
 		tr = util.TraceLine(tr)
-		if tr.Entity == v then
+		
+		
+		local tr2 = {}
+		tr2.start = LocalPlayer():EyePos()
+		tr2.endpos = v:GetPos()
+		tr2.filter = LocalPlayer()
+		tr2 = util.TraceLine(tr2)
+		
+		
+		if tr.Entity == v or tr2.Entity == v then
 			local text = ""
 			local extra = function() end
-			if (v:GetNWString("ItemName") != "") then
-				text = v:GetNWString("ItemName")
+			if (v:GetItemName() != "") then
+				text = v:GetItemName()
 				if GetItems()[text].ExtraHUD then
 					extra = GetItems()[text].ExtraHUD
 				end
@@ -224,6 +201,7 @@ function GM:HUDPaint()
 				extra = extraHUDFuncs[v:GetClass()]
 			elseif v:IsPlayer() then
 				text = v:Name()
+				pos = v:GetPos()+Vector(0,0,72)
 			elseif v:GetClass() == "power_socket" then
 				text = v:GetNWInt("WattsAvailable").." Watts Left"
 			elseif v:GetClass() == "money" then
@@ -236,34 +214,41 @@ function GM:HUDPaint()
 			
 			local alpha = math.min(255,(maxdist-dist)/maxdist*255)
 			extra(v,pos,alpha)
-			if v != Me then
-				draw.SimpleTextOutlined(text,"ScoreboardSub",pos.x,pos.y,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
-				if (v:IsPlayer() and v:GetNWString("GangName") != "") then
-					draw.SimpleTextOutlined("Gang: "..v:GetNWString("GangName"),"ScoreboardSub",pos.x,pos.y-20,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
-				elseif v:GetClass() == "darkland_light" then
-					local powered = v:IsPowered()
-					if powered then
-						draw.SimpleTextOutlined("Powered","HUDBars",pos.x,pos.y-20,Color(20,200,20,alpha),1,1,1,Color(0,0,0,alpha))
-					else
-						draw.SimpleTextOutlined("Unpowered","HUDBars",pos.x,pos.y-20,Color(200,20,20,alpha),1,1,1,Color(0,0,0,alpha))
+
+			draw.SimpleTextOutlined(text,"ScoreboardSub",pos.x,pos.y,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+			if (v:IsPlayer() and v:GetGangName() != "") then
+				draw.SimpleTextOutlined("Gang: "..v:GetGangName(),"HUDBars",pos.x,pos.y-25,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+				if v:GetGangLeader() then
+					draw.SimpleTextOutlined("Gang Leader","HUDBars",pos.x,pos.y-45,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+				end
+				draw.SimpleTextOutlined("Level: "..v:GetLevel(),"HUDBars",pos.x,pos.y-65,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+			elseif v.IsPowered then
+				local powered = v:IsPowered()
+				if powered then
+					draw.SimpleTextOutlined("Powered","HUDBars",pos.x,pos.y-20,Color(20,200,20,alpha),1,1,1,Color(0,0,0,alpha))
+				else
+					draw.SimpleTextOutlined("Unpowered","HUDBars",pos.x,pos.y-20,Color(200,20,20,alpha),1,1,1,Color(0,0,0,alpha))
+				end
+				local tbl = GetItems()[v:GetItemName()]
+				if tbl and tbl.Watts then
+					draw.SimpleTextOutlined(tbl.Watts.." Watts","Default",pos.x,pos.y-35,Color(200,200,20,alpha),1,1,1,Color(0,0,0,alpha))
+				end
+			elseif v:GetClass() == "weed_plant" then
+				local amt = v:GetLightAmount()
+				if amt == 0 then
+					draw.SimpleTextOutlined("No light","HUDBars",pos.x,pos.y-20,Color(200,20,20,alpha),1,1,1,Color(0,0,0,alpha))
+				else
+					if amt == 1 then
+						draw.SimpleTextOutlined("Dim light","HUDBars",pos.x,pos.y-20,Color(200,200,20,alpha),1,1,1,Color(0,0,0,alpha))
+					elseif amt == 2 then
+						draw.SimpleTextOutlined("Good light","HUDBars",pos.x,pos.y-20,Color(20,200,200,alpha),1,1,1,Color(0,0,0,alpha))
+					elseif amt == 3 then
+						draw.SimpleTextOutlined("Perfect light","HUDBars",pos.x,pos.y-20,Color(20,200,20,alpha),1,1,1,Color(0,0,0,alpha))
 					end
-				elseif v:GetClass() == "weed_plant" then
-					local amt = v:GetLightAmount()
-					if amt == 0 then
-						draw.SimpleTextOutlined("No light","HUDBars",pos.x,pos.y-20,Color(200,20,20,alpha),1,1,1,Color(0,0,0,alpha))
-					else
-						if amt == 1 then
-							draw.SimpleTextOutlined("Dim light","HUDBars",pos.x,pos.y-20,Color(200,200,20,alpha),1,1,1,Color(0,0,0,alpha))
-						elseif amt == 2 then
-							draw.SimpleTextOutlined("Good light","HUDBars",pos.x,pos.y-20,Color(20,200,200,alpha),1,1,1,Color(0,0,0,alpha))
-						elseif amt == 3 then
-							draw.SimpleTextOutlined("Perfect light","HUDBars",pos.x,pos.y-20,Color(20,200,20,alpha),1,1,1,Color(0,0,0,alpha))
-						end
-						local charge_per = math.min(1,v:GetGrowthPercentage()/100)
-					
-						draw.RoundedBox(0,pos.x-100,pos.y-60,200,8,Color(0,0,0,alpha))
-						draw.RoundedBox(0,pos.x-98,pos.y-58,charge_per*(200-4),8-4,Color(50,200,50,alpha))
-					end
+					local charge_per = math.min(1,v:GetGrowthPercentage()/100)
+				
+					draw.RoundedBox(0,pos.x-100,pos.y-60,200,8,Color(0,0,0,alpha))
+					draw.RoundedBox(0,pos.x-98,pos.y-58,charge_per*(200-4),8-4,Color(50,200,50,alpha))
 				end
 			end
 		end
@@ -281,27 +266,66 @@ function GM:HUDPaint()
 	end
 	--Height()
 end
+queued_experience = queued_experience or {}
 
-function GM:PostDrawOpaqueRenderables(bdepth,bsky)
+
+hook.Add("PostDrawTranslucentRenderables","queued_experiencereder",function()
+
+	
+	local i=1
+	while (i<#queued_experience) do
+		if (RealTime()-1>queued_experience[i]["StartTime"]) then
+			table.remove(queued_experience,i)
+		else
+			i = i + 1
+		end
+	end
 
 
-	local pos = territories[1].PowerLabel
+	for i,v in pairs(queued_experience) do
+		local endtime = v["StartTime"]+1
+		local frac = 1-math.min(1,math.max(0,(endtime-RealTime())/1))
+		local pos = LerpVector(frac,v["StartPos"],v["StartPos"]+Vector(0,0,20))
+		
+		local yaw = (v["StartPos"]-LocalPlayer():EyePos()):Angle().yaw-90
+		local ang = Angle(0,yaw,90)
+		cam.Start3D2D(pos, ang, 0.2)
+			draw.SimpleTextOutlined(v["Text"],"TerritoryTitle",0,0,Color(0,255,0,255-frac*255),1,1,1,Color(255,255,255,255-frac*255))
+		cam.End3D2D()
+	end
+end)
+function GM:PostDrawTranslucentRenderables(bdepth,bsky)
+	for i,v in pairs(territories) do
+		if v.Label then
+		
+			local pos = v.LabelPos
+			local ang = v.LabelAngle
+			cam.Start3D2D(pos, ang, 0.6)
+				v.Label()
+			cam.End3D2D()
+		end
 	
-	local ang = Angle(0,-90,90)
-	cam.Start3D2D(pos, ang, 0.6)
-	draw.SimpleText("Power Plant","Billboard",0,0,Color(255,255,255,255),1)
-	draw.RoundedBox(0,0,30,500,30,Color(0,0,0,255))
-	
-	local percentage = power.GetCityPowerUsed()/power.GetCityMaxPower()
-	local maxsize = 500-4
+	end
+
 	
 	
-	draw.RoundedBox(0,2,32,maxsize*percentage,26,Color(200,0,0,255))
-	draw.SimpleText(power.GetCityPowerUsed().."/"..power.GetCityMaxPower().." KW","Billboard",10,32,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM)
-	cam.End3D2D()
-	
+
+end
+function queueEffect( um )
+	local pos = um:ReadVector()
+	local text = um:ReadString()
+	local add = {}
+	add["StartPos"] = pos
+	add["Text"] = text
+	add["StartTime"] = RealTime()
+	table.insert(queued_experience,add)
 	
 end
+
+
+usermessage.Hook("experienceUp",queueEffect)
+
+
 function GetPowerBoost()
 	return GetGlobalInt("PowerBoost")
 end

@@ -10,7 +10,6 @@
 local logtbl = {}
 local mode = 0
 local logview 
-
 function CreateAdminTab()
 	local atab = vgui.Create("DPanelList")
 	atab:SetPadding(6)
@@ -124,12 +123,14 @@ function CreateAdminTab()
 	atab:AddItem(logview)
 
 	populateLog()
-	Panels["Menu"].Sheet:AddSheet("Admin Tab",atab,"gui/silkicons/wrench",nil,nil,nil,16) 
+	if (LocalPlayer():IsSubAdmin()) then
+		Panels["Menu"].Sheet:AddSheet("Admin Tab",atab,"gui/silkicons/wrench",nil,nil,nil,16) 
+	end
 end
 hook.Add("OnMenusCreated","ZCreateAdminTab",CreateAdminTab)
 
 function populateLog()
-	if(!logview)then return end
+	if(!ValidPanel(logview))then return end
 
 	logview:Clear() 
 	for k,v in pairs(logtbl)do
@@ -151,4 +152,4 @@ function AddLogEntry(str,amode,timestamp)
 	
 	table.insert(logtbl,temp)
 	populateLog()
-end 
+end

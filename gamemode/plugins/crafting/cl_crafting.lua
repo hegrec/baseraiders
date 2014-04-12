@@ -23,22 +23,62 @@ function PANEL:Init()
 		var = "Smeltable"
 		self:SetTitle("Smelting Furnace")
 	end
-	
-	
+	self.ItemGroups = {}
+
 	local items = GetItems()
 	for i,v in pairs(items) do
 		if (v[var]) then
-			self:AddCraftable(i,v)
+			self:AddItemGroup(v.Group,var)
+			--self:AddCraftable(i,v)
 		end
 	end
 
 
 	self:MakePopup()
 end
-function PANEL:AddCraftable(name,tbl)
+function PANEL:AddItemGroup(groupName,var)
+	if self.ItemGroups[groupName] then return end
+	local DCollapsibleCategory = vgui.Create( "DCollapsibleCategory2" )
+	DCollapsibleCategory:SetLabel( groupName )
+	
+	
+	local innerList = vgui.Create("DPanelList")
+	innerList:EnableVerticalScrollbar(true)
+	innerList.HUDPaint = function() end
+	local items = GetItems()
+	for i,v in pairs(items) do
+		if (v[var]) and v.Group == groupName then
+			innerList:AddItem(self:AddCraftable(i,v,innerList))
+		end
+	end
+	
+	
+	DCollapsibleCategory:SetStartHeight(128*#innerList:GetItems())
+	DCollapsibleCategory:SetSize(300,25+128*#innerList:GetItems())
+	innerList:SizeToContents()
+	DCollapsibleCategory:SetContents(innerList)
+	DCollapsibleCategory:InvalidateLayout( true )
+	DCollapsibleCategory.Header.DoClick = function(s)
+		
+		--s:GetParent():SetExpanded(false)
+		s:GetParent():Toggle()
+		
+		for i,v in pairs(self.ItemGroups) do
+			if (v:GetParent() != s:GetParent()) then
+			v:GetParent():SetExpanded(true)
+			v:GetParent():Toggle()
+			end
+		end
+		
+	end
+	
+	self.ItemGroups[groupName] = innerList
+	self.craftables:AddItem(DCollapsibleCategory)
+	DCollapsibleCategory:Toggle()
+end
+function PANEL:AddCraftable(name,tbl,parentList)
 	local pnl = vgui.Create("DPanel")
 	pnl:SetTall(128)
-	
 	local lblName = vgui.Create("DLabel",pnl)
 	lblName:SetPos(5,5)
 	lblName:SetText(name)
@@ -50,16 +90,17 @@ function PANEL:AddCraftable(name,tbl)
 	if isSmelting then
 		var = "Smeltable"
 	end
-	local can_craft = true
-	for i=1,#tbl[var],2 do
-		if (LocalPlayer():GetAmount(tbl[var][i])<tbl[var][i+1]) then can_craft = false break end
-	end
-
-	local color = Color(100,200,100,255)
-	if (!can_craft) then
-		color = Color(200,100,100,255)
-	end
+	
 	pnl.Paint = function(s)
+		local can_craft = true
+		for i=1,#tbl[var],2 do
+			if (LocalPlayer():GetAmount(tbl[var][i])<tbl[var][i+1]) then can_craft = false break end
+		end
+
+		local color = Color(100,200,100,255)
+		if (!can_craft) then
+			color = Color(200,100,100,255)
+		end
 		draw.RoundedBox(0,0,0,s:GetWide(),s:GetTall(),color)
 	end
 	
@@ -92,11 +133,11 @@ function PANEL:AddCraftable(name,tbl)
 	
 	pnl:SetToolTip(tbl.Description)
 	create:SetSize(150,25)
-	pnl:SizeToContents()
 	create:SetText("Craft Item")
-	create.DoClick = function() RunConsoleCommand("craftItem",name) end
+	create.DoClick = function() RunConsoleCommand("craft_item",name) end
 	create:SetPos(5,pnl:GetTall()-30)
-	self.craftables:AddItem(pnl)
+	
+	return pnl
 end
 function PANEL:Think()
 	if !Me:Alive() then self:Close() end --Auto save for the player if they die
@@ -104,7 +145,7 @@ end
 
 function PANEL:Close()
 	self:Remove()
-	RunConsoleCommand("craftingFinished")
+	RunConsoleCommand("crafting_finished")
 end
 vgui.Register("CraftingMenu",PANEL,"DFrame")
 

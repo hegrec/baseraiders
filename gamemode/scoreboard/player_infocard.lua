@@ -63,7 +63,7 @@ function PANEL:UpdatePlayerData()
 	if (!self.Player) then return end
 	if ( !self.Player:IsValid() ) then return end
 	
-	self:SetInfo( 1, "Website:", "http://www.zebgamers.com" )
+	self:SetInfo( 1, "Website:", "http://www.coinerd.com" )
 	self:SetInfo( 1, "Location:", "" )
 	self:SetInfo( 1, "Email:", "" )
 	self:SetInfo( 1, "GTalk:", "") 

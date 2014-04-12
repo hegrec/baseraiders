@@ -8,11 +8,23 @@ function meta:EyeTrace(len)
 	tr = util.TraceLine(tr)
 	return tr
 end
-
+function meta:GetExperience()
+	return self:GetDTInt(1)
+end
+function meta:GetLevel()
+	return CalculateLevel(self:GetExperience())
+end
 function meta:GetGangID()
-	return self:GetNWInt("GangID")
+	return self:GetDTInt(0)
 end
 
+function meta:GetGangName()
+	return self:GetDTString(0)
+end
+
+function meta:GetGangLeader()
+	return self:GetDTBool(0)
+end
 
 function meta:CanReach(ent)
 	return self:GetPos():Distance(ent:GetPos()) < MAX_INTERACT_DIST

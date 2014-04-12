@@ -18,6 +18,35 @@ function meta:SetMoney(amt)
 	self.Money = amt
 	SendMoney(self)
 end
+function meta:SetExperience(s)
+	local lvl = self:GetLevel()
+	self:SetDTInt(1,s)
+	self:TryLevelUp(lvl)
+end
+function meta:AddExperience(amt)
+
+	local lvl = self:GetLevel()
+	self:SetExperience(self:GetExperience()+amt)
+end
+function meta:TryLevelUp(oldLevel)
+	local lvl = self:GetLevel()
+	if (oldLevel<lvl) then
+		self:SendNotify("You have leveled up! You are now level "..self:GetLevel(),"NOTIFY_GENERIC",10)
+		self:EmitSound("ambient/energy/whiteflash.wav")
+		return
+	end
+end
+function meta:SetGangID(s)
+	self:SetDTInt(0,s)
+end
+
+function meta:SetGangLeader(s)
+	self:SetDTBool(0,s)
+end
+
+function meta:SetGangName(s)
+	self:SetDTString(0,s)
+end
 
 function meta:GetMoney()
 	return self.Money

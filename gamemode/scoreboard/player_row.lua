@@ -124,10 +124,11 @@ function PANEL:UpdatePlayerData()
 	self.lblFrags:SetText( self.Player:Frags() )
 	self.lblDeaths:SetText( self.Player:Deaths() )
 	self.lblPing:SetText( self.Player:Ping() )
-	self.lblTeams:SetText( team.GetName(self.Player:Team()) )
+	self.lblTeams:SetText( self.Player:GetGangName() )
+	self.lblTeams:SizeToContents()
 	
 	// Work out what icon to draw
-	self.texRating = surface.GetTextureID( "gui/silkicons/emoticon_smile" )
+	self.texRating = -1
 	
 	self.texRating = texRatings[ 'none' ]
 	local count = 0
@@ -235,7 +236,7 @@ function PANEL:PerformLayout()
 	self.lblPing:SetPos( self:GetWide() - COLUMN_SIZE * 1, 0 )
 	self.lblDeaths:SetPos( self:GetWide() - COLUMN_SIZE * 2, 0 )
 	self.lblFrags:SetPos( self:GetWide() - COLUMN_SIZE * 3, 0 )
-	self.lblTeams:SetPos( self:GetWide() - COLUMN_SIZE * 5, 0 )
+	self.lblTeams:SetPos( self:GetWide() - COLUMN_SIZE * 8, 0 )
 	
 	if ( self.Open || self.Size != self.TargetSize ) then
 	

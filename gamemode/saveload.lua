@@ -16,11 +16,11 @@ function BeginRPProfile(pl)
 	pl.Levels 			= {}
 	pl.Cars 			= {}
 	pl:SetMoney(DEFAULT_CASH)
-	
+	pl:SetExperience(0)
 	local steamID = pl:SteamID();
 	
 	
-	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model,GangID FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res) end)
+	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model,GangID,Experience FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res) end)
 end
 hook.Add("PlayerInitialSpawn","RPLoadProfile",BeginRPProfile)
 
@@ -31,6 +31,7 @@ function RPLoadCallback(pl, tbl)
 	tbl = tbl[1]
 	if !tbl then NewProfile(pl) return end
 	pl:SetMoney(tonumber(tbl["Money"]))
+	pl:SetExperience(tonumber(tbl["Experience"]))
 	if !tbl["Model"] or tbl["Model"] == "" then
 		RequestModel(pl)
 	end
@@ -40,7 +41,7 @@ function RPLoadCallback(pl, tbl)
 	hook.Call("OnLoadInventory",GAMEMODE,pl,tbl["Inventory"])
 	hook.Call("OnLoadClothing",GAMEMODE,pl,tbl["Clothing"],tbl["CurrentHat"],tbl["CurrentSkin"])
 	hook.Call("OnLoadVehicles",GAMEMODE,pl,tbl["Vehicle"])
-	hook.Call("OnLoadGang",GAMEMODE,pl,tbl["GangID"])
+	hook.Call("OnLoadGang",GAMEMODE,pl,tonumber(tbl["GangID"]))
 	pl:Spawn()
 	pl.LoadedRolePlay = true -- Let the script know that vars can be accessed
 	local steamid = pl:SteamID()
@@ -53,6 +54,7 @@ function NewProfile(pl)
 	hook.Call("OnLoadSkills",GAMEMODE,pl,'','')
 	hook.Call("OnLoadInventory",GAMEMODE,pl,'')
 	hook.Call("OnLoadClothing",GAMEMODE,pl,'')
+	hook.Call("OnLoadGang",GAMEMODE,pl,0)
 	RequestModel(pl)
 	pl.LoadedRolePlay = true -- Let the script know that vars can be accessed
 	local steamid = pl:SteamID()
@@ -69,9 +71,10 @@ function SaveRPAccount(pl)
 	local levels 		= table.ToSave(pl.Levels)
 	local clothing 		= table.ToSave(pl.Clothing)
 	local model 		= pl.Model or ""
+	local experience 		= pl:GetExperience() or ""
 	
 	if !safeinv or !skills or !levels then error("SOMETHING DIDN'T SAVE ---   Inv - "..tostring(safeinv).." Skills - "..tostring(skills).." Levels - "..tostring(levels)) return end
-	Query("UPDATE rp_playerdata SET Money=Money+"..safemoney..",Inventory=\'"..safeinv.."\',Skills=\'"..skills.."\',Levels=\'"..levels.."\',Clothing=\'"..clothing.."\',Model=\'"..model.."\' WHERE SteamID=\'"..safeid.."\'")
+	Query("UPDATE rp_playerdata SET Money=Money+"..safemoney..",Experience="..experience..",Inventory=\'"..safeinv.."\',Skills=\'"..skills.."\',Levels=\'"..levels.."\',Clothing=\'"..clothing.."\',Model=\'"..model.."\' WHERE SteamID=\'"..safeid.."\'")
 end
 AddChatCommand("save",function(pl,args)pl.nextSave = pl.nextSave or 0 if pl.nextSave > CurTime() then return end pl.nextSave = CurTime()+5 SaveRPAccount(pl) pl:SendNotify("Your RP Account has successfully saved","NOTIFY_GENERIC",4) end)
 

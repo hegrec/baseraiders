@@ -1,11 +1,11 @@
 local meta = FindMetaTable("Entity")
-function meta:GetLevel()
-	local lvl = self:GetNWInt("level")
+function meta:GetDoorLevel()
+	local lvl = self:GetNWInt("doorlevel")
 	if lvl == 0 then lvl = 1 end
 	return lvl
 end
 
-function meta:SetLevel(lvl)
+function meta:GetDoorLevel(lvl)
 	if(CLIENT)then return end
-	self:SetNWInt("level",lvl)
+	self:SetNWInt("doorlevel",lvl)
 end

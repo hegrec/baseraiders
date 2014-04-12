@@ -21,17 +21,40 @@ function AddBarHealth()
 			if hp > 0 then
 				draw.RoundedBox(4,2,2,hp/100*healthbar:GetWide()-4,healthbar:GetTall()-4,Color(255,50,50,255))
 			end
-			draw.DrawText(hp.."/100","HUDBars",healthbar:GetWide()/2,-2,Color(255,255,255,255),1)
+			draw.DrawText(hp.."/"..level_experience[LocalPlayer():GetLevel()+1],"HUDBars",healthbar:GetWide()/2,-2,Color(255,255,255,255),1)
 		end
 	HUDBars:AddItem(healthbar)
 end
 
+function AddBarXP()
+	
+	local xpbar = vgui.Create("DPanel")
+	xpbar:SetSize(300,16)
+	xpbar.Paint = function() 
+			local frac = 1
+			if level_experience[LocalPlayer():GetLevel()+1] then
+				frac = CalculateExperienceThisLevel(LocalPlayer():GetExperience())/level_experience[LocalPlayer():GetLevel()+1]
+			end
+			draw.RoundedBox(0,0,0,xpbar:GetWide(),xpbar:GetTall(),Color(0,0,0,150))
+			if frac > 0 then
+				draw.RoundedBox(4,2,2,frac*xpbar:GetWide()-4,xpbar:GetTall()-4,Color(200,200,50,255))
+			end
+			if level_experience[LocalPlayer():GetLevel()+1] then
+				draw.DrawText(CalculateExperienceThisLevel(LocalPlayer():GetExperience()).."/"..level_experience[LocalPlayer():GetLevel()+1].."xp","HUDBars",xpbar:GetWide()/2,-2,Color(255,255,255,255),1)
+			else
+				draw.DrawText("You have reached max level","HUDBars",xpbar:GetWide()/2,-2,Color(255,255,255,255),1)
+			end
+		end
+	HUDBars:AddItem(xpbar)
+end
+ 
 if (!IsValid(Me)) then
 	timer.Create("LoadbarsWhenPlayerReady", 0.001, 0, function()
 		if (IsValid(Me)) then
 			timer.Destroy("LoadbarsWhenPlayerReady");
 			createHud()
 			AddBarHealth()
+			AddBarXP()
 		end
 	end)
 end

@@ -1,36 +1,54 @@
 local MODEL = {}
 function MODEL:Init()
-	if(Panels["Menu"])then Panels["Menu"]:SetVisible(false) end
-	gui.EnableScreenClicker(true)
-	self:SetSize(300,300)
-	self:ShowCloseButton(false) 
+	
+	self:SetSize(1024,1024)
+	self:ShowCloseButton(false)
+	self:SetTitle("")
  	self:SetBackgroundBlur(true) 
 	self:Center()
-	self:SetDeleteOnClose(true)
 	self:SetZPos(1000)
 	local list = vgui.Create("DPanelList",self)
 	list:StretchToParent(5,25,5,5)
 	list:EnableHorizontal(true)
-	list:EnableVerticalScrollbar()
-	self:SetTitle("Select a Model")
+	
+	
+	
+	
 	for k,v in pairs(CitizenModels)do
-		local icon = vgui.Create("SpawnIcon",pan)
+		local icon = vgui.Create("DModelPanel")
+		icon:SetSize(200,200)
 		icon:SetModel(v)
+		icon.Entity:SetSkin((k%9)-1)
+		icon:SetCamPos(Vector(40,10,60))
+		icon:SetLookAt(Vector(0,0,60))
 		icon:InvalidateLayout(true)
-		icon:SetPos(5,5)
-		--icon:RebuildSpawnIcon()
-		icon.OnCursorEntered = function() end
-		icon.OnCursorExited = function() end
-		icon.OnMousePressed = function() 
+		local idle = icon.Entity:GetSequence()
+		icon.LayoutEntity = function(s,ent) s:RunAnimation()  end
+		icon.OnCursorEntered = function() icon.Entity:SetSequence(10)
+				if k == 3 then
+					icon.Entity:SetSequence(13)
+				end end
+		icon.OnCursorExited = function() icon.Entity:SetSequence(idle)
+				
+				end
+		icon.DoClick = function() 
 				surface.PlaySound("ui/buttonclickrelease.wav") 
 				RunConsoleCommand("setmodel",k) 
 				gui.EnableScreenClicker(false)
-				self:Close()
-				if(Panels["Menu"])then Panels["Menu"]:SetVisible(true) end
+				self:Remove()
+				
+				ShowMain(LocalPlayer())
 			end
 		icon:SetToolTip(nil)
 		list:AddItem(icon)
 	end
+	self:MakePopup()
+end
+function MODEL:Paint()
+	if ( self.m_bBackgroundBlur ) then
+		Derma_DrawBackgroundBlur( self, self.m_fCreateTime )
+	end
+	draw.SimpleTextOutlined("Select Your Model","TerritoryTitle",500,30,Color(255,255,255,255),1,1,2,Color(0,0,0,255))
 end
 vgui.Register("ModelSelect",MODEL,"DFrame")
 
@@ -65,6 +83,7 @@ function ShowMain(pl,cmd,args)
 	if(ValidPanel(Panels["Menu"]))then
 		Panels["Menu"]:Remove()
 	end
+	if (ValidPanel(Panels["ModelSelect"])) then return end
 	Panels["Menu"] = vgui.Create("Menu")
 	hook.Call("OnMenusCreated",GAMEMODE)
 end

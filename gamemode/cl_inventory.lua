@@ -88,6 +88,7 @@ function INVENTORY:AddItem(index,x,y)
 			end
 			if LocalPlayer():GetEyeTrace().Entity:GetClass() == "planted_gang_hub" then
 				menu:AddOption("Transfer to Hub",function() RunConsoleCommand("item_to_hub",x,y) end)
+				menu:AddOption("Transfer all to Hub",function() RunConsoleCommand("item_to_hub",x,y,"1") end)
 			end
 			if type.MenuAdds then
 				type.MenuAdds(menu,index,x,y)
@@ -171,9 +172,9 @@ local draggingEntity
  hook.Add("GUIMousePressed","hoverclick",function(code,pos)
 	local ent = properties.GetHovered(LocalPlayer():EyePos(),LocalPlayer():GetAimVector())
 	if (ent and ent:IsValid()) then
-		if ent:GetNWString("ItemName") then
+		if ent:GetItemName() then
 			draggingEntity = ent
-			SetDraggableItem(ent:GetNWString("ItemName"))
+			SetDraggableItem(ent:GetItemName())
 			
 		end
 	end
@@ -183,7 +184,7 @@ local draggableItem
 function SetDraggableItem(item,x,y)
 	if ValidPanel(draggableItem) then draggableItem:Remove() end
 	local type = GetItems()[item]
-	if !type then print("ITEM NOT FOUND: ",item) return end
+	if !type then return end
 	local panel = vgui.Create("DModelPanel")
 	local tsize = type.Size
 	if tsize == nil then tsize = {2,2} end
@@ -206,6 +207,7 @@ function SetDraggableItem(item,x,y)
 	panel:SetLookAt(lookat)
 	panel:SetMouseInputEnabled(false)
 	panel.DropDragger = function(p)
+		if !ValidPanel(Inventory) then return end
 		local cX,cY = Inventory:CursorPos()
 		if cX>0 and cX < Inventory:GetWide() and cY>0 and cY < Inventory:GetTall() then
 			local xSlot,ySlot = Inventory:GetItemSlot(cX,cY)

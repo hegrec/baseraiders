@@ -144,26 +144,21 @@ Replies["Drug Dealer"][3] = {
 Replies["Drug Dealer"][4] = {
 	Text		= "(Leave)",
 	OnUse		= function(pl) end
-}
+} 
 Replies["Drug Dealer"][5] = {
 	Text		= "I've got some of that homegrown...",
 	OnUse		= function(pl) 
 		if !pl:HasItem("Weed") then 
 			return 4 
-		elseif druggie.drugNeeds["Weed"] < MAX_DRUG_NEED then
-			local myDrugs = pl:GetAmount("Weed")
-			local drugAmount = math.min(MAX_DRUG_NEED - druggie.drugNeeds["Weed"] ,myDrugs)
-			druggie.drugNeeds["Weed"] = math.min(druggie.drugNeeds["Weed"]+drugAmount,MAX_DRUG_NEED)
-			pl:TakeItem("Weed",drugAmount)
-			pl:AddMoney(drugAmount*150)
-
-			pl:SendNotify("You made $"..drugAmount*150 .." selling marijuana","NOTIFY_GENERIC",4)
-			if drugAmount != myDrugs then
-				pl:SendNotify("Hey man, I only need "..drugAmount.." for now but I might need more later","NOTIFY_ERROR",5)
-			end
-			return 5
 		else
-			return 6
+			local myDrugs = pl:GetAmount("Weed")
+			for i=1,myDrugs do
+				pl:TakeItem("Weed")
+			end
+			pl:AddMoney(myDrugs*60)
+
+			pl:SendNotify("You made $"..myDrugs*60 .." selling marijuana","NOTIFY_GENERIC",4)
+			return 5
 		end
 	end
 }

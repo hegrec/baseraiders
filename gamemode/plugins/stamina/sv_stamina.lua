@@ -29,7 +29,7 @@ timer.Create("stamina_process",0.1,0,function()
 			end
 		else
 			if(v.stopstaminaspawm)then
-				v:SetRunSpeed(RUN_SPEED+v:GetLevel("Stamina")*2)
+				v:SetRunSpeed(RUN_SPEED+v:GetSkillLevel("Stamina")*2)
 				v.stopstaminaspawm = false
 			end
 		end

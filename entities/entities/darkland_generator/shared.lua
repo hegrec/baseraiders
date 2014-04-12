@@ -4,6 +4,9 @@ ENT.Base = "base_anim"
 function ENT:GetWattsLeft()
 	return self:GetNWInt("WattsAvailable")
 end
+function ENT:GetGallons()
+	self:GetDTInt(4)
+end
 sound.Add( {
 	name = "generator_idle",
 	channel = CHAN_STATIC,

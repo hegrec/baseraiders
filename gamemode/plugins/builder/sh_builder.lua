@@ -1,4 +1,4 @@
-PROP_COST = 100
+PROP_COST = 80
 SPAWN_DELAY = 1
 MAX_PROP_HEALTH = 1000
 local CanPickUpEnts = {

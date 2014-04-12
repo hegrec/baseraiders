@@ -36,19 +36,35 @@ usermessage.Hook("skillSet",function( um ) Skills[um:ReadString()] = um:ReadLong
 usermessage.Hook("levelSet",function( um ) Levels[um:ReadString()] = um:ReadChar() end)
 
 function CreateSkillsTab()
-	local list = vgui.Create("DPanelList")
+	local pnl = vgui.Create("DPanel")
+	
+	--[[local lbl = Label("You have 0 skill points available to spend",pnl)
+	lbl:SetPos(5,5)
+	lbl:SetTextColor(Color(0,0,0,255))
+	lbl:SetFont("HUDBars")
+	lbl:SizeToContents()]]
+
+	local list = vgui.Create("DPanelList",pnl)
 	list:SetSpacing(1)
 	list:SetPadding(7)
+	list.Paint = function(s)
+		draw.RoundedBox(0,0,0,s:GetWide(),s:GetTall(),Color(50,50,50,255))
+	end
+	list:StretchToParent(5,50,5,5)
+	pnl.PerformLayout = function(s)
+		list:StretchToParent(5,50,5,5)
+	end
+	
 	for i,v in pairs(GetSkillList()) do
 		local p = vgui.Create("DPanel")
-		p:SetTall(64)
+		p:SetTall(48)
 		p.Paint = 
 		function() 
-			draw.RoundedBox(6,0,0,p:GetWide(),p:GetTall(),Color(80,80,80,255))
-			draw.SimpleText(i,"ScoreboardSub",p:GetWide()-5,15,Color(220,20,20,255),2,1)
-			draw.SimpleText("Level "..Levels[i],"ScoreboardSub",5,15,Color(220,20,20,255),0,1)
+			draw.RoundedBox(0,0,0,p:GetWide(),p:GetTall(),Color(200,200,200,255))
+			draw.SimpleText(i,"HUDBars",p:GetWide()-5,10,Color(220,20,20,255),2,1)
+			draw.SimpleText("Level "..Levels[i],"HUDBars",5,10,Color(220,20,20,255),0,1)
 			local xpneeded = v.getNeeded(LocalPlayer())
-			draw.SimpleText(Skills[i].."/"..xpneeded,"Default",p:GetWide()-5,30,Color(0,0,0,255),2,1)
+			draw.SimpleText(Skills[i].."/"..xpneeded,"Default",p:GetWide()-5,20,Color(0,0,0,255),2,1)
 			
 			
 			draw.RoundedBox(2,5,p:GetTall()-20,p:GetWide()-10,15,Color(10,10,10,255))
@@ -59,6 +75,6 @@ function CreateSkillsTab()
 		list:AddItem(p)
 	end
 	
-	Panels["Menu"].Sheet:AddSheet("Skills",list,"gui/silkicons/pill",nil,nil,nil,3) 
+	Panels["Menu"].Sheet:AddSheet("Skills",pnl,"gui/silkicons/pill",nil,nil,nil,3) 
 end
 hook.Add("OnMenusCreated","CreateSkillsTab",CreateSkillsTab)

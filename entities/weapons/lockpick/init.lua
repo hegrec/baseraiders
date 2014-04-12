@@ -21,15 +21,16 @@ end
 
 function SWEP:TryUnlock(tr)
 	if tr.Entity.ConstLocked == 1 then self.Owner:SendNotify("This door is unable to be lockpicked!","NOTIFY_ERROR",3) return end
-	local lockpickskill = self.Owner:GetLevel("Security")
+	local lockpickskill = self.Owner:GetSkillLevel("Security")
 	local num = math.random(1,100)
-	if num <= math.Clamp(lockpickskill+3-tr.Entity:GetNWInt("level"),1,20) then
+	if num <= 10+math.Clamp(lockpickskill+3-tr.Entity:GetNWInt("level"),1,20) then
 		tr.Entity:Fire("unlock")
-		self.Owner:EmitSound("door/latchunlocked1.wav")
+		tr.Entity.Locked = false
+		self.Owner:EmitSound("doors/latchunlocked1.wav")
 		hook.Call("OnLockPickSuccess",GAMEMODE,self.Owner)
-		self.Owner:AddStars(1)
 	else
 		self.Owner:EmitSound("physics/metal/metal_sheet_impact_bullet1.wav")
 		self.Owner:TakeItem("Lock Pick")
+		if (!self.Owner:HasItem("Lock Pick")) then self.Owner:StripWeapon("lockpick") end
 	end
 end

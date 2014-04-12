@@ -1,5 +1,6 @@
  
 include( "player_row.lua" )
+include( "leaderboard.lua" )
 include( "player_frame.lua" )
 
 //surface.CreateFont( "coolvetica", 32, 500, true, false, "ScoreboardHeader" )
@@ -58,6 +59,12 @@ function PANEL:AddPlayerRow( ply )
 	local button = vgui.Create( "ScorePlayerRow", self.PlayerFrame:GetCanvas() )
 	button:SetPlayer( ply )
 	self.PlayerRows[ ply ] = button
+
+end
+
+function PANEL:AddLeaderboard( ply )
+
+	self.Leaderboard = vgui.Create( "ScoreLeaderboard", self.PlayerFrame:GetCanvas() )
 
 end
 
@@ -147,6 +154,11 @@ function PANEL:PerformLayout()
 		y = y + v:GetTall() + 1
 	
 	end
+	if ValidPanel(self.Leaderboard) then
+		self.PlayerFrame:GetCanvas():SetSize( self.PlayerFrame:GetCanvas():GetWide(), y + self.Leaderboard:GetTall() )
+		self.Leaderboard:SetPos( 0, y )	
+		self.Leaderboard:SetSize( self.PlayerFrame:GetWide(), self.Leaderboard:GetTall() )
+	end
 	
 	self.Hostname:SetText( GetGlobalString( "ServerName" ) )
 	
@@ -214,7 +226,11 @@ function PANEL:UpdateScoreboard( force )
 		end
 		
 	end
-	
+	if !ValidPanel(self.Leaderboard) then
+		
+			self:AddLeaderboard()
+		
+		end
 	// Always invalidate the layout so the order gets updated
 	self:InvalidateLayout()
 

@@ -2,8 +2,8 @@ ENT.Type = "anim"
 ENT.Base = "base_anim" 
 
 function ENT:GetGangName()
-	return self:GetNWString("GangName")
+	return self:GetDTString(0)
 end
 function ENT:GetGangID()
-	return self:GetNWInt("GangID")
+	return self:GetDTInt(0)
 end

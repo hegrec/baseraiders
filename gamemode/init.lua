@@ -18,7 +18,7 @@ end
 function resource.AddFolder(path)
      if path[#path] != '/' then path = path..'/' end
    
-     local fs, ds = file.Find(path,"GAME")
+     local fs, ds = file.Find(path.."*","GAME")
      for k, v in pairs(fs) do
           resource.AddFile(path..v)
      end
@@ -39,10 +39,6 @@ resource.AddMaterial("materials/katharsmodels/contraband/contraband_normal")
 
 resource.AddModel("models/katharsmodels/contraband/zak_wiet/zak_wiet")
 resource.AddModel("models/baseraiders/log")
-
-
-resource.AddModel("models/props_foliage/spikeplant01")
-resource.AddMaterial("materials/models/props_foliage/spikeplant01")
 
 resource.AddModel("models/weapons/v_fists")
 resource.AddModel("models/nater/weedplant_pot")
@@ -78,15 +74,15 @@ resource.AddModel("models/darkland/human/male/darkland_male_06")
 resource.AddModel("models/darkland/human/male/darkland_male_07")
 resource.AddModel("models/darkland/human/male/darkland_male_08")
 resource.AddModel("models/darkland/human/male/darkland_male_09")
-//resource.AddFolder("materials/models/darkland/human/male/")
+resource.AddFolder("materials/models/darkland/human/male/")
 resource.AddModel("models/darkland/human/female/darkland_female_01")
 resource.AddModel("models/darkland/human/female/darkland_female_02_v2")
 resource.AddModel("models/darkland/human/female/darkland_female_03_v2")
 resource.AddModel("models/darkland/human/female/darkland_female_04_v2")
 resource.AddModel("models/darkland/human/female/darkland_female_05_v2")
 resource.AddModel("models/darkland/human/female/darkland_female_06_v2")
-//resource.AddFolder("materials/models/darkland/human/female/")
-//resource.AddFolder("materials/models/darkland/human/")
+resource.AddFolder("materials/models/darkland/human/female/")
+resource.AddFolder("materials/models/darkland/human/")
 --We include the needed files
 include("chat.lua")
 
@@ -113,6 +109,7 @@ AddCSLuaFile("vgui/DMultiModelPanel.lua")
 AddCSLuaFile("vgui/DHorizontalScroller2.lua")
 AddCSLuaFile("vgui/DPropertySheet2.lua")
 AddCSLuaFile("vgui/DScrollPanel2.lua")
+AddCSLuaFile("vgui/DCategoryCollapse2.lua")
 AddCSLuaFile("skills/sh_skills.lua")
 AddCSLuaFile("skills/cl_skills.lua")
 AddCSLuaFile("items/sh_itemdefines.lua")
@@ -128,6 +125,7 @@ AddCSLuaFile( "scoreboard/player_infocard.lua" )
 AddCSLuaFile( "scoreboard/player_row.lua" )
 AddCSLuaFile( "scoreboard/scoreboard.lua" )
 AddCSLuaFile( "scoreboard/vote_button.lua" )
+AddCSLuaFile( "scoreboard/leaderboard.lua" )
 
 --remove ratings from getting sent to clinets
 
@@ -164,25 +162,100 @@ function GM:ShowSpare2(pl) --f4
 end
 
 function GM:OnHatchet(pl,tr)
-	if math.random() < 0.2 then
-		SpawnRoleplayItem("Wood",tr.HitPos+tr.HitNormal*10)
+	if math.random() < 0.5 then
+		pl.harvestents = pl.harvestents or {}
+		local ent = SpawnRoleplayItem("Wood",tr.HitPos+tr.HitNormal*10)
+		
+		local i = 1
+		while (i<#pl.harvestents) do
+			if (!pl.harvestents[i]:IsValid()) then
+				table.remove(pl.harvestents,i)
+			else
+				i = i + 1
+			end
+			
+		end
+		while (#pl.harvestents>=5) do
+			pl.harvestents[1]:Remove()
+				table.remove(pl.harvestents,1)
+		end
+		table.insert(pl.harvestents,ent)
+		umsg.Start("experienceUp")
+			umsg.Vector(ent:GetPos())
+			umsg.String("+1xp")
+		umsg.End()
+		pl:AddExperience(1)
 	end
 end
 
 function GM:OnPickaxe(pl,tr)
-	if math.random() < 0.2 then
-		SpawnRoleplayItem("Ore",tr.HitPos+tr.HitNormal*10)
+	if math.random() < 0.8 then
+		pl.harvestents = pl.harvestents or {}
+		local ent = SpawnRoleplayItem("Ore",tr.HitPos+tr.HitNormal*10)
+		
+		local i = 1
+		while (i<#pl.harvestents) do
+			if (!pl.harvestents[i]:IsValid()) then
+				table.remove(pl.harvestents,i)
+			else
+				i = i + 1
+			end
+		end
+		while (#pl.harvestents>=5) do
+		pl.harvestents[1]:Remove()
+				table.remove(pl.harvestents,1)
+		end
+		table.insert(pl.harvestents,ent)
+		umsg.Start("experienceUp")
+			umsg.Vector(ent:GetPos())
+			umsg.String("+1xp")
+		umsg.End()
+		pl:AddExperience(1)
 	end
 end
 
 function GM:OnShovel(pl,tr)
-	if math.random() < 0.2 then
-		if math.random() < 0.5 then
-			SpawnRoleplayItem("Sandblock",tr.HitPos+tr.HitNormal*10)
-		else
-			SpawnRoleplayItem("Clay",tr.HitPos+tr.HitNormal*10)
+	if math.random() < 0.8 then
+		local i = math.random(10)
+		pl.harvestents = pl.harvestents or {}
+		local ent
+		if i>6 then
+			ent = SpawnRoleplayItem("Sand",tr.HitPos+tr.HitNormal*10)
+		umsg.Start("experienceUp")
+			umsg.Vector(ent:GetPos())
+			umsg.String("+1xp")
+		umsg.End()
+		pl:AddExperience(1)
+		elseif i>3 then
+			ent = SpawnRoleplayItem("Clay",tr.HitPos+tr.HitNormal*10)
+		umsg.Start("experienceUp")
+			umsg.Vector(ent:GetPos())
+			umsg.String("+2xp")
+		umsg.End()
+		pl:AddExperience(2)
+		elseif i==1 then
+			ent = SpawnRoleplayItem("Marijuana Seed",tr.HitPos+tr.HitNormal*10)
+			umsg.Start("experienceUp")
+				umsg.Vector(ent:GetPos())
+				umsg.String("+3xp")
+			umsg.End()
+			pl:AddExperience(3)
 		end
 		
+		pl.harvestents = pl.harvestents or {}
+		local i = 1
+		while (i<#pl.harvestents) do
+			if (!pl.harvestents[i]:IsValid()) then
+				table.remove(pl.harvestents,i)
+			else
+				i = i + 1
+			end
+		end
+		while (#pl.harvestents>=5) do
+			pl.harvestents[1]:Remove()
+				table.remove(pl.harvestents,1)
+		end
+		table.insert(pl.harvestents,ent)
 	end
 end
 
@@ -223,22 +296,14 @@ function GM:PlayerLoadout(pl)
 	pl:Give("hands")
 	pl:Give("weapon_physcannon")
 	pl:Give("keys")
-	if pl:IsPlatinum() or pl:IsAdmin() then 
-		pl:Give("weapon_physgun") 
-		pl:Give("gmod_tool") 
-	end
+	pl:Give("weapon_physgun") 
+	pl:Give("gmod_tool") 
 	w = pl:GetWeapon("gmod_tool");
 	if IsValid(w) then
 		w.OldSecondaryAttack = w.SecondaryAttack;
 		w.SecondaryAttack = FixedSecondaryToolAttack;
 	end
 end
-
-
-function Unstun(ply)
-	ply:Unstun()
-end
-
 function GM:EntityTakeDamage(target, dmginfo) 
 	local amt = dmginfo:GetDamage()
 	if (target:GetClass() == "prop_physics") then
@@ -370,7 +435,7 @@ function player.FindNameMatch(str)
 	if !str then return end
 	str = string.lower(str)
 	for i,v in pairs(player.GetAll()) do
-		if string.find(string.lower(v:Name()),str,1,true) then return v end
+		if string.find(string.lower(v:Name()),str) then return v end
 	end
 end
 
@@ -404,12 +469,11 @@ function GM:PlayerDeath( Victim, Inflictor, Attacker )
 	Victim:AddMoney(-100)
 
 	Victim:SendNotify('You will be able to spawn in '..Victim.NextSpawnTime-CurTime()..' seconds',"NOTIFY_GENERIC",5)
-	for k,v in pairs(Victim:GetWeapons())do --rEMOVE WEIGHT IF WHBFDS
-		if(v.CanPutAway)then
-			if(DROP_GUNS_ON_DEATH)then
-				CreateRolePlayItem(v.WepType,Victim,true,true)
-			end			
-		end
+	for k,v in pairs(Victim:GetWeapons())do
+		if(DROP_GUNS_ON_DEATH)then
+			SpawnRoleplayItem(v.WepType,Victim:GetPos())
+			Victim:TakeItem(v.WepType)
+		end			
 	end
 	
 	if ( Inflictor && Inflictor == Attacker && (Inflictor:IsPlayer() || Inflictor:IsNPC()) ) then
@@ -439,33 +503,11 @@ function GM:PlayerDeath( Victim, Inflictor, Attacker )
 	end
 	
 	if(Attacker:GetClass() == "prop_physics")then
-		if(Attacker.LastPickedUp and IsValid(Attacker.LastPickedUp) and Attacker.LastPickedUp != Victim)then
-			if(Attacker.LastPickedUp:Team() == TEAM_COPS)then
-				if(Victim:GetNWInt("stars") < 2)then
-					Attacker.LastPickedUp:SetTeam(TEAM_CITIZENS)
-					Attacker.LastPickedUp:Spawn()
-					Attacker.LastPickedUp:SendNotify("You were demoted for using excessive force","NOTIFY_ERROR",6) 
-				else
-					local money = 50*Victim:GetNWInt("stars")
-		
-					Attacker.LastPickedUp:AddMoney(money)
-					Attacker.LastPickedUp:SendNotify("You were only rewarded $"..money.." because we prefer them alive","NOTIFY_GENERIC",4)
-				end
-			else
-				if(Victim:Team() == TEAM_COPS)then
-					Attacker.LastPickedUp:AddStars(2)
-				else
-					Attacker.LastPickedUp:AddStars(1)
-				end
-			end
-		end
 			
 		if(Attacker:GetNWString("Owner"))then
 			MsgAdmin( Victim:Name() .. " was killed by " .. Attacker:GetClass() .. " owned by "..player.GetBySteamID(Attacker:GetNWString("Owner")):Name(),1)
-			Victim:SetNWInt("stars",0)
 		return end
 	end
-	Victim:SetNWInt("stars",0)
 	MsgAdmin( Victim:Name() .. " was killed by " .. Attacker:GetClass(),1)
 end
 
@@ -492,11 +534,10 @@ function GM:AFK(ply)
 		NewAFKTimer(ply)
 		return 
 	end
-	game.ConsoleCommand( Format( "kickid %i %s\n", ply:UserID(), "AFK for 300 seconds" ) )
+	--game.ConsoleCommand( Format( "kickid %i %s\n", ply:UserID(), "AFK for 300 seconds" ) )
 end
 
 function RequestModel(pl)
-	pl:Lock()
 	umsg.Start("getModel",pl)
 	umsg.End()
 end
@@ -508,10 +549,37 @@ function SetModel(pl,cmd,args)
 	if(!mdl)then RequestModel(pl) return end --they sent a number not in the citizenmodel table
 	pl.Model = mdl
 	pl:SetModel(mdl)
+	pl:SetSkin(tonumber(args[1])%9)
 	SendModel(pl)
-	pl:UnLock()
+	SaveRPAccount()
 end
 concommand.Add("setmodel",SetModel)
+
+
+
+function sendLeaderboard(ply,cmd,args)
+
+	Query("SELECT Name,Experience FROM rp_gangdata ORDER BY Experience DESC LIMIT 5",function(res,stat,err)
+		
+
+		umsg.Start("sendLeaderboard",ply)
+			umsg.Char(#res)
+			for i,v in pairs(res) do
+				umsg.String(v.Name)
+				umsg.Long(v.Experience)
+			end
+		umsg.End()
+	end)
+
+end
+concommand.Add("load_leaderboard",sendLeaderboard)
+
+
+local meta = FindMetaTable("Entity")
+function meta:SetItemName(s)
+	return self:SetDTString(1,s)
+end
+
 
 function heheanticheat(ply,cmd,args)
 	if(DEVMODE)then return end

@@ -401,7 +401,6 @@ end
 
 local class
 function GM:CanTool( ply, trace, mode )
-	if ply:Team() != TEAM_BUILDER and ply:GetStatus() != 2 and !ply:IsAdmin() then  ply:SendNotify("Only builders can use tools","NOTIFY_ERROR",4) return false end
 	if trace.Entity:GetOwn() != ply and !ply:IsBuddy(trace.Entity:GetOwn()) and !ply:IsAdmin() then ply:SendNotify("This is not your prop","NOTIFY_ERROR",4)  return false end
 	if table.HasValue(NaughtyTools,mode) then ply:SendNotify("You can not use that tool","NOTIFY_ERROR",4) return false end
 	class = trace.Entity:GetClass()

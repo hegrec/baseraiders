@@ -25,7 +25,7 @@ ITEM.CanHold = true
 ITEM.ExtraHUD = function(ent,pos,alpha)
 
 	draw.SimpleTextOutlined(ent:GetWattsLeft().." Watts","HUDBars",pos.x,pos.y-55,Color(0,255,0,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,2,Color(0,0,0,255))
-	draw.SimpleTextOutlined(ent:GetNWInt("Gallons").." Gallons Left","HUDBars",pos.x,pos.y-30,Color(255,255,0,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,2,Color(0,0,0,255))
+	draw.SimpleTextOutlined(ent:GetGallons().." Gallons Left","HUDBars",pos.x,pos.y-30,Color(255,255,0,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,2,Color(0,0,0,255))
 
 end
 

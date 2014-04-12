@@ -28,13 +28,13 @@ function string.SecondsToHours(seconds)
 	local min = seconds*60;
 	return min*60; //hours
 end
-
+BASE_RESPAWN_TIME = 6
 WALK_SPEED = 100
 RUN_SPEED = 175
 PAYDAY_INTERVAL = 120
 MAX_INTERACT_DIST = 100
 DEFAULT_DOOR_PRICE = 100
-DEFAULT_CASH = 100
+DEFAULT_CASH = 6000
 DEFAULT_JOB = "Citizen"
 CHAT_DIST = 400
 YELL_DIST = 650
@@ -91,7 +91,20 @@ CitizenModels[15] = "models/darkland/human/female/darkland_female_06_v2.mdl"
 for k,v in pairs(CitizenModels)do 
 	util.PrecacheModel(v)
 end
+function string.ToMinutesSecondsBigTime(int)
 
+	local secs = math.floor(int % 60)
+	local mins = math.floor(int / 60 % 60)
+	local hrs = math.floor(int / 3600)
+	
+	local out = ""
+	if hrs>0 then
+		out = out .. hrs.."H "
+	end
+	out = out .. mins.."M "
+	out = out .. secs.."S"
+	return out
+end
 function IsFemale(mdl)
 	mdl = string.Explode("/",mdl)[5]
 	return (string.sub(mdl,1,15) == "darkland_female")

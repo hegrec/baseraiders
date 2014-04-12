@@ -9,5 +9,5 @@ function meta:GetOwn()
 	return GetBySteamID(self:GetNWString("Owner"))
 end 
 function meta:GetItemName()
-	return self:GetNWString("ItemName")
+	return self:GetDTString(1)
 end

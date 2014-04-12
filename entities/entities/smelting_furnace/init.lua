@@ -23,5 +23,5 @@ function ENT:Use(activator, caller)
 		activator:SendNotify("You need to place a fire in the smelter to use it","NOTIFY_ERROR",4)
 		return
 	end
-	activator:ConCommand("startCrafting "..self:EntIndex())
+	activator:ConCommand("start_crafting "..self:EntIndex())
 end 

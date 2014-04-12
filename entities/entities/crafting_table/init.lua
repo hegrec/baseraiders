@@ -15,5 +15,5 @@ function ENT:Initialize()
 	phys:EnableMotion(false)
 end 
 function ENT:Use(activator, caller)
-	activator:ConCommand("startCrafting "..self:EntIndex())
+	activator:ConCommand("start_crafting "..self:EntIndex())
 end 

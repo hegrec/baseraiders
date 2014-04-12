@@ -36,7 +36,7 @@ function ENT:SetPoweredBy(entity)
 	end
 end
 function ENT:SetPowered(b)
-	self:SetNWBool("Powered",b)
+	self:SetDTBool(0,b)
 end
 function ENT:GetPoweredBy()
 	return self.poweringEntity

@@ -16,7 +16,7 @@ function ENT:Initialize()
 	self:SetUseType(SIMPLE_USE)
 end
 function ENT:Use(ent)
-	ent:ConCommand("useGangBank "..self:EntIndex())
+	ent:ConCommand("use_gang_bank "..self:EntIndex())
 
 end
 function ENT:SetTerritory(territoryID)
@@ -33,17 +33,17 @@ function ENT:Explode()
 	self:EmitSound("ambient/explosions/explode_4.wav")
 end
 function ENT:SetGangID(gangID)
-	self:SetNWInt("GangID",gangID)
+	self:SetDTInt(0,gangID)
 end
 function ENT:SetGangName(gangName)
-	self:SetNWString("GangName",gangName)
+	self:SetDTString(0,gangName)
 end
 function ENT:Charge()
 	local amt = 0
 	local players = player.GetAll()
 	for i,v in pairs(players) do
-		if v:GetNWInt("GangID") == self:GetGangID() and v:GetPos():Distance(self:GetPos())<100 then
-			amt = amt + 1
+		if v:GetGangID() == self:GetGangID() and v:GetPos():Distance(self:GetPos())<100 then
+			amt = amt + 0.5
 		end
 	end
 	self:SetNWInt("ChargePercentage",self:GetNWInt("ChargePercentage")+amt)
