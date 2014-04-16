@@ -287,10 +287,13 @@ hook.Add("PostDrawTranslucentRenderables","queued_experiencereder",function()
 		local frac = 1-math.min(1,math.max(0,(endtime-RealTime())/1))
 		local pos = LerpVector(frac,v["StartPos"],v["StartPos"]+Vector(0,0,20))
 		
+		
+		local xp = v["XP"]
+		local txt = "+"..xp.."xp"
 		local yaw = (v["StartPos"]-LocalPlayer():EyePos()):Angle().yaw-90
 		local ang = Angle(0,yaw,90)
 		cam.Start3D2D(pos, ang, 0.2)
-			draw.SimpleTextOutlined(v["Text"],"TerritoryTitle",0,0,Color(0,255,0,255-frac*255),1,1,1,Color(255,255,255,255-frac*255))
+			draw.SimpleTextOutlined(txt,"TerritoryTitle",0,0,Color(0,255,0,255-frac*255),1,1,1,Color(255,255,255,255-frac*255))
 		cam.End3D2D()
 	end
 end)
@@ -313,10 +316,12 @@ function GM:PostDrawTranslucentRenderables(bdepth,bsky)
 end
 function queueEffect( um )
 	local pos = um:ReadVector()
-	local text = um:ReadString()
+	local xp = um:ReadShort()
+	local vip = um:ReadBool()
+	if vip then xp = xp * 2 end
 	local add = {}
 	add["StartPos"] = pos
-	add["Text"] = text
+	add["XP"] = xp
 	add["StartTime"] = RealTime()
 	table.insert(queued_experience,add)
 	

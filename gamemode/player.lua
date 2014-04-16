@@ -26,6 +26,11 @@ end
 function meta:AddExperience(amt)
 
 	local lvl = self:GetLevel()
+	
+	if self:IsVIP() then
+		amt = amt * 2
+	end
+	
 	self:SetExperience(self:GetExperience()+amt)
 end
 function meta:TryLevelUp(oldLevel)

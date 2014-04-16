@@ -182,7 +182,8 @@ function GM:OnHatchet(pl,tr)
 		table.insert(pl.harvestents,ent)
 		umsg.Start("experienceUp")
 			umsg.Vector(ent:GetPos())
-			umsg.String("+1xp")
+			umsg.Short(1)
+			umsg.Bool(pl:IsVIP())
 		umsg.End()
 		pl:AddExperience(1)
 	end
@@ -208,7 +209,8 @@ function GM:OnPickaxe(pl,tr)
 		table.insert(pl.harvestents,ent)
 		umsg.Start("experienceUp")
 			umsg.Vector(ent:GetPos())
-			umsg.String("+1xp")
+			umsg.Short(1)
+			umsg.Bool(pl:IsVIP())
 		umsg.End()
 		pl:AddExperience(1)
 	end
@@ -223,21 +225,24 @@ function GM:OnShovel(pl,tr)
 			ent = SpawnRoleplayItem("Sand",tr.HitPos+tr.HitNormal*10)
 		umsg.Start("experienceUp")
 			umsg.Vector(ent:GetPos())
-			umsg.String("+1xp")
+			umsg.Short(1)
+			umsg.Bool(pl:IsVIP())
 		umsg.End()
 		pl:AddExperience(1)
 		elseif i>3 then
 			ent = SpawnRoleplayItem("Clay",tr.HitPos+tr.HitNormal*10)
 		umsg.Start("experienceUp")
 			umsg.Vector(ent:GetPos())
-			umsg.String("+2xp")
+			umsg.Short(2)
+			umsg.Bool(pl:IsVIP())
 		umsg.End()
 		pl:AddExperience(2)
 		elseif i==1 then
 			ent = SpawnRoleplayItem("Marijuana Seed",tr.HitPos+tr.HitNormal*10)
 			umsg.Start("experienceUp")
 				umsg.Vector(ent:GetPos())
-				umsg.String("+3xp")
+				umsg.Short(3)
+				umsg.Bool(pl:IsVIP())
 			umsg.End()
 			pl:AddExperience(3)
 		end
@@ -321,18 +326,6 @@ function GM:EntityTakeDamage(target, dmginfo)
 		end
 	end
 end
-
-hook.Add("DarklandProfileLoaded","GiveDonatorStuff",function(pl)
-	if pl:GetStatus() == 2 then 
-		pl:Give("weapon_physgun"); 
-		pl:Give("gmod_tool") 
-		local w = pl:GetWeapon("gmod_tool");
-		if IsValid(w) then
-			w.OldSecondaryAttack = w.SecondaryAttack;
-			w.SecondaryAttack = FixedSecondaryToolAttack;
-		end
-	end
-end)
 
 local BadRightClicks = {"slider","hydraulic","muscle","winch"};
 function FixedSecondaryToolAttack(self)

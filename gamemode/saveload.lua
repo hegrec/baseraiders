@@ -4,9 +4,10 @@ function BeginRPProfile(pl)
 	--SET UP DEFAULTS IN CASE QUERY TAKES FOREVER
 	pl:SetTeam(TEAM_CITIZENS)
 	pl.Inventory 		= {}
-	for y=1,INV_Y do
+	local xmax,ymax = pl:GetInventorySize()
+	for y=1,ymax do
 		pl.Inventory[y] = {}
-		for x=1,INV_X do
+		for x=1,xmax do
 			pl.Inventory[y][x] = false
 		end
 	end
@@ -22,7 +23,7 @@ function BeginRPProfile(pl)
 	
 	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model,GangID,Experience FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res) end)
 end
-hook.Add("PlayerInitialSpawn","RPLoadProfile",BeginRPProfile)
+hook.Add("PlayerLoadedGlobalProfile","zzzzzRPLoadProfile",BeginRPProfile)
 
 
 

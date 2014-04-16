@@ -49,6 +49,23 @@ function UseGun(pl,cmd,args)
 end
 concommand.Add("use_gun",UseGun)
 
+
+function HealStim(pl,cmd,args)
+	if(!pl:Alive() || pl:Health()>=100)then return end
+	
+	local posX = tonumber(args[1])
+	local posY = tonumber(args[2])
+	local index = pl:GetItem(posX,posY)
+	if !index then return end
+	local tbl = GetItems()[index]
+	if !tbl then return end
+	if !tbl.CanHeal then return end
+	pl:TakeItem(posX,posY)
+	pl:EmitSound("items/medshot4.wav")
+	pl:SetHealth( math.Clamp(pl:Health()+tbl.RestoreHP,0,100))
+end
+concommand.Add("use_health",HealStim)
+
 function UseAmmo(pl,cmd,args)
 	local index = table.concat(args," ")
 	if !pl:HasItem(index) then return end

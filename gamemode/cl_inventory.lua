@@ -19,40 +19,57 @@ hook.Add("OnContextMenuClose","hideinv",HideInv)
 
 local INVENTORY = {}
 function INVENTORY:Init()
-	self:SetSize(INV_X*INV_TILE_SIZE,INV_Y*INV_TILE_SIZE)
+	local sz = INV_TILE_SIZE
+	
+
+	local xmax,ymax = LocalPlayer():GetInventorySize()
+	
+	local height = ymax*sz
+	if height>ScrH()-100 then
+		sz = (ScrH()-100)/ymax
+	end
+	self:SetTileSize(sz)
+	
+	
+	self:SetSize(ymax*self.tileSize,xmax*self.tileSize)
 	self:SetPos(-self:GetWide(),ScrH()-(self:GetTall()+100))
 	self.ItemSpots = {}
-	for y=1,INV_Y do
+	
+	for y=1,ymax do
 		self.ItemSpots[y] = {}
-		for x=1,INV_X do
+		for x=1,xmax do
 			self.ItemSpots[y][x] = false
 		end
 	end
 	self.Open = false
-	for y=1,INV_Y do
-		for x=1,INV_X do
-			if LocalPlayer().Inventory[y][x] != false and LocalPlayer().Inventory[y][x] != true then
+	for y=1,ymax do
+		for x=1,xmax do
+			if LocalPlayer().Inventory[y][x] and LocalPlayer().Inventory[y][x] != true then
 				self:AddItem(LocalPlayer().Inventory[y][x],x,y)
 			end
 		end
 	end
 end
+function INVENTORY:SetTileSize(sz)
+	self.tileSize = sz
+end
 function INVENTORY:Paint()
 	draw.RoundedBox(0,0,0,self:GetWide(),self:GetTall(),Color(200,200,200,255))
 	surface.SetDrawColor(Color(20,20,20,255))
-	for y=1,INV_Y do
-		surface.DrawLine(0,y*INV_TILE_SIZE,self:GetWide(),y*INV_TILE_SIZE)
-		for x=1,INV_X do
-			surface.DrawLine(x*INV_TILE_SIZE,0,x*INV_TILE_SIZE,self:GetTall())
+	local xmax,ymax = LocalPlayer():GetInventorySize()
+	for y=1,ymax do
+		surface.DrawLine(0,y*self.tileSize,self:GetWide(),y*self.tileSize)
+		for x=1,xmax do
+			surface.DrawLine(x*self.tileSize,0,x*self.tileSize,self:GetTall())
 			if (LocalPlayer().Inventory[y][x]) then
-				draw.RoundedBox(0,(x-1)*INV_TILE_SIZE,(y-1)*INV_TILE_SIZE,INV_TILE_SIZE,INV_TILE_SIZE,Color(0,0,0,100))
+				draw.RoundedBox(0,(x-1)*self.tileSize,(y-1)*self.tileSize,self.tileSize,self.tileSize,Color(0,0,0,100))
 			end
 		end
 	end
 end
 function INVENTORY:AddItem(index,x,y)
 	local type = GetItems()[index]
-
+	if !type then print("FAILED TO LOAD ITEM: ",index,x,y) return end
 	local panel = vgui.Create("DModelPanel",self)
 	self.ItemSpots[y][x] = panel
 	
@@ -64,7 +81,7 @@ function INVENTORY:AddItem(index,x,y)
 	local ang = type.Angle
 	if (!ang) then ang = Angle(0,0,0) end
 	panel.LayoutEntity = function(s,ent) ent:SetAngles(ang) end
-	panel:SetSize(INV_TILE_SIZE*xSize,INV_TILE_SIZE*ySize)
+	panel:SetSize(self.tileSize*xSize,self.tileSize*ySize)
 	panel.itemType = index
 	local CamPos = type.CamPos
 	if !CamPos then
@@ -98,11 +115,11 @@ function INVENTORY:AddItem(index,x,y)
 			SetDraggableItem(index,x,y)
 		end
 	end
-	panel:SetPos((x-1)*INV_TILE_SIZE,(y-1)*INV_TILE_SIZE)
+	panel:SetPos((x-1)*self.tileSize,(y-1)*self.tileSize)
 	
 end
 function INVENTORY:GetItemSlot(mX,mY)
-	return math.floor(mX/INV_TILE_SIZE)+1,math.floor(mY/INV_TILE_SIZE)+1
+	return math.floor(mX/self.tileSize)+1,math.floor(mY/self.tileSize)+1
 end
 function INVENTORY:TakeItem(x,y)
 	if ValidPanel(self.ItemSpots[y][x]) then
@@ -118,6 +135,7 @@ local function ReceiveItem( um )
 	local x = um:ReadChar()
 	
 	local tbl = GetItems()[index]
+	if !tbl then return end
 	
 	LocalPlayer().Inventory[y][x] = index
 	local tsize = tbl.Size
@@ -159,15 +177,19 @@ end
 usermessage.Hook("loseItem",LoseItem)
 
 
-hook.Add("InitPostEntity","CreateInventory",function() LocalPlayer().Inventory = {}
-for y=1,INV_Y do
+function recvInventorySize(um) 
+	LocalPlayer().Inventory = {}
+	local x = um:ReadChar()
+	local y = um:ReadChar()
+	
+	for y=1,y do
 		LocalPlayer().Inventory[y] = {}
-		for x=1,INV_X do
+		for x=1,x do
 			LocalPlayer().Inventory[y][x] = false
 		end
 	end
- end)
- 
+ end
+ usermessage.Hook("setInventorySize",recvInventorySize)
 local draggingEntity
  hook.Add("GUIMousePressed","hoverclick",function(code,pos)
 	local ent = properties.GetHovered(LocalPlayer():EyePos(),LocalPlayer():GetAimVector())
@@ -193,7 +215,7 @@ function SetDraggableItem(item,x,y)
 	local ang = type.Angle
 	if (!ang) then ang = Angle(0,0,0) end
 	panel.LayoutEntity = function(s,ent) ent:SetAngles(ang) end
-	panel:SetSize(INV_TILE_SIZE*xSize,INV_TILE_SIZE*ySize)
+	panel:SetSize(Inventory.tileSize*xSize,Inventory.tileSize*ySize)
 	panel.itemType = item
 	local CamPos = type.CamPos
 	if !CamPos then

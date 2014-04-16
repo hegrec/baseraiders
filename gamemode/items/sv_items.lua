@@ -171,21 +171,23 @@ end
 
 --Used when the player spawns
 function InventoryLoad(pl,str)
-	pl.tempInv = util.KeyValuesToTable(str)
-end
-hook.Add("OnLoadInventory","LoadInv",InventoryLoad)
-
---Used when the player spawns
-function InventoryLoadToClient(pl,str)
-	local t = pl.tempInv
+	local t = util.KeyValuesToTable(str)
+	local xmax,ymax = pl:GetInventorySize()
+	umsg.Start("setInventorySize",pl)
+		umsg.Char(xmax)
+		umsg.Char(ymax)
+	umsg.End()
+	
 	if !t then return end
-	for y=1,INV_Y do
-		for x=1,INV_X do
+
+	
+	
+	for y=1,ymax do
+		for x=1,xmax do
 			if (t[y] and t[y][x]) then
 				pl:GiveItem(t[y][x],x,y)
 			end
 		end
 	end
-	pl.tempInv = nil
 end
-hook.Add("OnPlayerReady","LoadInvToClient",InventoryLoadToClient)
+hook.Add("OnLoadInventory","LoadInv",InventoryLoad)

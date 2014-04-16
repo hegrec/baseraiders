@@ -20,11 +20,12 @@ ITEM.Description = "Great for healing after a drunken brawl"
 ITEM.Size = {1,1}
 ITEM.Craftable = {"Silicon",3,"Clay",4}
 ITEM.CanHeal = true
+ITEM.RestoreHP = 25
 ITEM.LookAt = Vector(0,0,5)
 ITEM.CamPos = Vector(0,8,5)
 ITEM.CanHold = true
-ITEM.MenuAdds = function(menu,index)
-	menu:AddOption("Use",function() RunConsoleCommand("use_health",index) end)
+ITEM.MenuAdds = function(menu,index,x,y)
+	menu:AddOption("Use",function() RunConsoleCommand("use_health",x,y) end)
 end
 
 local ITEM = items.DefineItem("Water")

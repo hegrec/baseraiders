@@ -5,7 +5,7 @@ function meta:GetDoorLevel()
 	return lvl
 end
 
-function meta:GetDoorLevel(lvl)
+function meta:SetDoorLevel(lvl)
 	if(CLIENT)then return end
 	self:SetNWInt("doorlevel",lvl)
 end

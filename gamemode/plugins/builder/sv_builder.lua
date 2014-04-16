@@ -417,11 +417,17 @@ function GM:PlayerSpawnProp( ply, model )
 	if !self.BaseClass:PlayerSpawnProp( ply, model ) then return false end
 	if(ply:InVehicle())then return false end
 	
-	if ply:GetMoney() < PROP_COST then ply:SendNotify("You can not afford this","NOTIFY_ERROR",3) return false end
+	local realpropcost = PROP_COST*-1
+	if ply:IsVIP() then
+		realpropcost = realpropcost *0.5
+	end
+	
+	
+	if ply:GetMoney() < realpropcost then ply:SendNotify("You can not afford this","NOTIFY_ERROR",3) return false end
 	
 	if(table.HasValue(NaugtyProps,string.Replace(model,[[\]],[[]])))then return false end	
-	
-	ply:AddMoney(PROP_COST*-1)
+
+	ply:AddMoney(realpropcost)
 	return true
 end
 

@@ -50,8 +50,6 @@ function gangs.OnLoadPlayerGang(pl,gangID)
 			
 			
 			Query("SELECT d.PlayerName as name FROM rp_gangdata r JOIN da_misc d on r.OwnerSteamID=d.SteamID WHERE r.ID="..gangID,function(res)
-			MsgN("loading leader")
-			MsgN(res)
 			if !res then return end
 			gangs.gangcache[gangID].OwnerName = res[1].name
 			end)
@@ -382,12 +380,13 @@ function gangs.PlantHub(pl,cmd,args)
 		local pos = hub:GetPos()+Vector(0,0,hub:OBBMaxs().z)
 		umsg.Start("experienceUp")
 			umsg.Vector(pos)
-			umsg.String("+25xp")
+			umsg.Short(25)
 		umsg.End()
 		pl:AddExperience(50)
 		umsg.Start("experienceUp")
 			umsg.Vector(pl:EyePos()+(pl:GetAimVector()*25-Vector(0,0,10)))
-			umsg.String("+50xp")
+			umsg.Short(50)
+			umsg.Bool(pl:IsVIP())
 		umsg.End()
 		
 		
@@ -441,7 +440,7 @@ function gangs.SpawnHUBResources()
 			local pos = hub:GetPos()+Vector(0,0,hub:OBBMaxs().z)
 			umsg.Start("experienceUp")
 				umsg.Vector(pos)
-				umsg.String("+1xp")
+				umsg.Short(1)
 			umsg.End()
 		end
 	
@@ -471,7 +470,8 @@ function gangs.CaptureTerritory(territoryID,capturing_hub)
 			v:AddExperience(100)
 			umsg.Start("experienceUp")
 				umsg.Vector(v:EyePos()+(v:GetAimVector()*25-Vector(0,0,10)))
-				umsg.String("+100xp")
+				umsg.Short(100)
+				umsg.Bool(pl:IsVIP())
 			umsg.End()
 		end
 	end
@@ -493,7 +493,7 @@ function gangs.HoldTerritory(territoryID,defending_hub)
 	local pos = defending_hub:GetPos()+Vector(0,0,defending_hub:OBBMaxs().z)
 	umsg.Start("experienceUp")
 		umsg.Vector(pos)
-		umsg.String("+100xp")
+		umsg.Short(100)
 	umsg.End()
 	
 	
@@ -504,7 +504,8 @@ function gangs.HoldTerritory(territoryID,defending_hub)
 			v:AddExperience(100)
 			umsg.Start("experienceUp")
 				umsg.Vector(v:EyePos()+(v:GetAimVector()*25-Vector(0,0,10)))
-				umsg.String("+100xp")
+				umsg.Short(100)
+				umsg.Bool(pl:IsVIP())
 			umsg.End()
 		end
 	end

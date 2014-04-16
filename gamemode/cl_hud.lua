@@ -21,7 +21,7 @@ function AddBarHealth()
 			if hp > 0 then
 				draw.RoundedBox(4,2,2,hp/100*healthbar:GetWide()-4,healthbar:GetTall()-4,Color(255,50,50,255))
 			end
-			draw.DrawText(hp.."/"..level_experience[LocalPlayer():GetLevel()+1],"HUDBars",healthbar:GetWide()/2,-2,Color(255,255,255,255),1)
+			draw.DrawText(hp.."/100","HUDBars",healthbar:GetWide()/2,-2,Color(255,255,255,255),1)
 		end
 	HUDBars:AddItem(healthbar)
 end

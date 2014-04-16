@@ -13,14 +13,30 @@ function items.DefineItem(Name)
 end
 
 
+
+
+
 local meta = FindMetaTable("Player")
 function meta:HasItem(index)
-	for y=1,INV_Y do
-		for x=1,INV_X do
+	local xmax,ymax = self:GetInventorySize()
+	for y=1,ymax do
+		for x=1,xmax do
 			if (self.Inventory[y][x] == index) then return x,y end
 		end
 	end
 	return false
+end
+
+function meta:GetInventorySize()
+
+	local x = INV_X
+	local y = INV_Y
+	if self:IsVIP() then
+		x = 15
+		y = 15
+	end
+	return x,y
+
 end
 
 function meta:GetItem(x,y)
@@ -29,8 +45,9 @@ end
 
 function meta:GetAmount(index)
 	local amt = 0
-	for y=1,INV_Y do
-		for x=1,INV_X do
+	local xmax,ymax = self:GetInventorySize()
+	for y=1,ymax do
+		for x=1,xmax do
 			if (self:GetItem(x,y) == index) then amt = amt + 1 end
 		end
 	end
@@ -38,11 +55,13 @@ function meta:GetAmount(index)
 	return amt
 end
 
- function meta:CanHold( item ) --note that item must be an actual item, not a InvItem panel.
+function meta:CanHold( item )
 	local tbl = GetItems()[item] 
 	if !tbl then return false end
-	for y=1,INV_Y do
-		for x=1,INV_X do
+	local xmax,ymax = self:GetInventorySize()
+	for y=1,ymax do
+		for x=1,xmax do
+
 			if (self:ItemFits(item,x,y)) then return x,y end
 		end
 	end
@@ -50,16 +69,19 @@ end
 	return false
 end
 function meta:ItemFits(item,x,y)
+
 	local tbl = GetItems()[item]
 	if !tbl then return false end
 	local tsize = tbl.Size
 	if tsize == nil then tsize = {2,2} end
 
 	local sx,sy = unpack(tsize)
+	local xmax,ymax = self:GetInventorySize()
 	for yPos=y,y+(sy-1) do
-		if (yPos>INV_Y) then return false end
+		if (yPos>ymax) then return false end
 		for xPos=x,x+(sx-1) do
-			if (xPos>INV_X) then return false end
+
+			if (xPos>xmax) then return false end
 
 			if self.Inventory[yPos][xPos] then return false end
 		end
