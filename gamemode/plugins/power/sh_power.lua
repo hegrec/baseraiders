@@ -1,6 +1,6 @@
-WOOD_BOOST = 1000
+WOOD_BOOST = 500
 MAX_WOOD_BOOST = 5
-BASE_POWER = 10000
+BASE_POWER = 2000
 
 power = {}
 function power.GetCityMaxPower()

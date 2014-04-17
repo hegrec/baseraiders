@@ -5,7 +5,7 @@ function ENT:GetWattsLeft()
 	return self:GetNWInt("WattsAvailable")
 end
 function ENT:GetGallons()
-	self:GetDTInt(4)
+	return self:GetDTInt(3)
 end
 sound.Add( {
 	name = "generator_idle",

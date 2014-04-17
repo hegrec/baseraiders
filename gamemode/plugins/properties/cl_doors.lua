@@ -203,26 +203,42 @@ function DoorProperties(door)
 	Panels["DoorProperties"] = vgui.Create("DoorProperties")
 end
  
-hook.Add("HUDPaint","doorHUDStuff",function()
+hook.Add("PostDrawTranslucentRenderables","doorHUDStuff",function()
 	if !Me then return end
-	local tr = Me:EyeTrace(MAX_INTERACT_DIST)
-	if tr.Entity:IsValid() and tr.Entity:IsDoor() then --convert this to HUDMessage shit
-		local dpos 			= tr.Entity:LocalToWorld(tr.Entity:OBBCenter()):ToScreen()
-		local unownable		= tr.Entity:GetNWBool("Unownable")
-		local title 		= tr.Entity:GetNWString("Title")
-		local territory		= tr.Entity:GetNWInt("Territory")
-		local property 		= tr.Entity:GetNWBool("Property")
-		local buyable 		= !tr.Entity:GetNWBool("Bought")
-		local col = Color(20,255,20,255)
-		if(title == "")then title = DEFAULT_DOOR_TITLE end
-		if property && buyable then
-			draw.SimpleTextOutlined("Property Available","ScoreboardSub",dpos.x,dpos.y-20,Color(20,0,20,255),1,1,1,Color(20,200,20,255))
-		elseif territory != 0 then
-			local t = territories[territory].Name
-			draw.SimpleTextOutlined(t,"ScoreboardSub",dpos.x,dpos.y+40,Color(20,0,20,255),1,1,1,col)
-		end
-		if territory == 0 then
-			draw.SimpleTextOutlined(title,"ScoreboardSub",dpos.x,dpos.y+20,Color(20,0,20,255),1,1,1,col)
+	local eee = ents.FindInSphere(Me:GetPos(),300)
+	for i,v in pairs(eee) do
+		if v:IsDoor() then
+			local tr = {}
+			tr.start = Me:GetShootPos()
+			tr.endpos = v:LocalToWorld(v:OBBCenter())
+			tr.filter = Me
+			tr = util.TraceLine(tr)
+			
+			
+			if tr.Entity == v then --convert this to HUDMessage shit
+				cam.Start3D2D(tr.HitPos, tr.HitNormal:Angle()+Angle(0,90,90), 0.2)
+				local unownable		= tr.Entity:GetNWBool("Unownable")
+				local title 		= tr.Entity:GetNWString("Title")
+				local territory		= tr.Entity:GetNWInt("Territory")
+				local property 		= tr.Entity:GetNWBool("Property")
+				local buyable 		= !tr.Entity:GetNWBool("Bought")
+				local col = Color(255,255,20,255)
+				if(title == "")then title = DEFAULT_DOOR_TITLE end
+				if property && buyable then
+					draw.SimpleTextOutlined("Property Available","ScoreboardSub",0,0,Color(20,0,20,255),1,1,1,Color(20,200,20,255))
+				elseif territory != 0 then
+					local t = territories[territory].Name
+					draw.SimpleTextOutlined(t,"ScoreboardSub",0,0,Color(20,0,20,255),1,1,1,col)
+				end
+				if territory == 0 then
+					draw.SimpleTextOutlined(title,"ScoreboardSub",0,0,Color(20,0,20,255),1,1,1,col)
+					if buyable && !unownable then
+						draw.SimpleTextOutlined("Press F3","ScoreboardSub",0,25,Color(20,0,20,255),1,1,1,col)
+					end
+				end	
+				cam.End3D2D()
+			end
+			
 		end
 	end
 end

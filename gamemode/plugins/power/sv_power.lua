@@ -1,5 +1,5 @@
 
-power.sockets = {}
+power.sockets = power.sockets or {}
 function power.AddSocket(ply,args)
 	if !ply:IsSuperAdmin() then return end
 
@@ -16,6 +16,21 @@ function power.AddSocket(ply,args)
 end
 AddChatCommand("addsocket",power.AddSocket)
 
+function power.RemoveSocket(ply,args)
+	if !ply:IsSuperAdmin() then return end
+
+	local tr = ply:GetEyeTrace()
+	for i,v in pairs(power.sockets) do
+		if v == tr.Entity then
+			table.remove(power.sockets,i)
+			tr.Entity:Remove()
+			break
+		end
+	end
+	power.SaveSockets()
+end
+AddChatCommand("removesocket",power.RemoveSocket)
+ 
 
 function power.SaveSockets()
 	local tbl = {}

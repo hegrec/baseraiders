@@ -4,7 +4,11 @@ crafting.craftman = nil
 CraftAccounts = {}
 function crafting.AddCrafter(ply,args)
 	if !ply:IsSuperAdmin() then return end
-
+	if crafting.craftman then
+		crafting.craftman:SetPos(ply:GetPos())
+		crafting.craftman:SetAngles(ply:GetAngles())
+		return
+	end
 	local ent = ents.Create("npc_generic")
 	
 	ent:SetNPCName("Craftmaster Flex")
@@ -119,10 +123,10 @@ function crafting.LoadCrafters()
 		
 		ent:SetModel("models/breen.mdl")
 		ent:SetPos(Vector(t[1],t[2],t[3]))
-		
+		ent:SetAngles(Angle(tonumber(t[4]),tonumber(t[5]),tonumber(t[6])))
 		ent:Spawn()
 		ent:EnableChat()
-		ent:SetAngles(Angle(0,180,0))
+		
 		crafting.craftman = ent		
 	end
 end

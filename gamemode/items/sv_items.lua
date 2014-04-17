@@ -117,6 +117,14 @@ function PickupItem(ply,cmd,args)
 	local ent = ents.GetByIndex(args[1])
 	local x = tonumber(args[2])
 	local y = tonumber(args[3])
+	
+	local tr = {}
+	tr.start = ply:GetShootPos()
+	tr.endpos = ent:LocalToWorld(ent:OBBCenter())
+	tr.filter = ply
+	tr = util.TraceLine(tr)
+	if tr.Entity != ent || tr.StartPos:Distance(tr.HitPos) > MAX_INTERACT_DIST then return end
+	
 	local itemType = ent:GetItemName()
 	if ply:GiveItem(itemType,x,y) then
 		ent:Remove()

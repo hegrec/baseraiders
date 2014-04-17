@@ -1,4 +1,4 @@
-
+BANK_SPACE = 300
 Dialog["Banker Joe"] = {}
 Dialog["Banker Joe"][1] = {
 	Text 		= "Hello sir, would you like to see your bank account?",

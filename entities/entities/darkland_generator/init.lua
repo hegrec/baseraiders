@@ -26,7 +26,7 @@ function ENT:StartTouch(ent)
 
 end
 function ENT:SetGallons(i)
-	self:SetDTInt(4,i)
+	self:SetDTInt(3,i)
 end
 
 function ENT:AddGallons(i)
@@ -96,13 +96,15 @@ function ENT:Think()
 		self.nextGallonDecrease = CurTime()+30
 		self:SetGallons(self:GetGallons()-1)
 		if self:GetGallons() < 1 then
-			self:StopSound("ambient/machines/engine1.wav")
-			self:EmitSound("ambient/machines/spindown.wav")
 			for i,v in pairs(self.powering) do
 				local ent = ents.GetByIndex(i)
 				ent:TurnOff()
 			end
+			self.powering = {}
 			self.On = false
+			self:SetNWInt("WattsAvailable",0)
+			self:StopSound("generator_idle")
+			self:EmitSound("ambient/machines/spindown.wav")
 		end
 	end
 	for i,v in pairs(self.powering) do

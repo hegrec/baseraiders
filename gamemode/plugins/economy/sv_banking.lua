@@ -1,7 +1,7 @@
 
-banking = {}
-banking.bankers = {}
-BankAccounts = {}
+banking = banking or {}
+banking.bankers = banking.bankers or {}
+BankAccounts = BankAccounts or {}
 function banking.AddBanker(ply,args)
 	if !ply:IsSuperAdmin() then return end
 
@@ -34,8 +34,8 @@ local function BankRequestCallBack(tbl,ply)
 		end
 	end
 	banking.SendBank(ply)
+	ply:SetNWBool("Banking",true)
 	ply.BankReady = true
-	ply:Freeze(true)
 end
 
 function banking.RequestBank(ply,cmd,args)
@@ -71,55 +71,133 @@ function banking.SendBank(ply)
 end
 
 function banking.BankFinished(ply,cmd,args)
-	ply:Freeze(false)
 	ply.BankReady = nil
+	ply:SetNWBool("Banking",false)
 	banking.SaveBankAccount(ply)
 	BankAccounts[ply] = nil
 end
 concommand.Add("bankFinished",banking.BankFinished)
 
 function banking.ItemToBank(ply,cmd,args)
-	local index = args[1];
-	local all = (args[2] == "all")
-	if !ply:HasItem(index) or !ply.BankReady or !BankAccounts[ply] then return end
-	local amount = 1
-	if all then 
-		amount = ply.Inventory[index] 
-	elseif(tonumber(args[2]))then
-		amount = math.Clamp(tonumber(args[2]),0,ply.Inventory[index])
+	local x = tonumber(args[1])
+	local y = tonumber(args[2])
+	local all = args[3] == "1"
+	local amt = 1
+	
+	
+	
+	local item = ply:GetItem(x,y)
+	local tbl = GetItems()[item]
+	if !tbl then return end
+	
+	
+	
+	
+	if !ply:HasItem(item) or !ply:GetNWBool("Banking") or !BankAccounts[ply] then return end
+	
+	local tr = {}
+	tr.start = ply:GetShootPos()
+	tr.endpos = tr.start + ply:GetAimVector()*MAX_INTERACT_DIST
+	tr.filter = ply
+	tr.mask = MASK_BLOCKLOS_AND_NPCS
+	
+	tr = util.TraceLine(tr)
+	--this is not really a true logical statement, could be talking to the craftsman and its true
+	if !(tr.Entity:IsValid() and tr.Entity:GetClass() == "npc_generic") then
+		ply:SendNotify("You are not talking to a banker....","NOTIFY_ERROR",4)
+		ply:SetNWBool("Banking",false)
+		return
 	end
-	ply:TakeItem(index,amount)
+	
+	
+	
+	
+	local tot = 0
+	for i,v in pairs(BankAccounts[ply]) do
+		local xs,ys = 2,2
+		if GetItems()[i].Size then
+		
+			xs,ys = unpack(GetItems()[i].Size)
+		end
+		tot = tot + xs*ys*v
+	end
+	local xs,ys = 2,2
+	if tbl.Size then
+		xs,ys = unpack(tbl.Size)
+	end
+	local newItemSize = xs*ys
+	if all then
+		newItemSize = newItemSize * ply:GetAmount(item)
+	end
+	
+	tot = tot + newItemSize --new size
+	if (tot>BANK_SPACE) then
+		ply:SendNotify("You don't have enough space in your bank for that","NOTIFY_ERROR",4)
+		return
+	end
+	
+	ply:TakeItem(x,y) --we always take an initial item because the minimum to transfer is 1
+	local amt = 1
+	if all then
+		while(true) do
+			x,y = ply:HasItem(item)
+			if !x or !y then break end
+			ply:TakeItem(x,y)
+			amt = amt + 1
+		end
+	end
+	
+	BankAccounts[ply][item] = BankAccounts[ply][item] or 0
+	BankAccounts[ply][item] = BankAccounts[ply][item] + amt
+	
+	
 	umsg.Start("getBankItem",ply)
-		umsg.String(index)
-		umsg.Long(amount)
+		umsg.String(item)
+		umsg.Long(BankAccounts[ply][item])
 	umsg.End()
-	BankAccounts[ply][index] = BankAccounts[ply][index] or 0
-	BankAccounts[ply][index] = BankAccounts[ply][index] + amount
+
 	ply.BankReady = false
 	banking.SaveBankAccount(ply,function() ply.BankReady = true end)
 	SaveRPAccount(ply)
 end
-concommand.Add("itemToBank",banking.ItemToBank)
+concommand.Add("item_to_bank",banking.ItemToBank)
 
 function banking.ItemToInventory(ply,cmd,args)
 	local index = args[1]
-	local all = (args[2] == "all")
 	if !BankAccounts[ply][index] or BankAccounts[ply][index] < 1 or !ply.BankReady then return end
-	local amount = 1
-	if all then 
-		amount = BankAccounts[ply][index]
-	elseif(tonumber(args[2]))then
-		amount = math.Clamp(tonumber(args[2]),0,BankAccounts[ply][index])
+
+	
+	local tr = {}
+	tr.start = ply:GetShootPos()
+	tr.endpos = tr.start + ply:GetAimVector()*MAX_INTERACT_DIST
+	tr.filter = ply
+	tr.mask = MASK_BLOCKLOS_AND_NPCS
+	
+	tr = util.TraceLine(tr)
+	--this is not really a true logical statement, could be talking to the craftsman and its true
+	if !(tr.Entity:IsValid() and tr.Entity:GetClass() == "npc_generic") then
+		ply:SendNotify("You are not talking to a banker....","NOTIFY_ERROR",4)
+		ply:SetNWBool("Banking",false)
+		return
 	end
-	for i=1,amount do 
+	
+	
+	for i=1,1 do 
 		local bool = ply:GiveItem(index)
 		if bool then
-			umsg.Start("loseBankItem",ply)
-				umsg.String(index)
-				umsg.Long(1)
-			umsg.End()
+
 			BankAccounts[ply][index] = BankAccounts[ply][index] - 1
+			
+			
+			umsg.Start("getBankItem",ply)
+				umsg.String(index)
+				umsg.Long(BankAccounts[ply][index])
+			umsg.End()
+			
 			if BankAccounts[ply][index] < 1 then BankAccounts[ply][index] = nil end
+			
+			
+			
 			ply.BankReady = false
 			banking.SaveBankAccount(ply,function() ply.BankReady = true end)
 			SaveRPAccount(ply)
@@ -128,7 +206,7 @@ function banking.ItemToInventory(ply,cmd,args)
 		end
 	end
 end
-concommand.Add("itemToInventory",banking.ItemToInventory)
+concommand.Add("bank_to_inv",banking.ItemToInventory)
 
 function banking.SaveBankers()
 	local tbl = {}
@@ -157,7 +235,7 @@ function banking.LoadBankers()
 			ent:SetAngles(Angle(t[4],t[5],t[6]))
 			ent:Spawn()
 			ent:EnableChat()
-			table.insert(banking.bankers,ent)
+			table.insert(banking.bankers,ent) 
 		end
 		
 	end

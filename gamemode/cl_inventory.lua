@@ -107,6 +107,10 @@ function INVENTORY:AddItem(index,x,y)
 				menu:AddOption("Transfer to Hub",function() RunConsoleCommand("item_to_hub",x,y) end)
 				menu:AddOption("Transfer all to Hub",function() RunConsoleCommand("item_to_hub",x,y,"1") end)
 			end
+			if LocalPlayer():GetNWBool("Banking") then
+				menu:AddOption("Transfer to Bank",function() RunConsoleCommand("item_to_bank",x,y) end)
+				menu:AddOption("Transfer all to Bank",function() RunConsoleCommand("item_to_bank",x,y,"1") end)
+			end
 			if type.MenuAdds then
 				type.MenuAdds(menu,index,x,y)
 			end
@@ -193,7 +197,19 @@ function recvInventorySize(um)
 local draggingEntity
  hook.Add("GUIMousePressed","hoverclick",function(code,pos)
 	local ent = properties.GetHovered(LocalPlayer():EyePos(),LocalPlayer():GetAimVector())
+	
+	
+	
+	
 	if (ent and ent:IsValid()) then
+	
+		local tr = {}
+		tr.start = LocalPlayer():GetShootPos()
+		tr.endpos = ent:LocalToWorld(ent:OBBCenter())
+		tr.filter = LocalPlayer()
+		tr = util.TraceLine(tr)
+		if tr.Entity != ent || tr.StartPos:Distance(tr.HitPos) > MAX_INTERACT_DIST then return end
+	
 		if ent:GetItemName() then
 			draggingEntity = ent
 			SetDraggableItem(ent:GetItemName())

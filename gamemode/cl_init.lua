@@ -296,6 +296,45 @@ hook.Add("PostDrawTranslucentRenderables","queued_experiencereder",function()
 			draw.SimpleTextOutlined(txt,"TerritoryTitle",0,0,Color(0,255,0,255-frac*255),1,1,1,Color(255,255,255,255-frac*255))
 		cam.End3D2D()
 	end
+	
+	local helpVec = Vector(320.968750, 4107.258301, 60.206669)
+	local helpAng = Angle(0,-90,90)
+	cam.Start3D2D(helpVec, helpAng, 1)
+		draw.SimpleTextOutlined("Welcome to Baseraiders!","TerritoryTitle",0,0,Color(255,255,0,255),0,1,1,Color(255,255,255,255))
+	cam.End3D2D()
+	
+	cam.Start3D2D(helpVec, helpAng, 0.5)
+		draw.SimpleTextOutlined("Where you can form gangs and conquer new ground!","TerritoryTitle",0,50,Color(255,0,0,255),0,1,1,Color(255,255,255,255))
+		draw.SimpleTextOutlined("Be sure to talk to all the NPCs in this building before leaving to explore","TerritoryTitle",0,100,Color(0,255,255,255),0,1,1,Color(255,255,255,255))
+		draw.SimpleTextOutlined("Checkout the market downstairs as well","TerritoryTitle",0,150,Color(0,255,0,255),0,1,1,Color(255,255,255,255))
+	cam.End3D2D()
+	
+	cam.Start3D2D(Vector(124.595848, 2779.031250, 50.608318), Angle(0,180,90), 0.5)
+		draw.SimpleTextOutlined("Press and hold C to access your inventory","TerritoryTitle",0,0,Color(255,255,255,255),0,1,1,Color(255,255,255,255))
+	cam.End3D2D()
+	
+	cam.Start3D2D(Vector(120.038223, 3402.968750, -71.685226), Angle(0,0,90), 0.5)
+		draw.RoundedBox(0,-14,-10,425,50,Color(120,120,120))
+		draw.SimpleTextOutlined("Baseraiders Market","TerritoryTitle",0,10,Color(0,255,255,255),0,1,1,Color(255,255,255,255))
+	cam.End3D2D()
+	
+	cam.Start3D2D(Vector(-315.968689, 2836.386230, 50.273762), Angle(0,90,90), 0.7)
+		draw.SimpleTextOutlined("Join our community to post suggestions & ban requests","ScoreboardSub",0,0,Color(255,255,255,255),0,1,0,Color(255,255,255,255))
+		draw.SimpleTextOutlined("CakeToast.com","TerritoryTitle",0,50,Color(255,255,255,255),0,1,1,Color(255,255,255,255))
+	cam.End3D2D()
+	
+	
+	cam.Start3D2D(Vector(-300.780121, 3409.968750, 45.953957), Angle(0,0,90), 0.4)
+		draw.SimpleTextOutlined("You can click and drag items into your inventory","TerritoryTitle",0,0,Color(255,255,255,255),0,1,1,Color(255,255,255,255))
+		draw.SimpleTextOutlined("while holding C if USE does not pick it up","TerritoryTitle",0,50,Color(255,255,255,255),0,1,1,Color(255,255,255,255))
+		draw.SimpleTextOutlined("CakeToast.com","TerritoryTitle",260,250,Color(255,255,255,255),0,1,1,Color(255,255,255,255))
+	cam.End3D2D()
+	
+	cam.Start3D2D(Vector(-310.968750, 3231.679199, -35.755562), Angle(0,90,90), 0.5)
+		draw.RoundedBox(0,-4,-1,370,50,Color(120,120,120))
+		draw.SimpleTextOutlined("Baseraiders Bank","TerritoryTitle",40,20,Color(0,255,255,255),0,1,1,Color(255,255,255,255))
+	cam.End3D2D()
+	
 end)
 function GM:PostDrawTranslucentRenderables(bdepth,bsky)
 	for i,v in pairs(territories) do

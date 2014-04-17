@@ -126,15 +126,15 @@ AddChatCommand("staff",Admin)
 
 function Gang(pl,args)
 	if !args[1] then return "" end
-	if(pl:Team() != TEAM_GANG and pl:Team() != TEAM_MOBBOSS)then pl:SendNotify("You are not a gangster","NOTIFY_ERROR",5) return end
+	if pl:GetGangID() == 0 then return "" end
 	for k,v in pairs(player.GetAll())do
-		if(v:Team() == TEAM_GANG or v:Team() == TEAM_MOBBOSS)then
+		if(v:GetGangID() == pl:GetGangID())then
 			umsg.Start("__chatcust",v)	
 				umsg.Entity(pl)
 				umsg.String("[Gang] " .. table.concat(args," "))
-				umsg.Short(80)
-				umsg.Short(80)
-				umsg.Short(80)
+				umsg.Short(200)
+				umsg.Short(20)
+				umsg.Short(20)
 			umsg.End()			
 			--v:SendLua('AddHistory('..pl:UserID()..',\"'..tmysql.escape(table.concat(args," "))..'\",11)')
 		end
@@ -142,4 +142,4 @@ function Gang(pl,args)
 	MsgAdmin(pl:Name().." used GANG to say: "..escape(table.concat(args," ")),7);
 end
 AddChatCommand("gang",Gang)
-
+AddChatCommand("g",Gang)

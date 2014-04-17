@@ -1,161 +1,120 @@
-local bankMenu;
 
-local PANEL = {}
-function PANEL:Init()
-	self:SetTitle("Bank Account")
+myBank = {}
+local bankPanel
+function ShowBank( um )
+	local name = um:ReadString()
+	bankPanel = vgui.Create("DFrame")
+	bankPanel:SetTitle("Personal Bank Account")
+	bankPanel:SetSize(300,600)
+	local lblName = vgui.Create("DLabel",bankPanel)
+	lblName:SetText("Your Personal Bank")
+	lblName:SetFont("HUDBars")
+	lblName:SizeToContents()
+	lblName:SetPos(5,25)
 	
-	self:SetSize(ScrW()*0.6,ScrH()*0.6)
-	self:Center()
+	bankPanel.weight = vgui.Create("DPanelList",bankPanel)
+	bankPanel.weight:SetPos(5,50)
+	bankPanel.weight:SetSize(bankPanel:GetWide()-10,20)
+	bankPanel.weight.Paint = function(s)
 	
-	self:SetDraggable(false)
 	
-	local inventory = GetInventoryPanel()
-	for i,v in pairs(inventory.List.Items) do
-		v.OldMousePressed = v.OnMousePressed
-		v.OnMousePressed = 
-		function()
-			local menu = DermaMenu()
-			menu:AddOption("Transfer to Bank",function() RunConsoleCommand("itemToBank",v.itemType) end)
-			menu:AddOption("Transfer X to Bank",function()
-				Derma_StringRequest( "Question", 
-					"How many do you wish to transfer?", 
-					"Type a number here", 
-					function( strTextOut ) RunConsoleCommand("itemToBank",v.itemType,strTextOut) end,
-					function( strTextOut )  end,
-					"Transfer", 
-					"Cancel" )
-			end)
-			menu:AddOption("Transfer all to Bank",function() RunConsoleCommand("itemToBank",v.itemType,"all") end)
-			menu:Open()
+		local tot = 0
+		for i,v in pairs(myBank) do
+			local xs,ys = 2,2
+			if GetItems()[i].Size then
+			
+				xs,ys = unpack(GetItems()[i].Size)
+			end
+			tot = tot + xs*ys*v
 		end
-	end
-	inventory:SetCustomUse(true)
-	inventory:SetParent(self)
-	inventory:StretchToParent(5,25,5,self:GetTall()*0.5+5)
-	inventory.List:StretchToParent(5,35,5,5);
-	inventory:InvalidateLayout()
 	
-	self.bankAccount = vgui.Create("DFrame",self)
-	self.bankAccount:SetTitle("My Bank Account")
-	self.bankAccount:SetDraggable(false)
-	self.bankAccount:ShowCloseButton(false)
-	self.bankAccount:StretchToParent(5,self:GetTall()*0.5,5,5)
 	
-	self.bankList = vgui.Create("DPanelList",self.bankAccount)
-	self.bankList:StretchToParent(5,25,5,5)
-	self.bankList:EnableHorizontal(true)
-	self.bankList:EnableVerticalScrollbar(true)
-
-	gui.EnableScreenClicker(true)
-end
-
-function PANEL:AddBankItem(index,amount)
-	for i,v in pairs(self.bankList.Items) do
-		if v.itemType == index then
-			v.amt = v.amt + amount
-			return
-		end
-	end
-	local type = GetItems()[index]
-	local panel = vgui.Create("DModelPanel")
-
-	panel:SetModel(type.Model)
-	panel:SetTooltip(index)
-	panel:SetSize(80,80)
-	panel.amt = amount
-	panel.itemType = index
-	panel:SetCamPos(type.CamPos)
-	panel:SetLookAt(type.LookAt)
-	panel.PaintOver = function() draw.SimpleText(panel.amt,"ScoreboardSub",60,60,Color(255,255,255,255),2,4) end
-	panel.OnMousePressed = 
-	function()
-		local menu = DermaMenu()
-		menu:AddOption("Transfer to Inventory",function() RunConsoleCommand("itemToInventory",index) end)
-		menu:AddOption("Transfer X to Inventory",function()
-				Derma_StringRequest( "Question", 
-					"How many do you wish to transfer?", 
-					"Type a number here", 
-					function( strTextOut ) RunConsoleCommand("itemToInventory",index,strTextOut) end,
-					function( strTextOut )  end,
-					"Transfer", 
-					"Cancel" )
-			end)
-		menu:AddOption("Transfer all to Inventory",function() RunConsoleCommand("itemToInventory",index,"all") end)
-		menu:Open()
-	end
-	self.bankList:AddItem(panel)
-end
-
-function PANEL:RemoveBankItem(index,amount)
-	for i,v in pairs(self.bankList.Items) do
-		if v.itemType == index then
-			v.amt = v.amt - amount
-			if v.amt < 1 then self.bankList:RemoveItem(v) self.bankList:InvalidateLayout() end
-		end
-	end
-end
-
-function PANEL:Think()
-	if !Me:Alive() then self:Close() end --Auto save for the player if they die
-end
-
-function PANEL:Close() --Don't try manually removing this or you will be stuck and have to rejoin and your bank will not save. TODO: Make a temp backup in case server crashes during a large transaction or make a force save for item movements over 10 or something
-	for i,v in pairs(GetInventoryPanel().List.Items) do
-		v.OnMousePressed = v.OldMousePressed;
-		v.OldMousePressed = nil;
-	end
-	--No longer customly use this
-	GetInventoryPanel():SetCustomUse(false)
-	self:Remove()
-	bankMenu = nil
-	gui.EnableScreenClicker(false)
-	RunConsoleCommand("bankFinished")
-end
-vgui.Register("BankMenu",PANEL,"DFrame")
-
---Hook and fix up the menu for items that are new to the inventory
-hook.Add("InventoryAddedItem","RedoDropMenu",function(v)
-		v.OldMousePressed = v.OnMousePressed
-		v.OnMousePressed = 
-		function()
-			local menu = DermaMenu()
-			menu:AddOption("Transfer to Bank",function() RunConsoleCommand("itemToBank",v.itemType) end)
-			menu:AddOption("Transfer X to Bank",function()
-				Derma_StringRequest( "Question", 
-					"How many do you wish to transfer?", 
-					"Type a number here", 
-					function( strTextOut ) RunConsoleCommand("itemToBank",v.itemType,strTextOut) end,
-					function( strTextOut )  end,
-					"Transfer", 
-					"Cancel" )
-			end)
-			menu:AddOption("Transfer all to Bank",function() RunConsoleCommand("itemToBank",v.itemType,"all") end)
-			menu:Open()
-		end
+		draw.RoundedBox(0,0,0,s:GetWide(),s:GetTall(),Color(0,0,0,255))
 		
-end)
-
-function GetBankItem( um )
-	if !bankMenu then return end
-	bankMenu:AddBankItem(um:ReadString(),um:ReadLong())
-end
-usermessage.Hook("getBankItem",GetBankItem)
-
-function LoseBankItem( um )
-	if !bankMenu then return end
-	bankMenu:RemoveBankItem(um:ReadString(),um:ReadLong())
-end
-usermessage.Hook("loseBankItem",LoseBankItem)
-
-function openBank()
-	bankMenu = vgui.Create("BankMenu")
+		local frac = tot/BANK_SPACE
+		
+		draw.RoundedBox(0,1,1,frac*(s:GetWide()-2),s:GetTall()-2,Color(frac*255,255-frac*255,0,255))
+	end
+	
+	
+	
+	bankPanel.list = vgui.Create("DPanelList",bankPanel)
+	bankPanel.list:StretchToParent(5,80,5,5)
+	bankPanel.list:EnableVerticalScrollbar(true)
+	bankPanel:Center()
+	bankPanel:MakePopup()
+	ShowInv()
+	bankPanel.Close = function(p) p:Remove() HideInv() RunConsoleCommand("bankFinished") end
 	RunConsoleCommand("requestBank")
 end
-usermessage.Hook("openBank",openBank)
+usermessage.Hook("openBank",ShowBank)
 
-local function fixMouse()
-	if bankMenu && bankMenu:IsValid() then
-		gui.EnableScreenClicker(true)
+function UpdateBankItem(um)
+	
+	local name = um:ReadString()
+	local current_amt = um:ReadLong()
+	
+	
+
+	myBank = myBank or {}
+	if current_amt == 0 then
+		myBank[name] = nil
+	else
+		myBank[name] = current_amt
 	end
+	
+
+	
+	
+	
+	local alt = false
+	if ValidPanel(bankPanel) then
+		bankPanel.list:Clear()
+		
+		for i,v in pairs(myBank) do
+			
+			local name = i
+			tbl = GetItems()[name]
+			local pnl = vgui.Create("DPanel")
+			pnl:SetTall(32)
+			
+			local lblName = vgui.Create("DLabel",pnl)
+			lblName:SetPos(5,5)
+			lblName:SetText(name)
+			lblName:SetFont("HUDBars")
+			lblName:SizeToContents()
+			lblName:SetTextColor(Color(0,0,0,255))
+			local lblAmt = vgui.Create("DLabel",pnl)
+			lblAmt:SetPos(5+lblName:GetWide()+5,5)
+			lblAmt:SetText("("..v..")")
+			lblAmt:SetFont("HUDBars")
+			lblAmt:SizeToContents()
+			lblAmt:SetTextColor(Color(0,0,0,255))
+			
+			alt = !alt
+			
+			local color = Color(200,200,200,255)
+			if (!alt) then
+				color = Color(170,170,170,255)
+			end
+			pnl.Paint = function(s)
+				draw.RoundedBox(0,0,0,s:GetWide(),s:GetTall(),color)
+			end
+			
+			local create = vgui.Create("DButton",pnl)
+			
+			pnl:SetToolTip(tbl.Description)
+			create:SetSize(50,25)
+			pnl:SizeToContents()
+			create:SetText("Take")
+			create.DoClick = function() RunConsoleCommand("bank_to_inv",name) end
+			create:SetPos(200,5)
+			pnl.PerformLayout = function(p) create:SetPos(p:GetWide()-55,5) end
+			bankPanel.list:AddItem(pnl)
+	
+	
+		end
+	end
+
 end
-hook.Add("ChatEnded","FixTheMouse",fixMouse)
+usermessage.Hook("getBankItem",UpdateBankItem)

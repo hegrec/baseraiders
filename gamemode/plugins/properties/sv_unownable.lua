@@ -7,8 +7,8 @@
     return table.concat(buf, " ")
 end 
  
-local doors = {}
-doors.Unownables = {}
+doors = doors or {}
+doors.Unownables = doors.Unownables or {}
 
 local meta = FindMetaTable("Entity")
 function meta:IsUnownable()

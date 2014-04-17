@@ -232,7 +232,7 @@ usermessage.Hook("invitedToGang",invitedToGang)
 
 
 myGangBank = {}
-local gangBankPanel = 0
+local gangBankPanel
 function ShowGangBank( um )
 	local name = um:ReadString()
 	gangBankPanel = vgui.Create("DFrame")

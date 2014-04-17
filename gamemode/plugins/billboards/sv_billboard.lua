@@ -1,6 +1,6 @@
 --normal billboard size is 221x115
 
-local billboards = {}
+billboards = billboards or {}
 billboards.entities = {}
 billboards.helpstring = "Syntax is '/addbbstart to start, /addbbend  [ownable] [cost] [default text] to finish. Start in top left, finish bottom right//'"
 billboards.temptable = {} --used in the creation of buildboards

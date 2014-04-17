@@ -1,5 +1,5 @@
-removelist = {}
-removelist.indexs = {}
+removelist = removelist or {}
+removelist.indexs = removelist.indexs or {}
 function removelist.AddRemove(ply,args)
 	if !ply:IsSuperAdmin() then return "" end
 	local tr = ply:GetEyeTrace()
@@ -13,7 +13,7 @@ function removelist.AddRemove(ply,args)
 		ply:SendNotify("You cannot remove this item","NOTIFY_ERROR",4)
 	end
 end
-AddChatCommand("addremove",removelist.AddRemove)
+AddChatCommand("addremove",removelist.AddRemove) 
 
 function removelist.SaveList()
 	local str = util.TableToKeyValues(removelist.indexs);
@@ -32,4 +32,4 @@ function removelist.LoadList()
 		if ent:IsValid() then ent:Remove() end
 	end
 end
-hook.Add("InitPostEntity","RemoveListLoad",function() removelist.LoadList() end)
+hook.Add("InitPostEntity","RemoveListLoad",function() removelist.LoadList() end) 

@@ -176,7 +176,7 @@ function closets.Load()
 			local t = string.Explode(" ",v)
 			local ent = ents.Create("closet")
 			ent:SetPos(Vector(t[1],t[2],t[3]))
-			ent:SetAngles(Angle(t[4],t[5],t[6]))
+			ent:SetAngles(Angle(tonumber(t[4]),tonumber(t[5]),tonumber(t[6])))
 			ent:Spawn()
 			table.insert(closets.closets,ent)
 		end
