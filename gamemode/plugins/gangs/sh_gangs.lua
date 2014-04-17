@@ -87,7 +87,9 @@ level_experience[18] = 420000
 level_experience[19] = 670000
 level_experience[20] = 1000000
 
-
+function GetMaxGangMembers(xp)
+	return 5+CalculateLevel(xp)*2
+end
 function CalculateLevel(experience)
 	local level = 0
 	for i=1,20 do

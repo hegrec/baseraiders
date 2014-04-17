@@ -60,18 +60,14 @@ function GANGTAB:ShowMyGang()
 	helptext:SetFont("HUDBars")
 	helptext:SizeToContents()
 	
-	local helptext = vgui.Create("DLabel",self.infoPanel)
-	helptext:SetPos(5,55)
-	helptext:SetTextColor(Color(0,0,0,255))
+	self.members = vgui.Create("DLabel",self.infoPanel)
+	self.members:SetPos(5,55)
+	self.members:SetTextColor(Color(0,0,0,255))
 
-	if (#myGang.Members > 1) then
-		helptext:SetText(#myGang.Members.." Members")
-	else
-		helptext:SetText("1 Member")
-	end
-	helptext:SetFont("HUDBars")
-	helptext:SizeToContents()
-	
+
+	self.members:SetText(#myGang.Members.."/"..GetMaxGangMembers(myGang.Experience).." Members")
+	self.members:SetFont("HUDBars")
+	self.members:SizeToContents()
 	
 	local helptext = vgui.Create("DLabel",self.infoPanel)
 	helptext:SetPos(210,380)
@@ -90,28 +86,45 @@ function GANGTAB:ShowMyGang()
 		draw.RoundedBox(0,0,0,s:GetWide(),s:GetTall(),Color(0,0,0,255))
 		draw.RoundedBox(0,1,1,frac*(s:GetWide()-2),s:GetTall()-2,Color(0,255,0,255))
 	end
-	local helptext = vgui.Create("DPanelList",self.infoPanel)
-	helptext:SetPos(5,80)
-	helptext:SetWide(200)
-	helptext:SetTall(400)
-	helptext:EnableVerticalScrollbar()
-	helptext.Paint = function(s)
+	self.memberList = vgui.Create("DPanelList",self.infoPanel)
+	self.memberList:SetPos(5,80)
+	self.memberList:SetWide(200)
+	self.memberList:SetTall(400)
+	self.memberList:EnableVerticalScrollbar()
+	self.memberList.Paint = function(s)
 		draw.RoundedBox(2,0,0,s:GetWide(),s:GetTall(),Color(50,50,50,255))
 	end
 	for i,v in pairs(myGang.Members) do
 		local pnl = vgui.Create("DLabel")
-		pnl:SetText(v)
+		pnl:SetText(v.Name)
 		pnl.DoClick = function(s) local menu = DermaMenu()
 			if LocalPlayer():GetGangLeader() then
-				menu:AddOption("Kick",function() EnsureAndGo("Are you sure you want to kick "..v.." from your gang?","gangkick",{v}) end)
-				menu:AddOption("Make Leader",function() EnsureAndGo("Are you sure you want to make "..v.." the gang leader?","gangpromote",{v}) end)
+				menu:AddOption("Kick",function() EnsureAndGo("Are you sure you want to kick "..v.Name.." from your gang?","gangkick",{v.SteamID}) end)
+				menu:AddOption("Make Leader",function() EnsureAndGo("Are you sure you want to make "..v.Name.." the gang leader?","gangpromote",{v.SteamID}) end)
 				
 			end
 			menu:Open()
 		end
 		pnl:SetFont("HUDBars")
-		helptext:AddItem(pnl)
+		self.memberList:AddItem(pnl)
 	end
+end
+function GANGTAB:AddGangMember(memberInfo)
+			
+	local pnl = vgui.Create("DLabel")
+	pnl:SetText(memberInfo.Name)
+	pnl.DoClick = function(s) local menu = DermaMenu()
+		if LocalPlayer():GetGangLeader() then
+			menu:AddOption("Kick",function() EnsureAndGo("Are you sure you want to kick "..memberInfo.Name.." from your gang?","gang_kick",{memberInfo.SteamID}) end)
+			menu:AddOption("Make Leader",function() EnsureAndGo("Are you sure you want to make "..memberInfo.Name.." the gang leader?","gang_promote",{memberInfo.SteamID}) end)
+			
+		end
+		menu:Open()
+	end
+	pnl:SetFont("HUDBars")
+	self.memberList:AddItem(pnl)
+	self.members:SetText(#myGang.Members.."/"..GetMaxGangMembers(myGang.Experience).." Members")
+	self.members:SizeToContents()
 end
 function GANGTAB:Think()
 	if (LocalPlayer():GetGangLeader()) then
@@ -163,20 +176,24 @@ vgui.Register("GangTab",GANGTAB,"DPanel")
 
 
 function receiveGangInfo(um)
-	myGang = {}
+	myGang = myGang or {}
 	myGang.Name = um:ReadString()
 	myGang.OwnerName = um:ReadString()
 	myGang.Experience = um:ReadLong()
 	myGang.Level = CalculateLevel(myGang.Experience)
 	myGang.Members = {}
-	local membercount = um:ReadChar()
-	for i=1,membercount do
-		myGang.Members[i] = um:ReadString()
-	end
 	gangSheet:ShowMyGang()
 
 end
 usermessage.Hook("sendGangInfo",receiveGangInfo)
+
+function receiveGangMember(um)
+	myGang = myGang or {}
+	myGang.Members = myGang.Members or {}
+	table.insert(myGang.Members,{Name=um:ReadString(),SteamID=um:ReadString()})
+	gangSheet:AddGangMember(myGang.Members[#myGang.Members])
+end
+usermessage.Hook("sendGangMember",receiveGangMember)
 
 function EnsureAndGo(msg,cmd,argg)
 

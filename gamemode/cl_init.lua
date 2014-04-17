@@ -216,12 +216,16 @@ function GM:HUDPaint()
 			extra(v,pos,alpha)
 
 			draw.SimpleTextOutlined(text,"ScoreboardSub",pos.x,pos.y,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
-			if (v:IsPlayer() and v:GetGangName() != "") then
-				draw.SimpleTextOutlined("Gang: "..v:GetGangName(),"HUDBars",pos.x,pos.y-25,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
-				if v:GetGangLeader() then
-					draw.SimpleTextOutlined("Gang Leader","HUDBars",pos.x,pos.y-45,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+			if v:IsPlayer()then
+				local pppp = 45
+				if v:GetGangName() != "" then
+					draw.SimpleTextOutlined("Gang: "..v:GetGangName(),"HUDBars",pos.x,pos.y-25,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+					if v:GetGangLeader() then
+						draw.SimpleTextOutlined("Gang Leader","HUDBars",pos.x,pos.y-45,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+					end
+					pppp = 65
 				end
-				draw.SimpleTextOutlined("Level: "..v:GetLevel(),"HUDBars",pos.x,pos.y-65,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+				draw.SimpleTextOutlined("Level: "..v:GetLevel(),"HUDBars",pos.x,pos.y-pppp,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
 			elseif v.IsPowered then
 				local powered = v:IsPowered()
 				if powered then
@@ -365,8 +369,6 @@ function queueEffect( um )
 	table.insert(queued_experience,add)
 	
 end
-
-
 usermessage.Hook("experienceUp",queueEffect)
 
 

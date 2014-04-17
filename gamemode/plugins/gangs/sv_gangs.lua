@@ -38,12 +38,12 @@ function gangs.OnLoadPlayerGang(pl,gangID)
 		end
 	else
 	
-		Query("SELECT d.PlayerName as name FROM rp_playerdata r JOIN da_misc d on r.SteamID=d.SteamID WHERE r.GangID="..gangID,function(res)
+		Query("SELECT d.PlayerName as name,d.SteamID as SteamID FROM rp_playerdata r JOIN da_misc d on r.SteamID=d.SteamID WHERE r.GangID="..gangID,function(res)
 			if !res then return end
 			if #res>0 then gangs.gangcache[gangID] = gangs.gangcache[gangID] or {} end
 			gangs.gangcache[gangID].Members = {}
 			for i,v in pairs(res) do
-				table.insert(gangs.gangcache[gangID].Members,v.name)
+				table.insert(gangs.gangcache[gangID].Members,{Name=v.name,SteamID=v.SteamID})
 			
 			
 			end
@@ -93,11 +93,14 @@ function gangs.LoadGangInfo(pl,cmd,args)
 	umsg.String(g.Name)
 	umsg.String(g.OwnerName)
 	umsg.Long(g.Experience)
-	umsg.Char(#g.Members)
-	for i,v in pairs(g.Members) do
-		umsg.String(v)
-	end
 	umsg.End()
+	for i,v in pairs(g.Members) do
+		umsg.Start("sendGangMember",pl)
+			umsg.String(v.Name)
+			umsg.String(v.SteamID)
+		umsg.End()
+	end
+	
 end
 concommand.Add("load_gang_info",gangs.LoadGangInfo)
 function gangs.ConfirmCreation(pl,name)
@@ -116,7 +119,7 @@ function gangs.ConfirmCreation(pl,name)
 		gangs.gangcache[lastID].Experience = 0
 		gangs.gangcache[lastID].Level = 1
 		gangs.gangcache[lastID].OwnerSteamID = pl:SteamID()
-		gangs.gangcache[lastID].Members = {pl:Name()}
+		gangs.gangcache[lastID].Members = {Name=pl:Name(),SteamID=pl:SteamID()}
 		
 		
 		gangs.LoadGangInfo(pl)
@@ -128,8 +131,12 @@ function gangs.InvitePlayer(pl,args)
 	
 	local ply = player.FindNameMatch(playername)
 	
+	if (pl:GetGangID() == 0) then pl:SendNotify("You are not in a gang","NOTIFY_ERROR",4) return end
 	
-	
+	if (#gangs.gangcache[pl:GetGangID()].Members>=GetMaxGangMembers(gangs.gangcache[pl:GetGangID()].Experience)) then
+		pl:SendNotify("Your gang can only support "..GetMaxGangMembers(gangs.gangcache[pl:GetGangID()].Experience).." members. Level up for more","NOTIFY_ERROR",4)
+		return
+	end
 	if !ply then pl:SendNotify("Player '"..playername.."' not found","NOTIFY_ERROR",4) return end
 	gangs.ganginvites[pl:GetGangID()] = gangs.ganginvites[pl:GetGangID()] or {}
 	gangs.ganginvites[pl:GetGangID()][ply:EntIndex()] = true
@@ -159,7 +166,7 @@ function gangs.JoinGang(pl,cmd,args)
 	Query("UPDATE rp_playerdata set GangID="..gang_id.." WHERE SteamID='"..pl:SteamID().."'")
 	pl:SetGangName(gangs.gangcache[gang_id].Name)
 	pl:SetGangID(gang_id)
-	table.insert(gangs.gangcache[gang_id].Members,pl:Name())
+	table.insert(gangs.gangcache[gang_id].Members,{Name=pl:Name(),SteamID=pl:SteamID()})
 	gangs.ganginvites[gang_id][pl:EntIndex()] = nil
 	
 end
@@ -170,13 +177,22 @@ function gangs.LeaveGang(pl,cmd,args)
 		pl:SendNotify("You must declare a new leader before leaving or disband your gang altogether!","NOTIFY_ERROR",6)
 		return
 	end 
+	for i,v in ipairs(gangs.gangcache[pl:GetGangID()].Members) do
+		if v.SteamID == pl:SteamID() then
+			table.remove(gangs.gangcache[pl:GetGangID()].Members,i)
+			break
+		end
+	end
+	
+	
 	pl:SetGangID(0)
 	pl:SetGangName("")
 	pl:SetGangLeader(false)
+	
 	Query("UPDATE rp_playerdata set GangID=0 WHERE SteamID='"..pl:SteamID().."'")
 end
 concommand.Add("leavegang",gangs.LeaveGang)
---[[
+
 function gangs.GangKick(pl,cmd,args)
 	if (pl:GetGangID()==0) then return end
 	
@@ -184,12 +200,28 @@ function gangs.GangKick(pl,cmd,args)
 		pl:SendNotify("Only the gang leader can kick members","NOTIFY_ERROR",6)
 		return
 	end 
-	pl:SetGangID(0)
-	pl:SetGangName("")
-	pl:SetGangLeader(false)
-	Query("UPDATE rp_playerdata set GangID=0 WHERE SteamID='"..pl:SteamID().."'")
+	local steamid = args[1]
+	
+	if (steamid == pl:SteamID()) then
+		pl:SendNotify("You can not kick yourself from the gang","NOTIFY_ERROR",6)
+		return
+	end 
+	local gang = gangs.gangcache[pl:GetGangID()]
+	for i,v in pairs(gang.Members) do
+		if v.SteamID == steamid then
+			Query("UPDATE rp_playerdata set GangID=0 WHERE SteamID='"..steamid.."'")
+			local ply = player.GetBySteamID(steamid)
+			if ply and ply:IsValid() then
+				ply:SetGangID(0)
+				ply:SetGangName("")
+				ply:SendNotify("You have been kicked from your gang","NOTIFY_GENERIC",10)
+			end
+			table.remove(gang.Members,i)
+			break
+		end
+	end
 end
-concommand.Add("leavegang",gangs.LeaveGang)]]
+concommand.Add("gang_kick",gangs.GangKick)
 
 
 function gangs.UseGangBank(pl,cmd,args)
@@ -198,7 +230,7 @@ function gangs.UseGangBank(pl,cmd,args)
 	if !pl:GetEyeTrace().Entity==ent then return end
 	local gangID = ent:GetGangID()
 	if gangID != pl:GetGangID() then pl:SendNotify("That is not your gang's bank!","NOTIFY_ERROR",4) return end
-	local gang = gangs.gangcache[gangID]
+	
 	umsg.Start("sendGangBank",pl)
 	umsg.String(gang.Name)
 	umsg.End()
@@ -471,7 +503,7 @@ function gangs.CaptureTerritory(territoryID,capturing_hub)
 			umsg.Start("experienceUp")
 				umsg.Vector(v:EyePos()+(v:GetAimVector()*25-Vector(0,0,10)))
 				umsg.Short(100)
-				umsg.Bool(pl:IsVIP())
+				umsg.Bool(v:IsVIP())
 			umsg.End()
 		end
 	end
@@ -505,7 +537,7 @@ function gangs.HoldTerritory(territoryID,defending_hub)
 			umsg.Start("experienceUp")
 				umsg.Vector(v:EyePos()+(v:GetAimVector()*25-Vector(0,0,10)))
 				umsg.Short(100)
-				umsg.Bool(pl:IsVIP())
+				umsg.Bool(v:IsVIP())
 			umsg.End()
 		end
 	end

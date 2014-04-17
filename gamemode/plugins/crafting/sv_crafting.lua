@@ -81,7 +81,7 @@ function crafting.CraftItem(ply,cmd,args)
 	umsg.Start("experienceUp")
 		umsg.Vector(ply:EyePos()+(ply:GetAimVector()*25-Vector(0,0,10)))
 		umsg.Short(2)
-		umsg.Bool(pl:IsVIP())
+		umsg.Bool(ply:IsVIP())
 	umsg.End()
 
 end
