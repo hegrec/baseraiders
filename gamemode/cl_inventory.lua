@@ -2,7 +2,8 @@ hook.Add("Initialize","dfsagdfds",function()
 Inventory = nil
 end)
 function ShowInv(pl,cmd,args)
-	if !ValidPanel(Inventory) then Inventory = vgui.Create("Inventory") end
+	if !LocalPlayer().Inventory then return end
+	Inventory = vgui.Create("Inventory")
 	local y = ScrH()-(Inventory:GetTall()+100)
 	Inventory:MoveTo(0,y,0.2,0,1)
 	Inventory:MakePopup()	
@@ -31,7 +32,7 @@ function INVENTORY:Init()
 	self:SetTileSize(sz)
 	
 	
-	self:SetSize(ymax*self.tileSize,xmax*self.tileSize)
+	self:SetSize(ymax*self.tileSize+150,xmax*self.tileSize)
 	self:SetPos(-self:GetWide(),ScrH()-(self:GetTall()+100))
 	self.ItemSpots = {}
 	
@@ -49,6 +50,25 @@ function INVENTORY:Init()
 			end
 		end
 	end
+
+	local infoX = xmax*self.tileSize
+
+	self.itemLabel = Label("Inventory",self)
+	self.itemLabel:SetFont("HUDBars")
+	self.itemLabel:SetPos(infoX+5,5)
+	self.itemLabel:SizeToContents()
+
+	self.amountLabel = Label("",self)
+	self.amountLabel:SetFont("HUDBars")
+	self.amountLabel:SetPos(infoX+5,25)
+	self.amountLabel:SizeToContents()
+
+	self.descriptionLabel = Label("",self)
+	self.descriptionLabel:SetPos(infoX+5,35)
+	self.descriptionLabel:SetMultiline(true)
+	self.descriptionLabel:SetWrap(true)
+
+	self.descriptionLabel:SetSize(140,100)
 end
 function INVENTORY:SetTileSize(sz)
 	self.tileSize = sz
@@ -58,7 +78,7 @@ function INVENTORY:Paint()
 	surface.SetDrawColor(Color(20,20,20,255))
 	local xmax,ymax = LocalPlayer():GetInventorySize()
 	for y=1,ymax do
-		surface.DrawLine(0,y*self.tileSize,self:GetWide(),y*self.tileSize)
+		surface.DrawLine(0,y*self.tileSize,xmax*self.tileSize,y*self.tileSize)
 		for x=1,xmax do
 			surface.DrawLine(x*self.tileSize,0,x*self.tileSize,self:GetTall())
 			if (LocalPlayer().Inventory[y][x]) then
@@ -66,6 +86,8 @@ function INVENTORY:Paint()
 			end
 		end
 	end
+	local infoX = xmax*self.tileSize
+	draw.RoundedBox(0,infoX,0,200,self:GetTall(),Color(50,50,50,255))
 end
 function INVENTORY:AddItem(index,x,y)
 	local type = GetItems()[index]
@@ -80,7 +102,7 @@ function INVENTORY:AddItem(index,x,y)
 	panel:SetTooltip(index)
 	local ang = type.Angle
 	if (!ang) then ang = Angle(0,0,0) end
-	panel.LayoutEntity = function(s,ent) ent:SetAngles(ang) end
+	panel.LayoutEntity = function(s,ent)  ent:SetAngles(ang) end
 	panel:SetSize(self.tileSize*xSize,self.tileSize*ySize)
 	panel.itemType = index
 	local CamPos = type.CamPos
@@ -92,6 +114,42 @@ function INVENTORY:AddItem(index,x,y)
 	if !lookat then
 		lookat = Vector(0,0,0)
 	end
+
+	
+	panel.PaintOver = function(p)
+
+
+		if GetItems()[p.itemType].SWEPClass  then
+			local found = false
+			for i,v in pairs(LocalPlayer():GetWeapons()) do
+				if v:GetClass() == GetItems()[p.itemType].SWEPClass then
+					found = true
+					break
+				end
+			end
+			if found then
+
+				draw.RoundedBox(0,0,0,p:GetWide(),p:GetTall(),Color(200,200,20,50)) 
+			end
+		end
+
+
+		if p.m_isSelected then
+			surface.SetDrawColor(Color(255,255,0,255))
+			surface.DrawLine(0,0,p:GetWide(),0)
+			surface.DrawLine(0,1,p:GetWide(),1)
+
+			surface.DrawLine(0,p:GetTall()-1,p:GetWide(),p:GetTall()-1)
+			surface.DrawLine(0,p:GetTall()-2,p:GetWide(),p:GetTall()-2)
+
+
+			surface.DrawLine(0,0,0,p:GetTall())
+			surface.DrawLine(1,0,1,p:GetTall())
+
+			surface.DrawLine(p:GetWide()-1,0,p:GetWide()-1,p:GetTall())
+			surface.DrawLine(p:GetWide()-2,0,p:GetWide()-2,p:GetTall())
+		end
+	end
 	panel:SetLookAt(lookat)
 	panel.OnMousePressed = 
 	function(p,mouse)
@@ -101,11 +159,26 @@ function INVENTORY:AddItem(index,x,y)
 				menu:AddOption("Drop",function() RunConsoleCommand("dropitem",x,y) end)
 			end
 			if type.SWEPClass then
-				menu:AddOption("Equip",function() RunConsoleCommand("use_gun",x,y) end)
+
+
+
+				local found = false
+				for i,v in pairs(LocalPlayer():GetWeapons()) do
+					if v:GetClass() == type.SWEPClass then
+						found = true
+						break
+					end
+				end
+				if !found then
+					menu:AddOption("Equip",function() RunConsoleCommand("use_gun",x,y) end)
+				else
+					menu:AddOption("Holster",function() RunConsoleCommand("holster_gun",x,y) end)
+				end
+
 			end
-			if LocalPlayer():GetEyeTrace().Entity:GetClass() == "planted_gang_hub" then
-				menu:AddOption("Transfer to Hub",function() RunConsoleCommand("item_to_hub",x,y) end)
-				menu:AddOption("Transfer all to Hub",function() RunConsoleCommand("item_to_hub",x,y,"1") end)
+			if LocalPlayer():GetEyeTrace().Entity:GetClass() == "gang_vault" then
+				menu:AddOption("Transfer to Vault",function() RunConsoleCommand("item_to_hub",x,y) end)
+				menu:AddOption("Transfer all to Vault",function() RunConsoleCommand("item_to_hub",x,y,"1") end)
 			end
 			if LocalPlayer():GetNWBool("Banking") then
 				menu:AddOption("Transfer to Bank",function() RunConsoleCommand("item_to_bank",x,y) end)
@@ -116,14 +189,57 @@ function INVENTORY:AddItem(index,x,y)
 			end
 			menu:Open()
 		elseif mouse == MOUSE_LEFT then
-			SetDraggableItem(index,x,y)
+			p.downOn = {x,y}
+			p.wasDown = true
+			
 		end
+
+	end
+	panel.OnMouseReleased = function(p,mouse)
+		if mouse == MOUSE_LEFT && p.wasDown then
+			self:SelectItem(panel)
+			p.downOn = nil
+			p.wasDown = nil
+		end
+	end
+
+	panel.OnCursorMoved = function(p,xpos,ypos)
+		if p.downOn then
+			p.wasDown = false
+			SetDraggableItem(index,p.downOn[1],p.downOn[2])
+		end
+
+
+
+
+
 	end
 	panel:SetPos((x-1)*self.tileSize,(y-1)*self.tileSize)
 	
 end
 function INVENTORY:GetItemSlot(mX,mY)
 	return math.floor(mX/self.tileSize)+1,math.floor(mY/self.tileSize)+1
+end
+
+function INVENTORY:SelectItem(pnl)
+	if ValidPanel(self.selectedPanel) then
+		self.selectedPanel.m_isSelected = false
+	end
+	pnl.m_isSelected = true
+	self.selectedPanel = pnl
+
+	self.selectedItem = pnl.itemType
+	self.itemLabel:SetText(pnl.itemType)
+	self.itemLabel:SizeToContents()
+	local tbl = GetItems()[pnl.itemType]
+
+	self.amountLabel:SetText(LocalPlayer():GetAmount(pnl.itemType))
+	self.amountLabel:SizeToContents()
+
+	self.descriptionLabel:SetText(tbl.Description)
+	
+
+
 end
 function INVENTORY:TakeItem(x,y)
 	if ValidPanel(self.ItemSpots[y][x]) then

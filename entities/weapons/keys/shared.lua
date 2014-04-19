@@ -41,9 +41,13 @@ function SWEP:PrimaryAttack()
 		local nocontest = territories[tr.Entity:GetNWInt("Territory")] && !territories[tr.Entity:GetNWInt("Territory")].ContestingHub
 		
 		if tr.Entity.DoorOwner == self.Owner:SteamID() || table.HasValue(tr.Entity.Roommates,self.Owner) || (territoryDoor && mygangcontrols && nocontest) then
-			self.Owner:EmitSound("doors/door_latch1.wav")
-			tr.Entity:Fire("lock","",0)
-			tr.Entity.Locked = true
+			if  (!tr.Entity.nextlock || tr.Entity.nextlock < CurTime()) then
+				self.Owner:EmitSound("doors/door_latch1.wav")
+				tr.Entity:Fire("lock","",0)
+				tr.Entity.Locked = true
+			else
+				self.Owner:SendNotify("You must wait "..math.ceil(tr.Entity.nextlock-CurTime()).." more seconds before relocking this door","NOTIFY_ERROR",4)
+			end
 		end
 	end
 	if IsValid(tr.Entity) and tr.Entity:GetClass() == "prop_vehicle_jeep" and !tr.Entity.Locked then

@@ -23,6 +23,15 @@ pl:ChatPrint(msg)
 end
 
 
+	
+
+AddChatCommand("l",function(pl,args)
+	for i,v in pairs(GetLocalPlayers(pl,CHAT_DIST)) do
+		v:ChatPrint(pl:Name()..": "..table.concat(args," "))
+	end
+	return ""
+end)
+
 AddChatCommand("w",function(pl,args)
 		for i,v in pairs(GetLocalPlayers(pl,WHISPER_DIST)) do
 			v:ChatPrint(pl:Name()..": "..table.concat(args," "))

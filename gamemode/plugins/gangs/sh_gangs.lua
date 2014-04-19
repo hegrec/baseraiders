@@ -38,13 +38,13 @@ territories[2] = territories[2] or {
 		
 	end
 }
-territories[3] = territories[3] or {
+territories[3] = {
 	Name = "Silicon Factory",
 	HubSpawns = "Silicon",
-	Min = Vector(-4770.882813, 588.223083, -2.031250),
-	Max = Vector(-5280.166504, 89.927063, -191.968750),
-	LabelPos = Vector(-5294.031250, 400.409576, -129.520035),
-	LabelAngle = Angle(0,-90,90),
+	Min = Vector(-6558.745117, -2172.780518, -199.968750),
+	Max = Vector(-6077.814453, -1707.554321, -10.031250),
+	LabelPos = Vector(-6568.468750, -2183.130127, -199.968750),
+	LabelAngle = Angle(0,180,90),
 	Label = function()
 	
 		draw.SimpleTextOutlined("Silicon Factory","TerritoryTitle",0,0,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM,2,Color(0,0,0,255))
@@ -127,7 +127,7 @@ ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/props_wasteland/gaspump001a.mdl"
 ITEM.Description = "Used to control other territories"
 ITEM.Size = {2,3}
-ITEM.Craftable = {"Metal",1}
+ITEM.Craftable = {"Mechanical Parts",5,"Circuit Board",1}
 ITEM.LookAt = Vector(0,0,20)
 ITEM.CamPos = Vector(40,40,40)
 ITEM.CanHold = true
@@ -135,6 +135,17 @@ ITEM.MenuAdds = function(menu,index)
 	menu:AddOption("Plant Hub",function() RunConsoleCommand("plant_hub") end)
 end
 
+local ITEM = items.DefineItem("Gang Vault")
+ITEM.Group = "Gang Stuff"
+ITEM.EntityClass = "gang_vault"
+ITEM.Model = "models/props/de_prodigy/ammo_can_01.mdl"
+ITEM.Description = "Used to access the gang's central vault"
+ITEM.Size = {3,3}
+ITEM.OnSpawned = function(ent,plSpawner) if (plSpawner) then ent:SetSpawner(plSpawner) end end
+ITEM.Craftable = {"Mechanical Parts",1,"Metal",20} 
+ITEM.LookAt = Vector(0,0,20)
+ITEM.CamPos = Vector(0,70,20)
+ITEM.CanHold = true
 
 local ITEM = items.DefineItem("Standing Turret")
 ITEM.Group = "Defense Systems"
@@ -144,7 +155,7 @@ ITEM.Model = "models/combine_turrets/floor_turret.mdl"
 ITEM.Description = "Used to defend your territory or your home"
 ITEM.Size = {2,4}
 ITEM.Watts = 600
-ITEM.Craftable = {"Sensor Module",5,"Circuit Board",5,"Metal Plating",10,"Weapon Sights",1}
+ITEM.Craftable = {"Mechanical Parts",15,"Circuit Board",5,"Hydraulics",1,"Weapon Sights",1,"Weapon Barrel",1}
 ITEM.LookAt = Vector(10,0,20)
 ITEM.CamPos = Vector(35,20,20)
 ITEM.CanHold = true

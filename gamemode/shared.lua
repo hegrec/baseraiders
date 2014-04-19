@@ -13,7 +13,7 @@ function GetBySteamID( steamID )
         for i,ply in ipairs(players) do
         
                 --      Check if the player's steam ID is the same as the given one
-                if ply:SteamID() == steamID then
+                if ply:GetNWString("SteamID") == steamID then
                         return ply
                 end
         end

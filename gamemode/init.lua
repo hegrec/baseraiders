@@ -139,7 +139,6 @@ end
 function DBClean(s)
 	return escape(s);
 end
-
 function GM:Initialize()
 	hook.Add("PlayerSpawnedProp","PropSpawnProtect",function(ply,model,ent) ply:GiveObject(ent) end)
 
@@ -332,17 +331,14 @@ function FixedSecondaryToolAttack(self)
 	if table.HasValue(BadRightClicks,self:GetMode()) then return end
 	self.OldSecondaryAttack(self)
 end
-
 function GM:PlayerSay(pl,txt,public)
 	if string.find(txt,"//") == 1 then
 		return string.sub(txt,3)
 	elseif string.find(txt,"/") == 1 then
 		return RunChatCommand(pl,txt) or "";
 	end
- 	for i,v in pairs(GetLocalPlayers(pl,CHAT_DIST)) do
-		v:ChatPrint(pl:Name()..": "..txt)
-	end
-	return ""
+ 	
+	return txt
 end
 
 function GM:PlayerCanHearPlayersVoice( pListener, pTalker )
@@ -362,7 +358,7 @@ function GetLocalPlayers(pl,dist)
 	end
 	return t
 end
-	
+
 function GM:GravGunPickupAllowed(ply,ent)
 	if !IsValid(ent) then return end
 	return true
@@ -459,8 +455,6 @@ function GM:PlayerDeath( Victim, Inflictor, Attacker )
 		respawnTime = respawnTime + math.Round(0.115*(x*x) + 1.947*x - 0.0737)
 	end
 	Victim.NextSpawnTime = CurTime() + respawnTime
-	Victim:AddMoney(-100)
-
 	Victim:SendNotify('You will be able to spawn in '..Victim.NextSpawnTime-CurTime()..' seconds',"NOTIFY_GENERIC",5)
 	for k,v in pairs(Victim:GetWeapons())do
 		if(DROP_GUNS_ON_DEATH)then
@@ -535,16 +529,54 @@ function RequestModel(pl)
 	umsg.End()
 end
 
+
+function ViewStore(pl,ent,store)
+	umsg.Start("showStore",pl)
+	umsg.Short(ent:EntIndex())
+	umsg.String(store.Title)
+	umsg.End()
+	
+	
+	for i,v in pairs(store.items) do
+		umsg.Start("addStoreItem",pl)
+		umsg.String(i)
+		umsg.Long(v)
+		umsg.End()
+	end
+end
+
+function BuyFromStore(pl,cmd,args)
+
+	local ent = ents.GetByIndex(tonumber(args[1]))
+	if !IsValid(ent) then return end
+	if !pl:FacingNPC(ent) then return end
+	local store = ent.store
+	local item = args[2]
+	if !store.items[item] then return end
+
+	if pl:GetMoney() < store.items[item] then pl:SendNotify("You can not afford this","NOTIFY_ERROR",4) return end
+	if store.CanBuy and !store.CanBuy(pl,item) then return end
+	if pl:GiveItem(item) then
+		pl:AddMoney(store.items[item]*-1)
+		pl:SendNotify("You bought an item ("..item..")","NOTIFY_GENERIC",6)
+		if store.OnBuy then store.OnBuy(pl,item) end
+	end
+
+end
+concommand.Add("buystore",BuyFromStore)
+
 function SetModel(pl,cmd,args)
-	if(pl.Model != "")then return end --a model already exists, they are trying to change it
+	if(pl.Model and pl.Model != "")then return end --a model already exists, they are trying to change it
+	
 	if(!tonumber(args[1]))then RequestModel(pl) return end --a number was not sent
 	local mdl = CitizenModels[tonumber(args[1])]
+	
 	if(!mdl)then RequestModel(pl) return end --they sent a number not in the citizenmodel table
 	pl.Model = mdl
 	pl:SetModel(mdl)
 	pl:SetSkin(tonumber(args[1])%9)
 	SendModel(pl)
-	SaveRPAccount()
+	SaveRPAccount(pl)
 end
 concommand.Add("setmodel",SetModel)
 

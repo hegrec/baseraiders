@@ -34,7 +34,7 @@ end
 for i,v in pairs(skills) do
 	hook.Add(v.hookUsed,i.."Increase",
 		function(pl)
-			if !pl.Skills[i] then return end
+			if !pl.Skills or !pl.Skills[i] then return end
 			pl.Skills[i] = math.Clamp(pl.Skills[i] + 1,0,skills[i].getNeeded(pl))
 			if pl.Skills[i] >= skills[i].getNeeded(pl) and pl:CanLevel(i) then pl:LevelUp(i) end
 			if v.custFunc then v.custFunc(pl); end

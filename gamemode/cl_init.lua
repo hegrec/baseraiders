@@ -197,8 +197,6 @@ function GM:HUDPaint()
 				if GetItems()[text].ExtraHUD then
 					extra = GetItems()[text].ExtraHUD
 				end
-			elseif extraHUDFuncs[v:GetClass()] then
-				extra = extraHUDFuncs[v:GetClass()]
 			elseif v:IsPlayer() then
 				text = v:Name()
 				pos = v:GetPos()+Vector(0,0,72)
@@ -206,6 +204,8 @@ function GM:HUDPaint()
 				text = v:GetNWInt("WattsAvailable").." Watts Left"
 			elseif v:GetClass() == "money" then
 				text = "$"..v:GetNWInt("Amount")
+			elseif v:GetClass() == "vendingmachine" then
+				text = " $5 Water Press USE"
 			end
 			local maxdist = 500
 			pos = pos:ToScreen()
@@ -213,7 +213,9 @@ function GM:HUDPaint()
 			local dist = math.sqrt((cx-pos.x)*(cx-pos.x)+(cy-pos.y)*(cy-pos.y))
 			
 			local alpha = math.min(255,(maxdist-dist)/maxdist*255)
-			extra(v,pos,alpha)
+			if extraHUDFuncs[v:GetClass()] then
+				extra = extraHUDFuncs[v:GetClass()](v,pos,alpha)
+			end
 
 			draw.SimpleTextOutlined(text,"ScoreboardSub",pos.x,pos.y,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
 			if v:IsPlayer()then

@@ -30,6 +30,20 @@ function meta:CanReach(ent)
 	return self:GetPos():Distance(ent:GetPos()) < MAX_INTERACT_DIST
 end 
 
+function meta:FacingNPC(ent)
+
+	local tr = {}
+	tr.start = self:GetShootPos()
+	tr.endpos = tr.start + self:GetAimVector()*MAX_INTERACT_DIST
+	tr.filter = self
+	tr.mask = MASK_BLOCKLOS_AND_NPCS
+	
+	tr = util.TraceLine(tr)
+
+
+	return tr.Entity == ent
+end 
+
 function meta:HasLineOfSight(v)
 	local tr = {}
 	tr.start = self:GetPos()+Vector(0,0,40)

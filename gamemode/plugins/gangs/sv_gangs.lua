@@ -67,6 +67,11 @@ function gangs.OnLoadPlayerGang(pl,gangID)
 			gangs.gangcache[cachedID] = gangs.gangcache[cachedID] or {}
 			gangs.gangcache[cachedID].Name = res.Name
 			gangs.gangcache[cachedID].GangBank = util.JSONToTable(res.GangBank) or {}
+			for i,v in pairs(gangs.gangcache[cachedID].GangBank) do
+				if !GetItems()[i] then 
+					gangs.gangcache[cachedID].GangBank[i] = nil
+				end
+			end
 			gangs.gangcache[cachedID].Experience = tonumber(res.Experience)
 			gangs.gangcache[cachedID].OwnerSteamID = res.OwnerSteamID
 			pl:SetGangName(res.Name)
@@ -225,12 +230,12 @@ concommand.Add("gang_kick",gangs.GangKick)
 
 
 function gangs.UseGangBank(pl,cmd,args)
-
 	local ent = ents.GetByIndex(args[1])
 	if !pl:GetEyeTrace().Entity==ent then return end
+	if ent:GetClass() != "gang_vault" then return end
 	local gangID = ent:GetGangID()
-	if gangID != pl:GetGangID() then pl:SendNotify("That is not your gang's bank!","NOTIFY_ERROR",4) return end
-	
+	if gangID != pl:GetGangID() then pl:SendNotify("That is not your gang's vault! You may lock pick it however","NOTIFY_ERROR",4) return end
+	local gang = gangs.gangcache[gangID]
 	umsg.Start("sendGangBank",pl)
 	umsg.String(gang.Name)
 	umsg.End()
@@ -240,8 +245,6 @@ function gangs.UseGangBank(pl,cmd,args)
 		umsg.Short(v)
 	umsg.End()
 	end
-	
-
 end
 concommand.Add("use_gang_bank",gangs.UseGangBank)
 function gangs.ItemToHub(pl,cmd,args)
@@ -257,8 +260,8 @@ function gangs.ItemToHub(pl,cmd,args)
 	if !tbl then return end
 	
 	local hub = pl:GetEyeTrace().Entity 
-	if hub:GetClass() != "planted_gang_hub" then return end
-	if hub:GetGangID() != pl:GetGangID() then pl:SendNotify("That is not your gang's bank!","NOTIFY_ERROR",4) return end
+	if hub:GetClass() != "gang_vault" then return end
+	if hub:GetGangID() != pl:GetGangID() then pl:SendNotify("That is not your gang's vault!","NOTIFY_ERROR",4) return end
 	if !pl:HasItem(item) then return end
 	pl:TakeItem(x,y)
 	local amt = 1
@@ -301,7 +304,7 @@ function gangs.HubToInv(pl,cmd,args)
 	if !tbl then return end
 	
 	local hub = pl:GetEyeTrace().Entity 
-	if hub:GetClass() != "planted_gang_hub" then return end
+	if hub:GetClass() != "gang_vault" then return end
 	if !pl:CanHold(item) then pl:SendNotify("You don't have room for that","NOTIFY_ERROR",3) return end
 	if hub:GetGangID() != pl:GetGangID() then pl:SendNotify("That is not your gang's bank!","NOTIFY_ERROR",4) return end
 	local gangID = hub:GetGangID()
@@ -329,7 +332,38 @@ function gangs.HubToInv(pl,cmd,args)
 	Query("UPDATE rp_gangdata set GangBank='"..escape(util.TableToJSON(gang.GangBank)).."' WHERE ID="..gangID)
 end
 concommand.Add("hub_to_inv",gangs.HubToInv)
+function gangs.StealGangVaultItem(vault,plStealer)
+	
+	local gang = gangs.gangcache[vault:GetGangID()]
 
+	local bank = gang.GangBank
+	if table.Count(bank) < 1 then 
+		plStealer:SendNotify("The gang vault was empty","NOTIFY_GENERIC",10)
+		return end
+	local types = {}
+	for i,v in pairs(bank) do
+		if v > 0 then
+			table.insert(types,i)
+		end
+	end
+
+	local stolenType = types[math.random(#types)];
+	
+	local tbl = GetItems()[stolenType]
+	if !tbl then return end
+	
+
+	gang.GangBank[stolenType] = gang.GangBank[stolenType] - 1
+	if gang.GangBank[stolenType] < 1 then
+		gang.GangBank[stolenType] = 0
+	end
+
+	SpawnRoleplayItem(stolenType,vault:GetPos()+Vector(0,0,70))
+	plStealer:SendNotify("You stole an item from the gang vault ("..stolenType..")","NOTIFY_GENERIC",10)
+	Query("UPDATE rp_gangdata set GangBank='"..escape(util.TableToJSON(gang.GangBank)).."' WHERE ID="..vault:GetGangID())
+
+
+end
 function gangs.DisbandGang(pl,cmd,args)
 	if (pl:GetGangID()==0) then return end
 	if !pl:GetGangLeader() then 
@@ -609,7 +643,7 @@ function gangs.AddTerritoryDoor(ply,args)
 		territories[territoryID].doors[door:EntIndex()-game.MaxPlayers()] = 1
 	elseif addremove == "remove" then
 
-		territories[territoryID].doors[door:EntIndex()-game.MaxPlayers()] = 1
+		territories[territoryID].doors[door:EntIndex()-game.MaxPlayers()] = nil
 	end
 	
 	//Do Reset Owners

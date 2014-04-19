@@ -52,33 +52,30 @@ function CreateDonateTab()
 	p2:SetTall(350)
 	p2.Paint = function()
 	draw.RoundedBox(8,0,0,p2:GetWide(),p2:GetTall(),Color(100,100,100,255))
-	draw.SimpleText("Help Darkland out!","ScoreboardSub",10,15,Color(0,0,0,255),0,1)
-	draw.SimpleText("	Darkland is very expensive to run. Donations help cover the cost of running the server","Default",10,30,Color(0,0,0,255),0,1)
+	draw.SimpleText("Help CakeToast out!","ScoreboardSub",10,15,Color(0,0,0,255),0,1)
+	draw.SimpleText("	CakeToast is very expensive to run. Donations help cover the cost of running the server","Default",10,30,Color(0,0,0,255),0,1)
 	draw.SimpleText("	We offer perks to donators who donate a certain amount at once. They last forever too.","Default",10,42,Color(0,0,0,255),0,1)
-	draw.SimpleText("Premium - $5 USD","ScoreboardSub",10,80,Color(0,200,0,255),0,1)
-	draw.SimpleText("Here are some of the benefits of Premium status:","Default",10,94,Color(0,0,0,255),0,1)
-	draw.SimpleText("	-Increased payroll (+25%). A 50$ payroll would get 62.50$ per payday with premium!","Default",10,106,Color(0,0,0,255),0,1)
-	draw.SimpleText("	-Max ban of 7 days","Default",10,118,Color(0,0,0,255),0,1)
-	draw.SimpleText("	-AFK Kicker Immunity","Default",10,130,Color(0,0,0,255),0,1)
+
+	local num = 80
 	
-	local num = 160
-	
-	draw.SimpleText("Platinum - $15 USD","ScoreboardSub",10,num,Color(20,20,200,255),0,1)
-	draw.SimpleText("Here are some of the benefits of Platinum status:","Default",10,num+14,Color(0,0,0,255),0,1)
-	draw.SimpleText("	-Increased payroll (+50%). A 50$ payroll would get 75$ per payday with platinum!","Default",10,num+26,Color(0,0,0,255),0,1)
-	draw.SimpleText("	-Max ban of 4 days","Default",10,num+38,Color(0,0,0,255),0,1)
+	draw.SimpleText("VIP - $10 USD","ScoreboardSub",10,80,Color(20,20,200,255),0,1)
+	draw.SimpleText("Here are some of the benefits of VIP status:","Default",10,num+14,Color(0,0,0,255),0,1)
+	draw.SimpleText("	-Max ban of 7 days","Default",10,num+38,Color(0,0,0,255),0,1)
 	draw.SimpleText("	-AFK Kicker Immunity","Default",10,num+50,Color(0,0,0,255),0,1)
-	draw.SimpleText("	-Physgun","Default",10,num+62,Color(0,0,0,255),0,1)
-	draw.SimpleText("	-Prop Spawning","Default",10,num+74,Color(0,0,0,255),0,1)
-	draw.SimpleText("	-Toolgun","Default",10,num+86,Color(0,0,0,255),0,1)
+	draw.SimpleText("	-Props cost %50 less. $80 props cost $40 to a VIP.","Default",10,num+62,Color(0,0,0,255),0,1)
+	draw.SimpleText("	-Experience is gained twice as fast (+200%)","Default",10,num+74,Color(0,0,0,255),0,1)
+	draw.SimpleText("	-Inventory is %225 that of a regular inventory. 15x15 vs 10x10","Default",10,num+86,Color(0,0,0,255),0,1)
+	draw.SimpleText("	-Never expires, valid forever","Default",10,num+98,Color(0,0,0,255),0,1)
+	draw.SimpleText("	-Receive new benefits as they are added","Default",10,num+110,Color(0,0,0,255),0,1)
 	
 	num = 276
 	
-	draw.SimpleText("RP Cash - $1 USD = $10k ingame ","ScoreboardSub",10,num,Color(200,20,20,255),0,1)
-	draw.SimpleText("Need some money for that new car? Donating can get you there faster","Default",10,num+14,Color(0,0,0,255),0,1)	
+	draw.SimpleText("Base Raiders Cash - $1 USD = $2500 ingame ","ScoreboardSub",10,num,Color(20,200,20,255),0,1)
+	draw.SimpleText("Head to www.CakeToast.com/donations.php","ScoreboardSub",10,num+35,Color(0,0,0,255),0,1)
+	draw.SimpleText("You will instantly receive your perks upon rejoining after donating","HUDBars",10,num+55,Color(0,0,0,255),0,1)	
 	end
 	
 	list:AddItem(p2)
 	Panels["Menu"].Sheet:AddSheet("Donations",list,"gui/silkicons/heart",nil,nil,nil,6) 
 end
---hook.Add("OnMenusCreated","CreateDonateTab",CreateDonateTab)
+hook.Add("OnMenusCreated","CreateDonateTab",CreateDonateTab)

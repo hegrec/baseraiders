@@ -107,7 +107,9 @@ function crafting.MakeFire(pl,cmd,args)
 	if !pl:HasItem("Wood") then return end
 	local fire = ents.Create("darkland_fire")
 	fire:SetPos(pl:GetEyeTrace().HitPos)
+
 	fire:Spawn()
+	fire:SetPos(fire:GetPos()-Vector(0,0,fire:OBBMins().z))
 	local x,y = pl:HasItem("Wood")
 	pl:TakeItem(x,y)
 

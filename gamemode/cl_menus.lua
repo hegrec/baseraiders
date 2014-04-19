@@ -90,4 +90,69 @@ end
 concommand.Add("show_main",ShowMain)
 
 	
+	local PANEL = {}
+
+local Me = LocalPlayer();
+
+function PANEL:Init()
+	self:MakePopup()
+	self:SetDraggable(false)
+	self:SetSize(700,380)
+	self:SetPos(ScrW()*0.5-350,ScrH()-400)
+	self.list = vgui.Create("DPanelList",self)
+	self.list:SetPadding(3)
+	self.list:SetSpacing(1)
+	self.list:EnableVerticalScrollbar()
+	self.list:StretchToParent(5,25,5,5)
 	
+end
+function PANEL:AddItem(item,price)
+	local tbl = GetItems()[item]
+	if !tbl then return end
+	local pan = vgui.Create("DPanel")
+	pan:SetTall(74)
+	
+	local panel = vgui.Create("DModelPanel",pan)
+	panel:SetModel(tbl.Model)
+	panel:SetSize(74,74)
+	panel:SetCamPos(Vector(10,20,10))
+	panel:SetLookAt(Vector(0,0,0))
+	local smallpan = vgui.Create("DPanel",pan)
+	smallpan:SetPos(74,5)
+	smallpan:SetSize(200,64)
+	smallpan.Paint = 
+	function()
+		draw.SimpleTextOutlined(item,"ScoreboardSub",5,10,Color(14,53,65,255),0,1,1,Color(29,128,156,255))
+		
+		draw.SimpleText(tbl.Description,"Default",5,25,Color(0,0,0,255),0,1)
+		local mcol = Color(100,255,100,255)
+		if GetMoney() < price then mcol = Color(205,50,50,255) end
+		draw.SimpleText("Cost: $"..price,"HUDBars",5,50,mcol,0,1)
+	end
+	local butt = vgui.Create("DButton",pan)
+	butt:SetPos(620,44)
+	butt:SetSize(60,20)
+	butt:SetText("Buy")
+	butt.DoClick = function() RunConsoleCommand("buystore",Panels["ActiveStore"].NPCIndex,item) end
+	butt.Think = function() end
+	self.list:AddItem(pan)
+end
+vgui.Register("Store",PANEL,"DFrame")
+
+function ShowActiveStore(um)
+	if !ValidPanel(Panels["ActiveStore"]) then
+		Panels["ActiveStore"] = vgui.Create("Store")
+	end
+	Panels["ActiveStore"].NPCIndex = um:ReadShort()
+	Panels["ActiveStore"]:SetTitle(um:ReadString())
+end 
+usermessage.Hook("showStore",ShowActiveStore)
+
+
+function addStoreItem(um)
+	if !ValidPanel(Panels["ActiveStore"]) then
+		Panels["ActiveStore"] = vgui.Create("Store")
+	end
+	Panels["ActiveStore"]:AddItem(um:ReadString(),um:ReadLong())
+end 
+usermessage.Hook("addStoreItem",addStoreItem)

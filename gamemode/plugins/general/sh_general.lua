@@ -12,17 +12,65 @@ ITEM.BulkAmt = 10
 ITEM.SWEPClass = "lockpick"
 
 
+local ITEM = items.DefineItem("Breach Charge")
+ITEM.Group = "Tools"
+ITEM.EntityClass = "darkland_item"
+ITEM.Model = "models/dav0r/tnt/tnttimed.mdl"
+ITEM.Description = "A sure fire way to get into a base."
+ITEM.Size = {1,2}
+ITEM.Craftable = {"Mechanical Parts",1,"Clay",5,"Gunpowder",20}
+ITEM.RestoreHP = 25
+ITEM.LookAt = Vector(0,0,7)
+ITEM.CamPos = Vector(10,10,7)
+ITEM.CanHold = true
+ITEM.MenuAdds = function(menu,index,x,y)
+	local ent = LocalPlayer():GetEyeTrace(MAX_INTERACT_DIST).Entity
+	if (ent:GetClass() == "prop_physics" or ent:IsDoor()) and LocalPlayer():CanReach(ent) then
+		menu:AddOption("Plant Charge",function() RunConsoleCommand("plant_charge",x,y) end)
+	end
+end
+
+
 local ITEM = items.DefineItem("Stim-pak")
 ITEM.Group = "Edible Items"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/healthvial.mdl"
 ITEM.Description = "Great for healing after a drunken brawl"
 ITEM.Size = {1,1}
-ITEM.Craftable = {"Silicon",3,"Clay",4}
 ITEM.CanHeal = true
 ITEM.RestoreHP = 25
 ITEM.LookAt = Vector(0,0,5)
 ITEM.CamPos = Vector(0,8,5)
+ITEM.CanHold = true
+ITEM.MenuAdds = function(menu,index,x,y)
+	menu:AddOption("Use",function() RunConsoleCommand("use_health",x,y) end)
+end
+
+local ITEM = items.DefineItem("Medkit")
+ITEM.Group = "Edible Items"
+ITEM.EntityClass = "darkland_item"
+ITEM.Model = "models/weapons/w_medkit.mdl"
+ITEM.Description = "Will replenish a lot of health"
+ITEM.Size = {1,1}
+ITEM.CanHeal = true
+ITEM.RestoreHP = 50
+ITEM.LookAt = Vector(0,0,0)
+ITEM.CamPos = Vector(0,0,10)
+ITEM.CanHold = true
+ITEM.MenuAdds = function(menu,index,x,y)
+	menu:AddOption("Use",function() RunConsoleCommand("use_health",x,y) end)
+end
+
+local ITEM = items.DefineItem("Adrenaline")
+ITEM.Group = "Edible Items"
+ITEM.EntityClass = "darkland_item"
+ITEM.Model = "models/props_c17/trappropeller_lever.mdl"
+ITEM.Description = "Temporarily replenishes your stamina much faster"
+ITEM.Size = {1,1}
+ITEM.CanHeal = true
+ITEM.RestoreFunction = function(pl) print(pl) pl:SetNWInt("adrenaline_end",CurTime()+30) end
+ITEM.LookAt = vector_origin
+ITEM.CamPos = Vector(0,0,12)
 ITEM.CanHold = true
 ITEM.MenuAdds = function(menu,index,x,y)
 	menu:AddOption("Use",function() RunConsoleCommand("use_health",x,y) end)
@@ -58,7 +106,7 @@ ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_rif_ak47.mdl"
 ITEM.Description = "Outlawed weapon that is very powerful"
 ITEM.Size = {3,2}
-ITEM.Craftable = {"Weapon Barrel",2,"Spring Action Reloader",1,"Wood Weapon Stock",2,"Weapon Sights",1}
+ITEM.Craftable = {"Weapon Barrel",5,"Weapon Body",5,"Weapon Stock",5,"Weapon Sights",5}
 
 ITEM.AmmoAmt = 90
 ITEM.LookAt = Vector(0,0,5)
@@ -73,7 +121,7 @@ ITEM.Group = "Weapons"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_pist_fiveseven.mdl"
 ITEM.Description = "A light pistol good for close range."
-ITEM.Craftable = {"Weapon Barrel",1,"Spring Action Reloader",1,"Metal Weapon Stock",1,"Weapon Sights",1}
+ITEM.Craftable = {"Weapon Barrel",1,"Weapon Body",1,"Weapon Stock",2,"Weapon Sights",1}
 ITEM.AmmoAmt = 45
 ITEM.BulkAmt = 10
 ITEM.Ammo = "pistol"
@@ -92,7 +140,7 @@ ITEM.Group = "Weapons"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_pist_deagle.mdl"
 ITEM.Description = "Very powerful handgun, at the cost of higher-then-usual recoil and it's limited clip size."
-ITEM.Craftable = {"Weapon Barrel",1,"Spring Action Reloader",1,"Metal Weapon Stock",1,"Weapon Sights",1}
+ITEM.Craftable = {"Weapon Barrel",3,"Weapon Body",2,"Weapon Stock",1,"Weapon Sights",1}
 ITEM.AmmoAmt = 45
 ITEM.BulkAmt = 10
 ITEM.Size = {2,1}
@@ -111,7 +159,7 @@ ITEM.Group = "Weapons"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_pist_glock18.mdl"
 ITEM.Description = "Standard issue firearm, used  by law enforcement across the globe."
-ITEM.Craftable = {"Weapon Barrel",1,"Spring Action Reloader",1,"Metal Weapon Stock",1,"Weapon Sights",1}
+ITEM.Craftable = {"Weapon Barrel",1,"Weapon Body",1,"Weapon Stock",1,"Weapon Sights",1}
 ITEM.AmmoAmt = 45
 ITEM.Ammo = "pistol"
 ITEM.Size = {2,1}
@@ -129,7 +177,7 @@ ITEM.Group = "Weapons"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_rif_m4a1.mdl"
 ITEM.Description = "Military grade rifle."
-ITEM.Craftable = {"Weapon Barrel",2,"Spring Action Reloader",1,"Metal Weapon Stock",2,"Weapon Sights",1}
+ITEM.Craftable = {"Weapon Barrel",5,"Weapon Body",6,"Weapon Stock",4,"Weapon Sights",7}
 ITEM.AmmoAmt = 90
 ITEM.Ammo = "SMG1"
 ITEM.BulkAmt = 10
@@ -148,7 +196,7 @@ ITEM.Group = "Weapons"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_smg_mac10.mdl"
 ITEM.Description = "SMG popular among lower class thugs"
-ITEM.Craftable = {"Weapon Barrel",1,"Spring Action Reloader",1,"Metal Weapon Stock",1,"Weapon Sights",1}
+ITEM.Craftable = {"Weapon Barrel",4,"Weapon Body",2,"Weapon Stock",3,"Weapon Sights",2}
 ITEM.AmmoAmt = 90
 ITEM.Ammo = "SMG1"
 ITEM.Size = {2,2}
@@ -168,7 +216,7 @@ ITEM.Group = "Weapons"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_smg_mp5.mdl"
 ITEM.Description = "Accurate sub-machine gun with a decent range"
-ITEM.Craftable = {"Weapon Barrel",1,"Spring Action Reloader",3,"Metal Weapon Stock",1,"Weapon Sights",1}
+ITEM.Craftable = {"Weapon Barrel",5,"Weapon Body",6,"Weapon Stock",4,"Weapon Sights",3}
 ITEM.Ammo = "SMG1"
 ITEM.AmmoAmt = 90
 ITEM.BulkAmt = 10
@@ -187,7 +235,7 @@ ITEM.Group = "Weapons"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/weapons/w_shot_m3super90.mdl"
 ITEM.Description = "Powerful weapon but not very accurate"
-ITEM.Craftable = {"Weapon Barrel",2,"Spring Action Reloader",1,"Metal Weapon Stock",1,"Weapon Sights",1}
+ITEM.Craftable = {"Weapon Barrel",5,"Weapon Body",6,"Weapon Stock",4,"Weapon Sights",1}
 ITEM.AmmoAmt = 20
 ITEM.Ammo = "buckshot"
 ITEM.BulkAmt = 10
@@ -207,7 +255,7 @@ ITEM.Group = "Ammo"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/Items/357ammo.mdl"
 ITEM.Description = "Ammo for pistols"
-ITEM.Craftable = {"Metal",2}
+ITEM.Craftable = {"Metal",1,"Gunpowder",1}
 ITEM.BulkAmt = 10
 ITEM.Size = {1,1}
 ITEM.LookAt = Vector(0,0,5)
@@ -226,7 +274,7 @@ ITEM.Group = "Ammo"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/Items/BoxBuckshot.mdl"
 ITEM.Description = "Ammo for shotguns"
-ITEM.Craftable = {"Metal",4,"Crude Oil",1}
+ITEM.Craftable = {"Metal",2,"Gunpowder",1}
 ITEM.Size = {1,1}
 ITEM.LookAt = Vector(0,0,5)
 ITEM.CamPos = Vector(18,0,5)
@@ -244,7 +292,7 @@ ITEM.Group = "Ammo"
 ITEM.EntityClass = "darkland_item"
 ITEM.Model = "models/Items/BoxSRounds.mdl"
 ITEM.Description = "Ammo for rifles"
-ITEM.Craftable = {"Metal Plating",2}
+ITEM.Craftable = {"Metal",1,"Gunpowder",2}
 ITEM.BulkAmt = 10
 ITEM.Size = {1,1}
 ITEM.LookAt = Vector(0,0,5)
@@ -257,37 +305,4 @@ ITEM.CanHold = true
 ITEM.MenuAdds = function(menu,index)
 	menu:AddOption("Use",function() RunConsoleCommand("use_ammo",index) end)
 end
-
-
-Dialog["Weapon Dealer"] = {}
-Dialog["Weapon Dealer"][1] = {
-	Text 		= "Hey man, what do you want?",
-	Replies 	= {1,2}
-}
-Dialog["Weapon Dealer"][2] = {
-	Text 		= "Aight man, I can hook you up bro. I only sell in bulk amounts though. You can buy stuff from me in bulks of ten",
-	Replies 	= {3}
-}
-Dialog["Weapon Dealer"][3] = {
-	Text 		= "I don't like you hangin' around man",
-	Replies 	= {5}
-}
-
-Replies["Weapon Dealer"] = {}
-Replies["Weapon Dealer"][1] = {
-	Text		= "I am looking for some weapons",
-	OnUse		= function(pl) return 2 end
-}
-Replies["Weapon Dealer"][2] = {
-	Text		= "I'm just exploring",
-	OnUse		= function(pl) return 3 end
-}
-Replies["Weapon Dealer"][3] = {
-	Text		= "What do you have?",
-	OnUse		= function(pl) OpenWeaponMenu(pl) end
-}
-Replies["Weapon Dealer"][5] = {
-	Text		= "See you later",
-	OnUse		= function(pl) end
-}
 

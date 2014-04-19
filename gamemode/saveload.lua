@@ -1,16 +1,8 @@
 local meta = FindMetaTable("Player")
 
-function BeginRPProfile(pl)
-	--SET UP DEFAULTS IN CASE QUERY TAKES FOREVER
+function loaddefaults(pl)
 	pl:SetTeam(TEAM_CITIZENS)
 	pl.Inventory 		= {}
-	local xmax,ymax = pl:GetInventorySize()
-	for y=1,ymax do
-		pl.Inventory[y] = {}
-		for x=1,xmax do
-			pl.Inventory[y][x] = false
-		end
-	end
 	pl.Clothing 		= {}
 	pl.CurrentClothing 	= {}
 	pl.Skills 			= {}
@@ -18,10 +10,24 @@ function BeginRPProfile(pl)
 	pl.Cars 			= {}
 	pl:SetMoney(DEFAULT_CASH)
 	pl:SetExperience(0)
+	pl:ChatPrint("Hold on...authenticating your profile!")
+	pl:Lock()
+end
+hook.Add("PlayerInitialSpawn","loaddefaults",loaddefaults)
+
+function BeginRPProfile(pl)
+	--SET UP DEFAULTS IN CASE QUERY TAKES FOREVER
+	local xmax,ymax = pl:GetInventorySize()
+	for y=1,ymax do
+		pl.Inventory[y] = {}
+		for x=1,xmax do
+			pl.Inventory[y][x] = false
+		end
+	end
 	local steamID = pl:SteamID();
+	print("loading profile")
 	
-	
-	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model,GangID,Experience FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res) end)
+	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model,GangID,Experience FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res)  end)
 end
 hook.Add("PlayerLoadedGlobalProfile","zzzzzRPLoadProfile",BeginRPProfile)
 
@@ -30,7 +36,10 @@ hook.Add("PlayerLoadedGlobalProfile","zzzzzRPLoadProfile",BeginRPProfile)
 function RPLoadCallback(pl, tbl)
 	if pl.LoadedRolePlay then return end
 	tbl = tbl[1]
+	pl:UnLock()
+	
 	if !tbl then NewProfile(pl) return end
+	print("existing profile")
 	pl:SetMoney(tonumber(tbl["Money"]))
 	pl:SetExperience(tonumber(tbl["Experience"]))
 	if !tbl["Model"] or tbl["Model"] == "" then
@@ -38,6 +47,7 @@ function RPLoadCallback(pl, tbl)
 	end
 	pl.Model = tbl["Model"]
 	SendModel(pl)
+	
 	hook.Call("OnLoadSkills",GAMEMODE,pl,tbl["Skills"],tbl["Levels"])
 	hook.Call("OnLoadInventory",GAMEMODE,pl,tbl["Inventory"])
 	hook.Call("OnLoadClothing",GAMEMODE,pl,tbl["Clothing"],tbl["CurrentHat"],tbl["CurrentSkin"])
@@ -47,10 +57,12 @@ function RPLoadCallback(pl, tbl)
 	pl.LoadedRolePlay = true -- Let the script know that vars can be accessed
 	local steamid = pl:SteamID()
 	timer.Create("SaveTimer_"..steamid,60,0,function() if !IsValid(pl) then timer.Destroy("SaveTimer_"..steamid) return end SaveRPAccount(pl) end)
+	pl:ChatPrint("Profile loaded successfully :D")
 end
 
 --Player has no profile saved... Create a default one
 function NewProfile(pl)
+	print("new profile")
 	Query("INSERT INTO rp_playerdata (SteamID,Inventory,Money,Skills,Levels,BankAccount,Clothing) VALUES (\'"..pl:SteamID().."\',\'\',"..DEFAULT_CASH..",\'\',\'\',\'\',\'\')")
 	hook.Call("OnLoadSkills",GAMEMODE,pl,'','')
 	hook.Call("OnLoadInventory",GAMEMODE,pl,'')
@@ -60,9 +72,11 @@ function NewProfile(pl)
 	pl.LoadedRolePlay = true -- Let the script know that vars can be accessed
 	local steamid = pl:SteamID()
 	timer.Create("SaveTimer_"..steamid,60,0,function() if !IsValid(pl) then timer.Destroy("SaveTimer_"..steamid) return end SaveRPAccount(pl) end)
+	pl:ChatPrint("Welcome new player! Thanks for giving Base Raiders a try :D")
 end
 
 function SaveRPAccount(pl)
+	if !IsValid(pl) then return end
 	if !pl.LoadedRolePlay then return end
 	
 	local safemoney 	= pl:GetMoneyOffset()

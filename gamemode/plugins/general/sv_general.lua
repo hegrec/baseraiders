@@ -41,7 +41,7 @@ function UseGun(pl,cmd,args)
 			
 		end
 	end
-	pl.holstertime = CurTime()
+	pl.holstertime = CurTime()+2
 	pl:SelectWeapon(tbl.SWEPClass)
 	wep.CanPutAway = true
 	wep.WepType = index
@@ -50,8 +50,25 @@ end
 concommand.Add("use_gun",UseGun)
 
 
-function HealStim(pl,cmd,args)
-	if(!pl:Alive() || pl:Health()>=100)then return end
+function HolsterGun(pl,cmd,args)
+
+	local posX = tonumber(args[1])
+	local posY = tonumber(args[2])
+	local index = pl:GetItem(posX,posY)
+	if !index then return end
+	local tbl = GetItems()[index]
+	if !tbl || !tbl.SWEPClass then return end
+	if !pl:HasWeapon(tbl.SWEPClass) then return end --Don't waste them
+	pl:StripWeapon(tbl.SWEPClass)
+	pl:SelectWeapon("hands")
+
+	
+end
+concommand.Add("holster_gun",HolsterGun)
+
+
+function healthaugment(pl,cmd,args)
+	
 	
 	local posX = tonumber(args[1])
 	local posY = tonumber(args[2])
@@ -60,11 +77,16 @@ function HealStim(pl,cmd,args)
 	local tbl = GetItems()[index]
 	if !tbl then return end
 	if !tbl.CanHeal then return end
+	if(!pl:Alive() || (pl:Health()>=100 && tbl.RestoreHP)) then return end
 	pl:TakeItem(posX,posY)
 	pl:EmitSound("items/medshot4.wav")
-	pl:SetHealth( math.Clamp(pl:Health()+tbl.RestoreHP,0,100))
+	if (tbl.RestoreHP) then
+		pl:SetHealth( math.Clamp(pl:Health()+tbl.RestoreHP,0,100))
+	else
+		tbl.RestoreFunction(pl)
+	end
 end
-concommand.Add("use_health",HealStim)
+concommand.Add("use_health",healthaugment)
 
 function UseAmmo(pl,cmd,args)
 	local index = table.concat(args," ")
@@ -84,7 +106,7 @@ function PutAway(pl,txt,wep)
 	local w = pl:GetActiveWeapon()
 	if IsValid(wep) then w = wep end
 	if !w.CanPutAway then pl:SendNotify("You can't put that into your inventory","NOTIFY_ERROR",4) return end
-	if(pl.holstertime + 2 > CurTime())then pl:SendNotify("You can't put that away yet","NOTIFY_ERROR",4) return end
+	if(pl.holstertime > CurTime())then pl:SendNotify("You can't put that away yet","NOTIFY_ERROR",4) return end
 	local t = GetItems()[w.WepType].Ammo
 	if t then
 		pl.AmmoReserves[t] = pl:GetAmmoCount(t);
@@ -94,102 +116,30 @@ function PutAway(pl,txt,wep)
 end
 AddChatCommand("putaway",PutAway)
 AddChatCommand("holster",PutAway)
-DEFAULT_RESERVE = 10 --this is ten bulks of each gun and regens every 10 minutes, This creates demand and players will buy guns from other players
 
 
-local gunReserves = {}
-function CreateGunReserve()	
-	local str = file.Read("darklandrp/guns/gunreserves.txt", "DATA")
-	if !str then
-		
-		for i,v in pairs(GetItems()) do
-			if v.Group == "Weapons" || v.Group == "Ammo" then
-				gunReserves[i] = DEFAULT_RESERVE
-			end
-		end
-	else
-		local t = table.ToLoad(str)
-		for i,v in pairs(GetItems()) do
-			if v.Group == "Weapons" || v.Group == "Ammo" then
-				local amt = DEFAULT_RESERVE
-				for ii,vv in pairs(t) do
-					if ii == i then
-						amt = tonumber(vv)
-						break
-					end
-				end
-				gunReserves[i] = amt
-			end
-		end		
-	end
-end
-
-hook.Add("Initialize","CreateGunReserve",CreateGunReserve)
-
-function ReUpReserve()
-	for i,v in pairs(gunReserves) do
-		gunReserves[i] = math.min(gunReserves[i]+1,DEFAULT_RESERVE)
-	end
-end
-timer.Create("upgunReserve",300,0,ReUpReserve)
-		
-function OpenWeaponMenu(pl)
-	umsg.Start("weaponMenu",pl)
-	umsg.End()
-end
-function BuyWeapon(pl,cmd,args)
-
-	local WepT = GetItems()[args[1]]
-	if !WepT || !pl:CanReach(pl.lastTalkEnt) || pl.lastTalkEnt:GetName() != "Weapon Dealer" || (WepT.Group != "Weapons" && WepT.Group != "Ammo") then return end --make sure you should be able to buy this
-	if WepT.BulkPrice > pl:GetMoney() then pl:SendNotify("You can not afford those weapons!","NOTIFY_ERROR",4) return end
-	if gunReserves[args[1]] < 1 then pl:SendNotify("Sorry man, I am all out of those","NOTIFY_ERROR",4) return end
-	if !pl:GiveItem(args[1],WepT.BulkAmt) then return end
-	pl:AddMoney(WepT.BulkPrice * -1)
-	gunReserves[args[1]] = gunReserves[args[1]] - 1
-	file.Write("darklandrp/guns/gunreserves.txt",table.ToSave(gunReserves))
-
-end
-concommand.Add("buygun",BuyWeapon)
-
-
-
-
-
-local weps = {}
-weps.seller = nil
-
-function weps.SetSeller(ply,args)
-	if !ply:IsSuperAdmin() then return end
-	if(!weps.seller)then 
-		weps.seller =  ents.Create("npc_generic")
-		weps.seller:Spawn()
-	end 
+function PlantBreachCharge(pl,cmd,args)
 	
-	weps.seller:SetModel("models/Eli.mdl")
-	weps.seller:SetNPCName("Weapon Dealer")
-	weps.seller:SetPos(ply:GetPos())
-	weps.seller:SetAngles(ply:GetAngles())
-	weps.seller:EnableChat()
-	local vec = ply:GetPos()
-	local ang = ply:GetAngles()
-	local str = vec.x .. " " .. vec.y .. " " .. vec.z .. " " .. ang.pitch .. " " .. ang.yaw .. " " .. ang.roll
-	file.Write("darklandrp/guns/seller/"..game.GetMap()..".txt",str)
-end
-AddChatCommand("setgunseller",weps.SetSeller)
-
-function weps.LoadSeller()
-	if file.Exists("darklandrp/guns/seller/"..game.GetMap()..".txt", "DATA") then
-		local str = file.Read("darklandrp/guns/seller/"..game.GetMap()..".txt", "DATA")
-		local tbl = string.Explode(" ",str)
-		
-		weps.seller =  ents.Create("npc_generic")
-
-		weps.seller:SetModel("models/Eli.mdl")
-		weps.seller:SetNPCName("Weapon Dealer")
-		weps.seller:SetPos(Vector(tbl[1],tbl[2],tbl[3]))
-		weps.seller:SetAngles(Angle(tbl[4],tbl[5],tbl[6])) //It is an AimVector
-		weps.seller:Spawn()
-		weps.seller:EnableChat()
+	local posX = tonumber(args[1])
+	local posY = tonumber(args[2])
+	local index = pl:GetItem(posX,posY)
+	if !index then return end
+	local tbl = GetItems()[index]
+	if !tbl then return end
+	if index != "Breach Charge" then return end
+	local tr = pl:GetEyeTrace()
+	local parEnt = tr.Entity
+	if !pl:CanReach(parEnt) then return end
+	if (parEnt:GetClass() == "prop_physics" or parEnt:IsDoor()) then
+		local charge = ents.Create("breach_charge")
+		charge:SetPos(tr.HitPos)
+		charge:SetAngles(tr.HitNormal:Angle()+Angle(0,-90,0))
+		charge:SetParent(parEnt)
+		charge:Spawn()
 	end
+
+
+
+	pl:TakeItem(posX,posY)
 end
-hook.Add("InitPostEntity","LoadGunSeller",weps.LoadSeller)
+concommand.Add("plant_charge",PlantBreachCharge)

@@ -16,8 +16,7 @@ function ENT:Initialize()
 	self:SetUseType(SIMPLE_USE)
 end
 function ENT:Use(ent)
-	ent:ConCommand("use_gang_bank "..self:EntIndex())
-
+	ent:SendNotify("This is your gang hub. Make a vault to access the gang bank","NOTIFY_GENERIC",5);
 end
 function ENT:SetTerritory(territoryID)
 	self:SetNWInt("TerritoryID",territoryID)
@@ -42,7 +41,7 @@ function ENT:Charge()
 	local amt = 0
 	local players = player.GetAll()
 	for i,v in pairs(players) do
-		if v:GetGangID() == self:GetGangID() and v:GetPos():Distance(self:GetPos())<100 then
+		if v:Alive() && v:GetGangID() == self:GetGangID() and v:GetPos():Distance(self:GetPos())<100 then
 			amt = amt + 0.5
 		end
 	end

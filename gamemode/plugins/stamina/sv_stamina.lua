@@ -11,14 +11,14 @@ timer.Create("stamina_process",0.1,0,function()
 			v.Stamina = math.Clamp(v.Stamina - DECREASE_RATE * 2,0,100)
 		end
 		
-		if v:GetVelocity():Length() > 1 then
-			if v:KeyDown(IN_SPEED) then
-				v.Stamina = math.Clamp(v.Stamina - DECREASE_RATE,0,100)
+		if v:GetVelocity():Length() > 1 and v:KeyDown(IN_SPEED) then
+			v.Stamina = math.Clamp(v.Stamina - DECREASE_RATE,0,100)
+		else
+			if ( v:GetNWInt("adrenaline_end")>CurTime()) then
+				v.Stamina = math.Clamp(v.Stamina + INCREASE_RATE*10,0,100) 
 			else
 				v.Stamina = math.Clamp(v.Stamina + INCREASE_RATE,0,100) 
 			end
-		else 
-			v.Stamina = math.Clamp(v.Stamina + INCREASE_RATE,0,100) 
 		end
 		
 											

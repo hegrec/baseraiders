@@ -143,11 +143,18 @@ function MoveItem(ply,cmd,args)
 	if item ==false or item == true then return end
 	local tbl = GetItems()[item]
 	
+	
+	
+	
+	
+	
+	ply:TakeItem(oldX,oldY)
 	if !ply:ItemFits(item,newX,newY) then
 		ply:SendNotify("That item doesn't fit.","NOTIFY_ERROR",4)
+		ply:GiveItem(item,oldX,oldY)
 		return
 	end
-	ply:TakeItem(oldX,oldY)
+	
 	ply:GiveItem(item,newX,newY)
 	SaveRPAccount(ply)
 end
@@ -174,6 +181,10 @@ function SpawnRoleplayItem(index,spawnpos,plOwner)
 	ent:Spawn()
 	ent:SetPos(ent:GetPos()-Vector(0,0,ent:OBBMins().z))
 	ent:Activate()
+
+	if tbl.OnSpawned then
+		tbl.OnSpawned(ent,plOwner)
+	end
 	return ent
 end
 
@@ -189,10 +200,9 @@ function InventoryLoad(pl,str)
 	if !t then return end
 
 	
-	
 	for y=1,ymax do
 		for x=1,xmax do
-			if (t[y] and t[y][x]) then
+			if (t[y] and t[y][x] and GetItems()[t[y][x]]) then
 				pl:GiveItem(t[y][x],x,y)
 			end
 		end

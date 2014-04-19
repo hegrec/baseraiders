@@ -8,7 +8,6 @@ end
 
 function items.DefineItem(Name)
 	ItemList[Name] = ItemList[Name] or {}
-	
 	return ItemList[Name]
 end
 

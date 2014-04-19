@@ -253,10 +253,10 @@ local gangBankPanel
 function ShowGangBank( um )
 	local name = um:ReadString()
 	gangBankPanel = vgui.Create("DFrame")
-	gangBankPanel:SetTitle("Gang Bank")
+	gangBankPanel:SetTitle("Gang Vault")
 	gangBankPanel:SetSize(300,600)
 	local lblName = vgui.Create("DLabel",gangBankPanel)
-	lblName:SetText(name.."'s Gang Bank")
+	lblName:SetText(name.."'s Gang Vault")
 	lblName:SetFont("HUDBars")
 	lblName:SizeToContents()
 	lblName:SetPos(5,25)
@@ -293,6 +293,7 @@ function UpdateGangBankItem(um)
 			
 			local name = i
 			tbl = GetItems()[name]
+
 			local pnl = vgui.Create("DPanel")
 			pnl:SetTall(32)
 			
@@ -359,6 +360,19 @@ function gangHubStuff(ent,pos,alpha)
 
 end
 AddCustomHUD("planted_gang_hub",gangHubStuff)
+
+function gangVaultHud(ent,pos,alpha)
+	local name = "Loading..."
+	if ent:GetGangID() != 0 then
+		local gangname = ent:GetGangName()
+
+		draw.SimpleTextOutlined(gangname,"HUDBars",pos.x,pos.y-40,Color(0,255,0,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
+	else
+		draw.SimpleTextOutlined("Unlinked","HUDBars",pos.x,pos.y-40,Color(255,0,0,alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,alpha))
+
+	end
+end
+AddCustomHUD("gang_vault",gangVaultHud)
 
 function receiveTerritoryInfo(um)
 	local territoryID = um:ReadChar()

@@ -1,5 +1,5 @@
 brproperties = brproperties or {}
-
+brproperties.properties = brproperties.properties or {}
 
 local temp = {}
 local tempfloor = {}

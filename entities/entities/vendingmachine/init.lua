@@ -12,7 +12,7 @@ function ENT:Initialize()
 end 
 --I FIXED THIS UP A BIT TRAIN DUNNO IF IT IS FULLY DONE BUT IT SHUOLD BE 
 --VENDING_MACHINE_SODA_COST is declared in sh_hunger.lua
-WATER_COST = 70
+WATER_COST = 5
 function ENT:Use(activator, caller)
 	self.Users[activator:SteamID()] = self.Users[activator:SteamID()] or 0
 	if self.Users[activator:SteamID()] > CurTime() then return end
