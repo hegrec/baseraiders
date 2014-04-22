@@ -3,6 +3,7 @@ Inventory = nil
 end)
 function ShowInv(pl,cmd,args)
 	if !LocalPlayer().Inventory then return end
+	if ValidPanel(Inventory) then return end
 	Inventory = vgui.Create("Inventory")
 	local y = ScrH()-(Inventory:GetTall()+100)
 	Inventory:MoveTo(0,y,0.2,0,1)
@@ -43,10 +44,13 @@ function INVENTORY:Init()
 		end
 	end
 	self.Open = false
+	local amts = {}
 	for y=1,ymax do
 		for x=1,xmax do
 			if LocalPlayer().Inventory[y][x] and LocalPlayer().Inventory[y][x] != true then
 				self:AddItem(LocalPlayer().Inventory[y][x],x,y)
+				amts[LocalPlayer().Inventory[y][x]] = amts[LocalPlayer().Inventory[y][x]] or 0
+				amts[LocalPlayer().Inventory[y][x]] = amts[LocalPlayer().Inventory[y][x]] + 1
 			end
 		end
 	end
@@ -58,10 +62,19 @@ function INVENTORY:Init()
 	self.itemLabel:SetPos(infoX+5,5)
 	self.itemLabel:SizeToContents()
 
-	self.amountLabel = Label("",self)
+
+	local amtStr = ""
+	for i,v in pairsByKeys(amts) do
+		amtStr = amtStr .. i .. " " .. v .. "\r\n"
+	end
+
+
+	self.amountLabel = Label(amtStr,self)
 	self.amountLabel:SetFont("HUDBars")
 	self.amountLabel:SetPos(infoX+5,25)
 	self.amountLabel:SizeToContents()
+
+
 
 	self.descriptionLabel = Label("",self)
 	self.descriptionLabel:SetPos(infoX+5,35)
@@ -150,7 +163,7 @@ function INVENTORY:AddItem(index,x,y)
 			surface.DrawLine(p:GetWide()-2,0,p:GetWide()-2,p:GetTall())
 		end
 	end
-	panel:SetLookAt(lookat)
+	panel:SetLookAt(lookat) 
 	panel.OnMousePressed = 
 	function(p,mouse)
 		if mouse == MOUSE_RIGHT then
@@ -183,6 +196,9 @@ function INVENTORY:AddItem(index,x,y)
 			if LocalPlayer():GetNWBool("Banking") then
 				menu:AddOption("Transfer to Bank",function() RunConsoleCommand("item_to_bank",x,y) end)
 				menu:AddOption("Transfer all to Bank",function() RunConsoleCommand("item_to_bank",x,y,"1") end)
+			end
+			if LocalPlayer():GetNWBool("Trading") then
+				menu:AddOption("Add to Trade",function() RunConsoleCommand("add_trade_item",x,y) end)
 			end
 			if type.MenuAdds then
 				type.MenuAdds(menu,index,x,y)
@@ -273,10 +289,39 @@ local function ReceiveItem( um )
 	
 	if ValidPanel(Inventory) then
 		Inventory:AddItem(index,x,y)
+	
+
+		if !ValidPanel(Inventory.selectedPanel) then
+
+			local xmax,ymax = LocalPlayer():GetInventorySize()
+			local amts = {}
+			for y=1,ymax do
+				for x=1,xmax do
+					if LocalPlayer().Inventory[y][x] and LocalPlayer().Inventory[y][x] != true then
+						amts[LocalPlayer().Inventory[y][x]] = amts[LocalPlayer().Inventory[y][x]] or 0
+						amts[LocalPlayer().Inventory[y][x]] = amts[LocalPlayer().Inventory[y][x]] + 1
+					end
+				end
+			end
+
+
+			local amtStr = ""
+			for i,v in pairsByKeys(amts) do
+				amtStr = amtStr .. i .. " " .. v .. "\r\n"
+			end
+
+
+			Inventory.amountLabel:SetText(amtStr)
+			Inventory.amountLabel:SizeToContents()
+		end
 	end
 	
 end
 usermessage.Hook("recvItem",ReceiveItem)
+
+
+
+    
 local function LoseItem( um )
 	local y = um:ReadChar()
 	local x = um:ReadChar()
@@ -292,6 +337,30 @@ local function LoseItem( um )
 	end
 	if ValidPanel(Inventory) then
 		Inventory:TakeItem(x,y)
+
+		if !ValidPanel(Inventory.selectedPanel) then
+
+			local xmax,ymax = LocalPlayer():GetInventorySize()
+			local amts = {}
+			for y=1,ymax do
+				for x=1,xmax do
+					if LocalPlayer().Inventory[y][x] and LocalPlayer().Inventory[y][x] != true then
+						amts[LocalPlayer().Inventory[y][x]] = amts[LocalPlayer().Inventory[y][x]] or 0
+						amts[LocalPlayer().Inventory[y][x]] = amts[LocalPlayer().Inventory[y][x]] + 1
+					end
+				end
+			end
+
+
+			local amtStr = ""
+			for i,v in pairsByKeys(amts) do
+				amtStr = amtStr .. i .. " " .. v .. "\r\n"
+			end
+
+
+			Inventory.amountLabel:SetText(amtStr)
+			Inventory.amountLabel:SizeToContents()
+		end
 	end
 end
 usermessage.Hook("loseItem",LoseItem)
@@ -324,7 +393,7 @@ local draggingEntity
 		tr.endpos = ent:LocalToWorld(ent:OBBCenter())
 		tr.filter = LocalPlayer()
 		tr = util.TraceLine(tr)
-		if tr.Entity != ent || tr.StartPos:Distance(tr.HitPos) > MAX_INTERACT_DIST then return end
+		if tr.Entity != ent || tr.StartPos:Distance(tr.HitPos) > 200 then return end
 	
 		if ent:GetItemName() then
 			draggingEntity = ent
@@ -336,6 +405,7 @@ end)
 
 local draggableItem
 function SetDraggableItem(item,x,y)
+	if !ValidPanel(Inventory) then return end
 	if ValidPanel(draggableItem) then draggableItem:Remove() end
 	local type = GetItems()[item]
 	if !type then return end

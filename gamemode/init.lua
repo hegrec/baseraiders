@@ -266,6 +266,14 @@ end
 function GM:PlayerInitialSpawn(pl)
 	GAMEMODE:SetPlayerSpeed(pl,WALK_SPEED,RUN_SPEED)
 	pl:SetTeam(TEAM_CITIZENS)
+	local id = pl:UserID();
+	timer.Create("plyhpregen_"..id,10,0,function() 
+		if IsValid(pl) then 
+			pl:SetHealth(math.min(pl:Health()+1,100)) 
+		else 
+			timer.Destroy("plyhpregen_"..id) 
+		end
+	end)
 end
 
 function GM:PlayerSpawn(pl)

@@ -30,6 +30,9 @@ function ENT:OnTakeDamage(dmg)
 		effectdata:SetOrigin(self.Entity:GetPos())
  		util.Effect("Explosion", effectdata, true, true)
 		self.Entity:Remove()
+		if IsValid(self.planter) then
+			self.planter:SetNWInt("livePlants",math.max(0,self.planter:GetNWInt("livePlants")-1))
+		end
 	end
 end
 
@@ -57,6 +60,9 @@ function ENT:Use(activator, caller)
 	pot:SetItemName("Empty Pot")
 	pot:Spawn()
 	self:Remove()
+	if IsValid(self.planter) then
+		self.planter:SetNWInt("livePlants",math.max(0,self.planter:GetNWInt("livePlants")-1))
+	end
 end 
 ENT.NextGrow = 0
 function ENT:Think()
@@ -77,6 +83,9 @@ function ENT:Think()
 	elseif (self:GetGrowthPercentage()>=45 && self.CurrentStage < 5) then
 		self:SetModel("models/nater/weedplant_pot_growing4.mdl")
 		self.CurrentStage = 5
+		if IsValid(self.planter) then
+			self.planter:SetNWInt("livePlants",self.planter:GetNWInt("livePlants")+1)
+		end
 	elseif (self:GetGrowthPercentage()>=25 && self.CurrentStage < 4) then
 		self:SetModel("models/nater/weedplant_pot_growing3.mdl")
 		self.CurrentStage = 4
@@ -86,5 +95,6 @@ function ENT:Think()
 	elseif (self:GetGrowthPercentage()>=5 && self.CurrentStage < 2) then
 		self:SetModel("models/nater/weedplant_pot_growing1.mdl")
 		self.CurrentStage = 2	
+
 	end
 end

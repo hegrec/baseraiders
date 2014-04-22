@@ -191,7 +191,7 @@ function GM:HUDPaint()
 		
 		if tr.Entity == v or tr2.Entity == v then
 			local text = ""
-			local extra = function() end
+			local extra
 			if (v:GetItemName() != "") then
 				text = v:GetItemName()
 				if GetItems()[text].ExtraHUD then
@@ -213,8 +213,10 @@ function GM:HUDPaint()
 			local dist = math.sqrt((cx-pos.x)*(cx-pos.x)+(cy-pos.y)*(cy-pos.y))
 			
 			local alpha = math.min(255,(maxdist-dist)/maxdist*255)
-			if extraHUDFuncs[v:GetClass()] then
+			if !extra and extraHUDFuncs[v:GetClass()] then
 				extra = extraHUDFuncs[v:GetClass()](v,pos,alpha)
+			elseif extra then
+				extra(v,pos,alpha)
 			end
 
 			draw.SimpleTextOutlined(text,"ScoreboardSub",pos.x,pos.y,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))

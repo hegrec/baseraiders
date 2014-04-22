@@ -12,6 +12,7 @@ function ENT:Initialize()
 	self:SetUseType(SIMPLE_USE)
 	self:SetGallons(0)
 	self:SetNWInt("WattsAvailable",0)
+	self:SetNWBool("On",false)
 	self.nextGallonDecrease = CurTime()
 	self.On = false
 	self.powering = {}
@@ -44,15 +45,17 @@ function ENT:Use(pl)
 		self:SetNWInt("WattsAvailable",0)
 		self:StopSound("generator_idle")
 		self:EmitSound("ambient/machines/spindown.wav")
+		self:SetNWBool("On",false)
 	else
 		
 		if self:GetGallons() > 1 then
 			self.On = true
 			self:SetGallons(self:GetGallons()-1)
-			self.nextGallonDecrease = CurTime()+30
-			self:SetNWInt("WattsAvailable",1000)
+			self.nextGallonDecrease = CurTime()+60
+			self:SetNWInt("WattsAvailable",self.tbl.Watts)
 			self:EmitSound("generator_idle")
 			self:EmitSound("ambient/machines/spinup.wav")
+			self:SetNWBool("On",true)
 		else
 			pl:SendNotify("You need at least 2 gallons in the tank. Touch gas to generator.","NOTIFY_ERROR",4)
 		end
@@ -105,6 +108,7 @@ function ENT:Think()
 			self:SetNWInt("WattsAvailable",0)
 			self:StopSound("generator_idle")
 			self:EmitSound("ambient/machines/spindown.wav")
+			self:SetNWBool("On",false)
 		end
 	end
 	for i,v in pairs(self.powering) do

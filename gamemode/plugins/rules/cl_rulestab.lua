@@ -26,7 +26,7 @@ local Rules = {
 "placed ON the entrance of the door, easily in view",
 "1o. Lying about something can increase your ban length.",
 "1p. DO NOT TAKE MATTERS INTO YOUR OWN HANDS, contact an admin or collect evidence",
-"which you can then post on the forums in the ban section www.darklandservers.com",
+"which you can then post on the forums in the ban section www.caketoast.com",
 "1q. Signs are considered props. All building rules apply to signs. Signs are to",
 "be used in a proper RP manner, anything else, is bannable."
 	},

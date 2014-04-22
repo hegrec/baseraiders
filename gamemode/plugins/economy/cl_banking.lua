@@ -71,7 +71,7 @@ function UpdateBankItem(um)
 	if ValidPanel(bankPanel) then
 		bankPanel.list:Clear()
 		
-		for i,v in pairs(myBank) do
+		for i,v in pairsByKeys(myBank) do
 			
 			local name = i
 			tbl = GetItems()[name]

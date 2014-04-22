@@ -18,11 +18,14 @@ end
 function ENT:StartTouch(ent)
 
 	if ent:GetItemName() == "Marijuana Seed" then
+
+		local planter = ent.pOwner
 		ent:Remove()
 		local plant = ents.Create("weed_plant")
 		plant:SetPos(self:GetPos())
 		plant:SetAngles(self:GetAngles())
 		plant:Spawn()
+		plant.planter = planter
 		self:Remove()
 	end
 

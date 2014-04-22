@@ -2,7 +2,7 @@
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 function ENT:Initialize()
-	self.Entity:SetModel("models/props_wasteland/gaspump001a.mdl")
+	self.Entity:SetModel("models/props/cs_militia/roof_vent.mdl")
 	self.Entity:PhysicsInit(SOLID_VPHYSICS)
 	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
 	self.Entity:SetSolid(SOLID_VPHYSICS)

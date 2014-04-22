@@ -14,6 +14,7 @@ function meta:GiveItem(index,x,y)
 		self:SendNotify("That item doesn't fit.","NOTIFY_ERROR",4)
 		return false
 	end
+
 	self.Inventory[y][x] = index
 	
 	local tsize = tbl.Size
@@ -36,7 +37,7 @@ function meta:GiveItem(index,x,y)
 	umsg.End()
 	
 	SaveRPAccount(self)
-	return true
+	return x,y
 end
 
 
@@ -71,8 +72,9 @@ function meta:TakeItem(x,y)
 		umsg.Char(y)
 		umsg.Char(x)
 	umsg.End()
-	
+	hook.Call("OnTakePlayerItem",GAMEMODE,self,item,x,y)
 	SaveRPAccount(self)
+	return x,y
 end
 
 function DropItem(ply,cmd,args)
@@ -123,7 +125,7 @@ function PickupItem(ply,cmd,args)
 	tr.endpos = ent:LocalToWorld(ent:OBBCenter())
 	tr.filter = ply
 	tr = util.TraceLine(tr)
-	if tr.Entity != ent || tr.StartPos:Distance(tr.HitPos) > MAX_INTERACT_DIST then return end
+	if tr.Entity != ent || tr.StartPos:Distance(tr.HitPos) > 200 then return end
 	
 	local itemType = ent:GetItemName()
 	if ply:GiveItem(itemType,x,y) then
@@ -181,7 +183,9 @@ function SpawnRoleplayItem(index,spawnpos,plOwner)
 	ent:Spawn()
 	ent:SetPos(ent:GetPos()-Vector(0,0,ent:OBBMins().z))
 	ent:Activate()
-
+	if (tbl.Mass && IsValid(ent:GetPhysicsObject())) then
+		ent:GetPhysicsObject():SetMass(tbl.Mass)
+	end
 	if tbl.OnSpawned then
 		tbl.OnSpawned(ent,plOwner)
 	end

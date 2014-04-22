@@ -118,3 +118,29 @@ function GetUser(Nick)
 	end
 	return false;
 end
+
+
+--from http://www.lua.org/pil/19.3.html
+function pairsByKeys (t, f)
+      local a = {}
+      for n in pairs(t) do table.insert(a, n) end
+      table.sort(a, f)
+      local i = 0      -- iterator variable
+      local iter = function ()   -- iterator function
+        i = i + 1
+        if a[i] == nil then return nil
+        else return a[i], t[a[i]]
+        end
+      end
+      return iter
+    end
+
+achievement.Add(
+"Grow Op",
+function(pl) return pl:GetNWInt("livePlants") >= 10 end,
+"http://www.darklandservers.com/garrysmod/da_awards/CoolKid.png",
+0,
+"Grow 10 weed plants at a time",
+function(pl) return math.min(10,pl:GetNWInt("livePlants")) / 10 end,
+function(pl) return math.min(10,pl:GetNWInt("livePlants")) end,
+"10 Plants")

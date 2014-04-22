@@ -417,17 +417,17 @@ function GM:PlayerSpawnProp( ply, model )
 	if !self.BaseClass:PlayerSpawnProp( ply, model ) then return false end
 	if(ply:InVehicle())then return false end
 	
-	local realpropcost = PROP_COST*-1
+	local realpropcost = PROP_COST
 	if ply:IsVIP() then
 		realpropcost = realpropcost *0.5
 	end
 	
-	
+	print(realpropcost)
 	if ply:GetMoney() < realpropcost then ply:SendNotify("You can not afford this","NOTIFY_ERROR",3) return false end
 	
 	if(table.HasValue(NaugtyProps,string.Replace(model,[[\]],[[]])))then return false end	
 
-	ply:AddMoney(realpropcost)
+	ply:AddMoney(realpropcost*-1)
 	return true
 end
 
@@ -436,7 +436,12 @@ function GM:PlayerSpawnedProp(ply, model, ent)
 	if(size.x > maxwidth or size.y > maxlength or size.z > maxheight)then
 		--filex.Append("largeprops.txt",model)
 		ent:Remove()
-		ply:AddMoney(PROP_COST)
+		local realpropcost = PROP_COST
+		if ply:IsVIP() then
+			realpropcost = realpropcost *0.5
+		end
+		ply:AddMoney(realpropcost)
+	
 	end
 	ent:SetNWInt("Health",MAX_PROP_HEALTH)
 	ply:AddCount( "props", ent )

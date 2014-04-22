@@ -254,7 +254,7 @@ function ShowGangBank( um )
 	local name = um:ReadString()
 	gangBankPanel = vgui.Create("DFrame")
 	gangBankPanel:SetTitle("Gang Vault")
-	gangBankPanel:SetSize(300,600)
+	gangBankPanel:SetSize(400,600)
 	local lblName = vgui.Create("DLabel",gangBankPanel)
 	lblName:SetText(name.."'s Gang Vault")
 	lblName:SetFont("HUDBars")
@@ -263,11 +263,13 @@ function ShowGangBank( um )
 	
 	gangBankPanel.list = vgui.Create("DPanelList",gangBankPanel)
 	gangBankPanel.list:StretchToParent(5,50,5,5)
+	gangBankPanel.list:SetSortable(true)
 	gangBankPanel.list:EnableVerticalScrollbar(true)
 	gangBankPanel:Center()
 	gangBankPanel:MakePopup()
 	ShowInv()
 	gangBankPanel.Close = function(p) p:Remove() HideInv() end
+	gangBankPanel.itemlist = {}
 
 end
 usermessage.Hook("sendGangBank",ShowGangBank)
@@ -276,7 +278,7 @@ function UpdateGangBankItem(um)
 	
 	local name = um:ReadString()
 	local current_amt = um:ReadShort()
-	
+	print(name,current_amt)
 		
 
 	myGangBank = myGangBank or {}
@@ -287,11 +289,19 @@ function UpdateGangBankItem(um)
 	end
 	local alt = false
 	if ValidPanel(gangBankPanel) then
-		gangBankPanel.list:Clear()
+		if ValidPanel(gangBankPanel.itemlist[name]) then
+			if current_amt < 1 then
+				gangBankPanel.list:RemoveItem(gangBankPanel.itemlist[name])
+				gangBankPanel.itemlist[name] = nil
+			else
+				gangBankPanel.itemlist[name].lblName:SetText(name)
+				gangBankPanel.itemlist[name].lblName:SizeToContents()
+				gangBankPanel.itemlist[name].lblCount:SetText("("..current_amt..")")
+				gangBankPanel.itemlist[name].lblCount:SizeToContents()
+			end
+		elseif current_amt > 0 then
 		
-		for i,v in pairs(myGangBank) do
-			
-			local name = i
+
 			tbl = GetItems()[name]
 
 			local pnl = vgui.Create("DPanel")
@@ -303,12 +313,14 @@ function UpdateGangBankItem(um)
 			lblName:SetFont("HUDBars")
 			lblName:SizeToContents()
 			lblName:SetTextColor(Color(0,0,0,255))
+			pnl.lblName = lblName
 			local lblAmt = vgui.Create("DLabel",pnl)
 			lblAmt:SetPos(5+lblName:GetWide()+5,5)
-			lblAmt:SetText("("..v..")")
+			lblAmt:SetText("("..current_amt..")")
 			lblAmt:SetFont("HUDBars")
 			lblAmt:SizeToContents()
 			lblAmt:SetTextColor(Color(0,0,0,255))
+			pnl.lblCount = lblAmt
 			
 			alt = !alt
 			
@@ -320,23 +332,34 @@ function UpdateGangBankItem(um)
 				draw.RoundedBox(0,0,0,s:GetWide(),s:GetTall(),color)
 			end
 			
+
+			local fillinv = vgui.Create("DTextEntry",pnl)
+			fillinv:SetNumeric(true)
+			fillinv.OnEnter = function() RunConsoleCommand("hub_to_inv",name,fillinv:GetValue()) end
+			fillinv:SetPos(200,5)
+			fillinv:SetSize(25,25)
+			fillinv:SetValue(1)
 			local create = vgui.Create("DButton",pnl)
 			
-			pnl:SetToolTip(tbl.Description)
 			create:SetSize(50,25)
-			pnl:SizeToContents()
+			
 			create:SetText("Take")
-			create.DoClick = function() RunConsoleCommand("hub_to_inv",name) end
+			create.DoClick = function() RunConsoleCommand("hub_to_inv",name,fillinv:GetValue()) end
 			create:SetPos(200,5)
-			pnl.PerformLayout = function(p) create:SetPos(p:GetWide()-55,5) end
+
+
+			pnl:SizeToContents()
+			pnl:SetToolTip(tbl.Description)
+			pnl.PerformLayout = function(p) fillinv:SetPos(p:GetWide()-35,5) create:SetPos(p:GetWide()-100,5) end
 			gangBankPanel.list:AddItem(pnl)
+			gangBankPanel.itemlist[name] = pnl
 	
 	
 		end
 	end
 
 end
-usermessage.Hook("sendGangBankItem",UpdateGangBankItem)
+usermessage.Hook("updateGangBankItem",UpdateGangBankItem)
 
 
 

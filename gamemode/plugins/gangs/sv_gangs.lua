@@ -239,11 +239,13 @@ function gangs.UseGangBank(pl,cmd,args)
 	umsg.Start("sendGangBank",pl)
 	umsg.String(gang.Name)
 	umsg.End()
-	for i,v in pairs(gang.GangBank) do
-	umsg.Start("sendGangBankItem",pl)
-		umsg.String(i)
-		umsg.Short(v)
-	umsg.End()
+	for i,v in pairsByKeys(gang.GangBank) do
+		if v > 0 then
+			umsg.Start("updateGangBankItem",pl)
+				umsg.String(i)
+				umsg.Short(v)
+			umsg.End()
+		end
 	end
 end
 concommand.Add("use_gang_bank",gangs.UseGangBank)
@@ -288,18 +290,18 @@ function gangs.ItemToHub(pl,cmd,args)
 	end
 	if !found then gang.GangBank[item] = amt end
 	
-	for i,v in pairs(gang.GangBank) do
-	umsg.Start("sendGangBankItem",pl)
-		umsg.String(i)
-		umsg.Short(v)
+	umsg.Start("updateGangBankItem",pl)
+		umsg.String(item)
+		umsg.Short(gang.GangBank[item])
 	umsg.End()
-	end
 	Query("UPDATE rp_gangdata set GangBank='"..escape(util.TableToJSON(gang.GangBank)).."' WHERE ID="..gangID)
 end
 concommand.Add("item_to_hub",gangs.ItemToHub)
 function gangs.HubToInv(pl,cmd,args)
 	local item = args[1]
-	
+	local amtToTake = tonumber(args[2])
+	amtToTake = amtToTake or 1 --in case its nil (bad client data)
+	amtToTake = math.Clamp(amtToTake,1,25)
 	local tbl = GetItems()[item]
 	if !tbl then return end
 	
@@ -307,28 +309,29 @@ function gangs.HubToInv(pl,cmd,args)
 	if hub:GetClass() != "gang_vault" then return end
 	if !pl:CanHold(item) then pl:SendNotify("You don't have room for that","NOTIFY_ERROR",3) return end
 	if hub:GetGangID() != pl:GetGangID() then pl:SendNotify("That is not your gang's bank!","NOTIFY_ERROR",4) return end
+
 	local gangID = hub:GetGangID()
 	local gang = gangs.gangcache[gangID]
-	local found = false
-	for i,v in pairs(gang.GangBank) do
-		if i == item && gang.GangBank[i] >= 1 then
-			found = true
-			gang.GangBank[i] = gang.GangBank[i] - 1
-			if gang.GangBank[i] < 1 then
-				gang.GangBank[i] = 0
+
+	if gang.GangBank[item] && gang.GangBank[item] >= 1 then
+		
+		amtToTake = math.min(amtToTake,gang.GangBank[item])
+		for num=1,amtToTake do
+			if pl:GiveItem(item) then
+				gang.GangBank[item] = gang.GangBank[item] - 1
+				if gang.GangBank[item] < 1 then
+					gang.GangBank[item] = nil
+					break
+				end
+			else
+				break
 			end
-			break
 		end
 	end
-	if (found) then
-		pl:GiveItem(item)
-	end
-	for i,v in pairs(gang.GangBank) do
-	umsg.Start("sendGangBankItem",pl)
-		umsg.String(i)
-		umsg.Short(v)
+	umsg.Start("updateGangBankItem",pl)
+		umsg.String(item)
+		umsg.Short(gang.GangBank[item])
 	umsg.End()
-	end
 	Query("UPDATE rp_gangdata set GangBank='"..escape(util.TableToJSON(gang.GangBank)).."' WHERE ID="..gangID)
 end
 concommand.Add("hub_to_inv",gangs.HubToInv)
@@ -398,6 +401,13 @@ function gangs.PlantHub(pl,cmd,args)
 		pl:SendNotify("Your gang already controls this territory","NOTIFY_ERROR",4)
 		return
 	end
+
+
+	if (territories[pl:GetNWInt("TerritoryID")].ActiveHub and territories[pl:GetNWInt("TerritoryID")].ContestingHub) then
+		pl:SendNotify("A power struggle is already occurring! Wait for things to return to normal","NOTIFY_ERROR",4)
+		return
+	end
+
 	local x,y = pl:HasItem("Unplanted Gang Hub")
 	if !x or !y then return end
 	pl:TakeItem(x,y)
@@ -409,11 +419,7 @@ function gangs.PlantHub(pl,cmd,args)
 	tr.filter = player.GetAll()
 	tr = util.TraceLine(tr)
 	
-	--if there is a hub and it is not the planter's initiate contest mode only if a contest is not in place
-	if (territories[pl:GetNWInt("TerritoryID")].ActiveHub and territories[pl:GetNWInt("TerritoryID")].ContestingHub) then
-		pl:SendNotify("A power struggle is already occurring! Wait for things to return to normal","NOTIFY_ERROR",4)
-		return
-	end
+	
 	
 	local tr2 = {}
 	tr2.start = tr.HitPos
@@ -427,10 +433,10 @@ function gangs.PlantHub(pl,cmd,args)
 	hub:SetGangName(pl:GetGangName())
 	hub:SetNWInt("TerritoryID",pl:GetNWInt("TerritoryID"))
 	hub:Spawn()
+	hub:SetPos(hub:GetPos()+Vector(0,0,hub:OBBMaxs().z))
 	
 	
-	
-	
+	--if there is a hub and it is not the planter's initiate contest mode only if a contest is not in place
 	if (territories[pl:GetNWInt("TerritoryID")].ActiveHub and territories[pl:GetNWInt("TerritoryID")].ActiveHub:IsValid()) then
 		territories[pl:GetNWInt("TerritoryID")].ContestingHub = hub
 		territories[pl:GetNWInt("TerritoryID")].ContestingGangName = pl:GetGangName()
@@ -443,7 +449,7 @@ function gangs.PlantHub(pl,cmd,args)
 		
 		
 		gangs.AddGangExperience(hub:GetGangID(),25)
-		local pos = hub:GetPos()+Vector(0,0,hub:OBBMaxs().z)
+		local pos = hub:GetPos()+Vector(0,0,hub:OBBMaxs().z-hub:OBBMins().z)
 		umsg.Start("experienceUp")
 			umsg.Vector(pos)
 			umsg.Short(25)
@@ -512,7 +518,7 @@ function gangs.SpawnHUBResources()
 	
 	end
 end
-timer.Create("g_HubSpawnResources",30,0,gangs.SpawnHUBResources)
+timer.Create("g_HubSpawnResources",60,0,gangs.SpawnHUBResources)
 
 
 function gangs.CaptureTerritory(territoryID,capturing_hub)

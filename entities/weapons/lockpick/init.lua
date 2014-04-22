@@ -38,6 +38,27 @@ function SWEP:TryUnlock(tr)
 		self.Owner:TakeItem("Lock Pick")
 		self.lockpickboost = self.lockpickboost + 1
 	end
+
+	local door = tr.Entity
+	local alarms = ents.FindByClass("alarm_system")
+	if door:GetNWInt("Territory") > 0 and territories[door:GetNWInt("Territory")].OwnerGangID then
+		local owningGang = territories[door:GetNWInt("Territory")].OwnerGangID
+		
+
+		for i,v in pairs(alarms) do
+			if (v.ownerGang == owningGang and v:GetPos():Distance(door:GetPos())<300) then
+				v:Alert()
+			end
+		end		
+	else
+		local owner = door:GetOwn()
+		for i,v in pairs(alarms) do
+			if (v.pOwner == owner and v:GetPos():Distance(door:GetPos())<300) then
+				v:Alert(true)
+			end
+		end		
+	end
+
 end
 
 function SWEP:TrySteal(tr)

@@ -35,7 +35,7 @@ function elec_npc.GetStore()
 	store.items["Advanced Electronics"] = 150
 	store.items["Circuit Board"] = 50
 	store.items["Clay Pot"] = 10
-	store.items["Mechanical Parts"] = 35
+	store.items["Mechanical Parts"] = 100
 	store.items["Gasoline"] = 50
 	store.items["Crowbar"] = 80
 	return store

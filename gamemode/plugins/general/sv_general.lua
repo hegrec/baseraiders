@@ -118,6 +118,19 @@ AddChatCommand("putaway",PutAway)
 AddChatCommand("holster",PutAway)
 
 
+function AlarmOff(pl,txt,wep)
+	local alarms = ents.FindByClass("alarm_system")
+
+	for i,v in pairs(alarms) do
+		if v.pOwner == pl then
+			v:AlarmOff()
+		end
+	end
+	pl:SendNotify("Any alarms you have placed down have been reset and armed","NOTIFY_GENERIC",3)
+
+end
+AddChatCommand("alarmoff",AlarmOff)
+
 function PlantBreachCharge(pl,cmd,args)
 	
 	local posX = tonumber(args[1])

@@ -124,12 +124,12 @@ end
 local ITEM = items.DefineItem("Unplanted Gang Hub")
 ITEM.Group = "Gang Stuff"
 ITEM.EntityClass = "darkland_item"
-ITEM.Model = "models/props_wasteland/gaspump001a.mdl"
+ITEM.Model = "models/props/cs_militia/roof_vent.mdl"
 ITEM.Description = "Used to control other territories"
-ITEM.Size = {2,3}
+ITEM.Size = {3,3}
 ITEM.Craftable = {"Mechanical Parts",5,"Circuit Board",1}
-ITEM.LookAt = Vector(0,0,20)
-ITEM.CamPos = Vector(40,40,40)
+ITEM.LookAt = Vector(0,0,-5)
+ITEM.CamPos = Vector(0,90,-5)
 ITEM.CanHold = true
 ITEM.MenuAdds = function(menu,index)
 	menu:AddOption("Plant Hub",function() RunConsoleCommand("plant_hub") end)
