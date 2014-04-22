@@ -1,11 +1,22 @@
 local meta = FindMetaTable("NPC")
 
+local voicetable = {}
+//voicetable["Craftmaster Flex"] = {Sound("vo/breencast/br_tofreeman02.wav")}
+//voicetable["Hat Seller"] = {Sound("")}
+//voicetable["Clothes Seller"] = {Sound("vo/npc/female01/hi01"),Sound("vo/npc/female01/hi02")}
+//voicetable["Dr. Ned"] = {Sound("")}
+//voicetable["Banker Joe"] = {Sound("")}
+//voicetable["Arnold, The Hardware Guy"] = {Sound("")}
+//voicetable["Drug Dealer"] = {Sound("")}
+//voicetable["Achmed, the Gun Dealer"] = {Sound("")}
+
 function meta:SetNPCName(str)
 	self.m_Name = str
 end
 function meta:GetName()
 	return self.m_Name
 end
+
  
 function TalkToNPC(pl,cmd,args)
 
@@ -22,7 +33,13 @@ function TalkToNPC(pl,cmd,args)
 		pl.TalkingTo 	= ent:GetName()
 		pl.lastTalkEnt	= ent
 		pl.ChatNum		= 1
+		
+		if voicetable[ent:GetName()] then
+			local randvoice = math.random(1,#voicetable[ent:GetName()])
+			ent:EmitSound(voicetable[ent:GetName()][randvoice],100,100)
+		end
 
+		
 		umsg.Start("beginChatting",pl)
 			umsg.Short(ent:EntIndex())
 			umsg.String(ent:GetName())
@@ -34,8 +51,6 @@ function TalkToNPC(pl,cmd,args)
 					umsg.Short(v)
 				end
 		umsg.End()
-
-
 
 	elseif response && pl.TalkingTo then
 		local t = Dialog[pl.TalkingTo][pl.ChatNum].Replies
