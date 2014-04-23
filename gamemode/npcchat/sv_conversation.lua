@@ -38,7 +38,8 @@ function TalkToNPC(pl,cmd,args)
 			local randvoice = math.random(1,#voicetable[ent:GetName()])
 			ent:EmitSound(voicetable[ent:GetName()][randvoice],100,100)
 		end
-
+		
+		ent:SetAngles(pl:GetAngles() + Angle(0,180,0))
 		
 		umsg.Start("beginChatting",pl)
 			umsg.Short(ent:EntIndex())
