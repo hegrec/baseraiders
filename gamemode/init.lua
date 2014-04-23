@@ -176,9 +176,16 @@ function GM:OnHatchet(pl,tr)
 		end
 		while (#pl.harvestents>=5) do
 			pl.harvestents[1]:Remove()
-				table.remove(pl.harvestents,1)
+			table.remove(pl.harvestents,1)
 		end
 		table.insert(pl.harvestents,ent)
+		
+		timer.Simple(5, function()
+			if ent:IsValid() then
+				ent:Remove()
+			end
+		end)
+		
 		umsg.Start("experienceUp")
 			umsg.Vector(ent:GetPos())
 			umsg.Short(1)
@@ -202,10 +209,17 @@ function GM:OnPickaxe(pl,tr)
 			end
 		end
 		while (#pl.harvestents>=5) do
-		pl.harvestents[1]:Remove()
-				table.remove(pl.harvestents,1)
+			pl.harvestents[1]:Remove()
+			table.remove(pl.harvestents,1)
 		end
 		table.insert(pl.harvestents,ent)
+		
+		timer.Simple(5, function()
+			if ent:IsValid() then
+				ent:Remove()
+			end
+		end)
+		
 		umsg.Start("experienceUp")
 			umsg.Vector(ent:GetPos())
 			umsg.Short(1)
@@ -260,6 +274,13 @@ function GM:OnShovel(pl,tr)
 				table.remove(pl.harvestents,1)
 		end
 		table.insert(pl.harvestents,ent)
+		
+		timer.Simple(5, function()
+			if ent:IsValid() then
+				ent:Remove()
+			end
+		end)
+		
 	end
 end
 
