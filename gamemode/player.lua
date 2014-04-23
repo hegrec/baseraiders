@@ -122,6 +122,7 @@ function RemoveObject(obj)
 		RemoveFunctions[obj:GetClass()](obj,steamid)
 	end
 end
+
 AddRemoveFunction("prop_physics",function(ent) ent:Remove() end)
 AddRemoveFunction("gmod_cameraprop",function(ent) ent:Remove() end)
 AddRemoveFunction("gmod_light",function(ent) ent:Remove() end)

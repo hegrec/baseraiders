@@ -1,6 +1,8 @@
+util.AddNetworkString("Stamina")
+
 function AddStamToPly(ply)
 	ply.Stamina = 100
-	ply.stopstaminaspawm = falsed
+	ply.stopstaminaspawm = false
 end
 hook.Add("PlayerInitialSpawn","stamina_plyspawn",AddStamToPly)
 timer.Create("stamina_process",0.1,0,function() 
@@ -21,8 +23,12 @@ timer.Create("stamina_process",0.1,0,function()
 			end
 		end
 		
+		net.Start("Stamina")
+			net.WriteInt(v.Stamina,8)
+		net.Send(v)	
+		
 											
-		if(v.Stamina <= 0) then 							
+		if(v.Stamina < 1) then 							
 			if(!v.stopstaminaspawm)then
 				v:SetRunSpeed(WALK_SPEED)
 				v.stopstaminaspawm = true
