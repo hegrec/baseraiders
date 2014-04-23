@@ -1,0 +1,5 @@
+"Eyeball"
+{
+	"$basetexture" "models\darkland\human\pupil_r"
+	"$nodecal" "1"
+}

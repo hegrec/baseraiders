@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture" "models\darkland\human\glint"
+	"$additive" 1
+	"$model" 1
+}

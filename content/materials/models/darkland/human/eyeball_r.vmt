@@ -1,0 +1,8 @@
+"eyes"
+{
+	"$basetexture" "models\darkland\human\eyeball_r"
+	"$iris" "models\darkland\human\pupil_r"
+	"$halflambert" 1
+	"$nodecal" "1"
+}
+

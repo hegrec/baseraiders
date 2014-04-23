@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	// Original shader: VertexLitTexture
+	"$basetexture" "models\darkland\human\female\citizen_sheet6"
+	"$halflambert" 1
+}

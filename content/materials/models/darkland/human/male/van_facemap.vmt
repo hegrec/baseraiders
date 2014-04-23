@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	// Original shader: VertexLitTexture
+	"$basetexture" "models/darkland/human/van_facemap"
+	"$halflambert" 1
+}
