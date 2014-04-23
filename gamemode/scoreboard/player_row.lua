@@ -8,16 +8,6 @@ surface.CreateFont("ScoreboardPlayerNameBig", {font='coolvetica', size=22, weigh
 
 local texGradient = surface.GetTextureID( "gui/center_gradient" )
 
-local texRatings = {}
-texRatings[ 'none' ] 		= surface.GetTextureID( "gui/silkicons/user" )
-texRatings[ 'smile' ] 		= surface.GetTextureID( "gui/silkicons/emoticon_smile" )
-texRatings[ 'bad' ] 		= surface.GetTextureID( "gui/silkicons/exclamation" )
-texRatings[ 'love' ] 		= surface.GetTextureID( "gui/silkicons/heart" )
-texRatings[ 'artistic' ] 	= surface.GetTextureID( "gui/silkicons/palette" )
-texRatings[ 'star' ] 		= surface.GetTextureID( "gui/silkicons/star" )
-texRatings[ 'builder' ] 	= surface.GetTextureID( "gui/silkicons/wrench" )
-
-surface.GetTextureID( "gui/silkicons/emoticon_smile" )
 local PANEL = {}
 
 /*---------------------------------------------------------
@@ -35,6 +25,8 @@ function PANEL:Init()
 	self.lblDeaths 	= vgui.Create( "DLabel", self )
 	self.lblPing 	= vgui.Create( "DLabel", self )
 	self.lblTeams 	= vgui.Create( "DLabel", self )
+	
+	self.Mute		= vgui.Create( "DImageButton", self )
 	
 	// If you don't do this it'll block your clicks
 	self.lblName:SetMouseInputEnabled( false )
@@ -76,19 +68,14 @@ function PANEL:Paint()
 	
 	surface.SetTexture( texGradient )
 	surface.SetDrawColor( 255, 255, 255, 50 )
-	surface.DrawTexturedRect( 0, 0, self:GetWide(), 36 ) 
-	
-	// This should be an image panel!
-	surface.SetTexture( self.texRating )
-	surface.SetDrawColor( 255, 255, 255, 255 )
-	surface.DrawTexturedRect( self:GetWide() - 16 - 8, 36 / 2 - 8, 16, 16 ) 	
+	surface.DrawTexturedRect( 0, 0, self:GetWide(), 36 ) 	
 	
 	return true
 
 end
 
 /*---------------------------------------------------------
-   Name: UpdatePlayerData
+   Name: SetPlayer
 ---------------------------------------------------------*/
 function PANEL:SetPlayer( ply )
 
@@ -98,17 +85,6 @@ function PANEL:SetPlayer( ply )
 	self.imgAvatar:SetPlayer( ply )
 	
 	self:UpdatePlayerData()
-
-end
-
-function PANEL:CheckRating( name, count )
-
-	if ( self.Player:GetNetworkedInt( "Rating."..name, 0 ) > count ) then
-		count = self.Player:GetNetworkedInt( "Rating."..name, 0 )
-		self.texRating = texRatings[ name ]
-	end
-	
-	return count
 
 end
 
@@ -127,26 +103,12 @@ function PANEL:UpdatePlayerData()
 	self.lblTeams:SetText( self.Player:GetGangName() )
 	self.lblTeams:SizeToContents()
 	
-	// Work out what icon to draw
-	self.texRating = -1
-	
-	self.texRating = texRatings[ 'none' ]
-	local count = 0
-	
-	count = self:CheckRating( 'smile', count )
-	count = self:CheckRating( 'love', count )
-	count = self:CheckRating( 'artistic', count )
-	count = self:CheckRating( 'star', count )
-	count = self:CheckRating( 'builder', count )
-	
-	count = self:CheckRating( 'bad', count )
-
 end
 
 
 
 /*---------------------------------------------------------
-   Name: PerformLayout
+   Name: ApplySchemeSettings
 ---------------------------------------------------------*/
 function PANEL:ApplySchemeSettings()
 
@@ -165,7 +127,7 @@ function PANEL:ApplySchemeSettings()
 end
 
 /*---------------------------------------------------------
-   Name: PerformLayout
+   Name: DoClick
 ---------------------------------------------------------*/
 function PANEL:DoClick( x, y )
 
@@ -180,7 +142,7 @@ function PANEL:DoClick( x, y )
 end
 
 /*---------------------------------------------------------
-   Name: PerformLayout
+   Name: OpenInfo
 ---------------------------------------------------------*/
 function PANEL:OpenInfo( bool )
 
@@ -195,7 +157,7 @@ function PANEL:OpenInfo( bool )
 end
 
 /*---------------------------------------------------------
-   Name: PerformLayout
+   Name: Think
 ---------------------------------------------------------*/
 function PANEL:Think()
 
@@ -213,6 +175,19 @@ function PANEL:Think()
 		self.PlayerUpdate = CurTime() + 0.5
 		self:UpdatePlayerData()
 		
+	end
+	
+	if ( self.Muted == nil || self.Muted != self.Player:IsMuted() ) then
+
+		self.Muted = self.Player:IsMuted()
+		if ( self.Muted ) then
+			self.Mute:SetImage( "icon32/muted.png" )
+		else
+			self.Mute:SetImage( "icon32/unmuted.png" )
+		end
+			
+		self.Mute.DoClick = function() self.Player:SetMuted( !self.Muted ) end
+
 	end
 
 end
@@ -250,12 +225,13 @@ function PANEL:PerformLayout()
 	
 	end
 	
-	
+	self.Mute:SetSize( 32, 32 )
+	self.Mute:SetPos( self:GetWide()-32, 0 )
 
 end
 
 /*---------------------------------------------------------
-   Name: PerformLayout
+   Name: HigherOrLower
 ---------------------------------------------------------*/
 function PANEL:HigherOrLower( row )
 
