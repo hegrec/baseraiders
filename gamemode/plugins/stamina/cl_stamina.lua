@@ -1,11 +1,14 @@
 Stamina = 100
-stopstaminaspawm = false
+
+net.Receive("Stamina", function(um)
+	Stamina = net.ReadInt(8)
+end)
 
 timer.Create("stamina_process",0.1,0,function() 
 	if !IsValid(Me) || Me:InVehicle() then return end
 	if !Me:Alive() then Stamina = 100 end
 	
-	if(Me:GetVelocity().z > 0 and Me:KeyDown(IN_JUMP))then
+	--[[if(Me:GetVelocity().z > 0 and Me:KeyDown(IN_JUMP))then
 		Stamina = math.Clamp(Stamina - DECREASE_RATE * 2,0,100)
 	elseif(Me:GetVelocity():Length() > 1 and Me:KeyDown(IN_SPEED))then
 		Stamina = math.Clamp(Stamina - DECREASE_RATE,0,100)
@@ -15,7 +18,7 @@ timer.Create("stamina_process",0.1,0,function()
 		else
 			Stamina = math.Clamp(Stamina + INCREASE_RATE,0,100) 
 		end
-	end
+	end]]
 end)
 
 function AddStaminaBar()
