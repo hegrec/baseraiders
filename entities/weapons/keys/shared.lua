@@ -18,8 +18,17 @@ SWEP.Secondary.ClipSize = -1;
 SWEP.Secondary.DefaultClip = -1;
 SWEP.Secondary.Automatic = false;
 SWEP.Secondary.Ammo = "none"; 
-SWEP.ViewModel = Model( "models/weapons/v_fists.mdl" );
-SWEP.WorldModel = Model( "models/weapons/w_fists.mdl" );
+
+SWEP.ViewModel = Model( "models/weapons/c_arms_citizen.mdl" );
+SWEP.WorldModel = ""
+SWEP.ViewModelFOV		= 52
+SWEP.UseHands	= true
+
+function SWEP:SetupDataTables()
+
+	self:NetworkVar( "Float", 1, "NextIdle" )
+	
+end
 
 function SWEP:Initialize()
 	if( SERVER ) then
@@ -86,3 +95,37 @@ function SWEP:SecondaryAttack()
 		end
 	end
 end 
+
+function SWEP:UpdateNextIdle()
+
+	local vm = self.Owner:GetViewModel()
+	self:SetNextIdle( CurTime() + vm:SequenceDuration() )
+	
+end
+
+function SWEP:Deploy()
+
+	local vm = self.Owner:GetViewModel()
+	vm:SendViewModelMatchingSequence( vm:LookupSequence( "fists_idle01" ) )
+	
+	self:UpdateNextIdle()
+	
+	return true
+
+end
+
+function SWEP:Think()
+	
+	local vm = self.Owner:GetViewModel()
+	local curtime = CurTime()
+	local idletime = self:GetNextIdle()
+	
+	if ( idletime > 0 && CurTime() > idletime ) then
+
+		vm:SendViewModelMatchingSequence( vm:LookupSequence( "fists_idle_0" .. math.random( 1, 2 ) ) )
+		
+		self:UpdateNextIdle()
+
+	end
+	
+end

@@ -34,8 +34,16 @@ SWEP.Secondary.Ammo = "none";
 SWEP.Instructions = "Left click: Punch. Right Click: Knock.";
 SWEP.Purpose = "Punch and knock";
 
-SWEP.ViewModel = Model( "models/weapons/v_fists.mdl" );
-SWEP.WorldModel = Model( "models/weapons/w_fists.mdl" );
+SWEP.ViewModel = Model( "models/weapons/c_arms_citizen.mdl" );
+SWEP.WorldModel = ""
+SWEP.ViewModelFOV		= 52
+SWEP.UseHands	= true
+
+function SWEP:SetupDataTables()
+
+	self:NetworkVar( "Float", 1, "NextIdle" )
+	
+end
 
 function SWEP:PrimaryAttack()
 	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
@@ -64,6 +72,13 @@ function SWEP:PrimaryAttack()
 	elseif(tr.HitWorld)then
 		self.Weapon:EmitSound("physics/flesh/flesh_impact_hard5.wav")
 	end
+	
+	local anim = "fists_left"
+	self.Owner:SetAnimation( PLAYER_ATTACK1 )
+	local vm = self.Owner:GetViewModel()
+	vm:SendViewModelMatchingSequence( vm:LookupSequence( anim ) )
+	self:UpdateNextIdle()
+	
 end
 function SWEP:SecondaryAttack() 
 	self.Weapon:SetNextSecondaryFire(CurTime() + 1)
@@ -79,4 +94,44 @@ function SWEP:SecondaryAttack()
 		self.Owner:SetAnimation( PLAYER_ATTACK1 )
 		self.Weapon:EmitSound("physics/plastic/plastic_box_impact_hard4.wav",100,70)
 	end
+	
+	local anim = "fists_right"
+	self.Owner:SetAnimation( PLAYER_ATTACK1 )
+	local vm = self.Owner:GetViewModel()
+	vm:SendViewModelMatchingSequence( vm:LookupSequence( anim ) )
+	self:UpdateNextIdle()
+end
+
+function SWEP:UpdateNextIdle()
+
+	local vm = self.Owner:GetViewModel()
+	self:SetNextIdle( CurTime() + vm:SequenceDuration() )
+	
+end
+
+function SWEP:Deploy()
+
+	local vm = self.Owner:GetViewModel()
+	vm:SendViewModelMatchingSequence( vm:LookupSequence( "fists_draw" ) )
+	
+	self:UpdateNextIdle()
+	
+	return true
+
+end
+
+function SWEP:Think()
+	
+	local vm = self.Owner:GetViewModel()
+	local curtime = CurTime()
+	local idletime = self:GetNextIdle()
+	
+	if ( idletime > 0 && CurTime() > idletime ) then
+
+		vm:SendViewModelMatchingSequence( vm:LookupSequence( "fists_idle_0" .. math.random( 1, 2 ) ) )
+		
+		self:UpdateNextIdle()
+
+	end
+	
 end
