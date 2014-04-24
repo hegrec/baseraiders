@@ -58,6 +58,7 @@ function SWEP:TryUnlock(tr)
 			end
 		end		
 	end
+	self.Owner:AddNoteriety(LOCK_PICK_NOTERIETY)
 
 end
 

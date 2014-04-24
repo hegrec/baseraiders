@@ -50,7 +50,7 @@ surface.CreateFont("HUDBars", {font='Arial', size=18, weight=600});
 
 surface.CreateFont("TerritoryTitle", {font='Arial', size=38, weight=600});
 
-
+hostilePlayers = {}
 local function RandomString(len)
 	local str = ""
 	math.random(100)
@@ -169,7 +169,18 @@ function GM:HUDPaint()
 	end
 
 	draw.SimpleTextOutlined("$"..GetMoney(),"g_Logo",215,ScrH()-5,Color(0,200,0,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,3,Color(0,0,0,255))
-	
+	if (LocalPlayer():GetGangName() != "") then
+		draw.SimpleTextOutlined("Gang: "..LocalPlayer():GetGangName(),"HUDBars",215,ScrH()-50,Color(200,200,200,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2,Color(0,0,0,255))
+	end
+	if LocalPlayer():GetNWInt("TerritoryID") != 0 then
+		local name = territories[LocalPlayer():GetNWInt("TerritoryID")].Name
+		draw.SimpleTextOutlined(name,"HUDBars",215,ScrH()-80,Color(200,200,200,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2,Color(0,0,0,255))
+	else
+		draw.SimpleTextOutlined("Public","HUDBars",215,ScrH()-80,Color(200,200,200,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2,Color(0,0,0,255))
+	end
+	draw.SimpleTextOutlined("Level: "..LocalPlayer():GetLevel(),"HUDBars",215,ScrH()-110,Color(200,200,200,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2,Color(0,0,0,255))
+	draw.SimpleTextOutlined("Notoriety: "..LocalPlayer():GetNoteriety(),"HUDBars",215,ScrH()-140,Color(200,200,200,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2,Color(0,0,0,255))
+
 	
 	local nearby_ents = ents.FindInSphere(Me:GetShootPos(),300)
 	
@@ -221,15 +232,37 @@ function GM:HUDPaint()
 
 			draw.SimpleTextOutlined(text,"ScoreboardSub",pos.x,pos.y,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
 			if v:IsPlayer()then
-				local pppp = 45
+				local pppp = 65
 				if v:GetGangName() != "" then
-					draw.SimpleTextOutlined("Gang: "..v:GetGangName(),"HUDBars",pos.x,pos.y-25,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+					local gangtext = "Gang: "..v:GetGangName()
 					if v:GetGangLeader() then
-						draw.SimpleTextOutlined("Gang Leader","HUDBars",pos.x,pos.y-45,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+						gangtext = gangtext .. " (Ldr)"
 					end
-					pppp = 65
+					draw.SimpleTextOutlined(gangtext,"HUDBars",pos.x,pos.y-25,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha)) 					
 				end
-				draw.SimpleTextOutlined("Level: "..v:GetLevel(),"HUDBars",pos.x,pos.y-pppp,Color(255,255,255,alpha),1,1,1,Color(0,0,0,alpha))
+				
+				local hostiletext = ""
+				local color
+				if hostilePlayers[v:SteamID()] then
+					hostiletext = "Hostile ";
+					color = Color(255,0,0,alpha)
+				end
+
+				if (v:GetNoteriety()<50) then
+
+					
+				elseif (v:GetNoteriety()<250) then
+					hostiletext = hostiletext .. "Thug"
+					if !color then
+						color = Color(255,255,0,alpha)
+					end
+				else
+					hostiletext = hostiletext .. "Criminal"
+					if !color then
+						color = Color(255,128,0,alpha)
+					end
+				end
+				draw.SimpleTextOutlined(hostiletext,"HUDBars",pos.x,pos.y-(pppp),color,1,1,1,Color(0,0,0,alpha))
 			elseif v.IsPowered then
 				local powered = v:IsPowered()
 				if powered then
@@ -374,6 +407,25 @@ function queueEffect( um )
 	
 end
 usermessage.Hook("experienceUp",queueEffect)
+
+
+function setHostileToMe( um )
+	local aggressor = um:ReadEntity()
+	if IsValid(aggressor) then
+		hostilePlayers[aggressor:SteamID()] = true
+	end
+	
+end
+usermessage.Hook("setHostileToMe",setHostileToMe)
+
+function clearHostileToMe( um )
+	local aggressor = um:ReadEntity()
+	if IsValid(aggressor) then
+		hostilePlayers[aggressor:SteamID()] = nil
+	end
+	
+end
+usermessage.Hook("clearHostileToMe",clearHostileToMe)
 
 
 function GetPowerBoost()

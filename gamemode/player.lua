@@ -45,10 +45,60 @@ function meta:SetGangID(s)
 	self:SetDTInt(0,s)
 end
 
+function meta:SetNoteriety(s)
+	self:SetDTInt(2,s)
+end
+
+function meta:AddNoteriety(s)
+	self:SetDTInt(2,self:GetDTInt(2)+s)
+	self.startDropNoteriety = CurTime()+15
+	self:SendNotify("You have gained "..s.." noteriety for your actions","NOTIFY_GENERIC",2)
+end
+function g_reduceNoteriety()
+ 
+	for i,v in pairs(player.GetAll()) do
+		if (!v.startDropNoteriety || v.startDropNoteriety < CurTime()) then
+			v:SetNoteriety(math.max(0,v:GetNoteriety()-1))
+		end
+	end
+end
+timer.Create("g_reduceNoteriety",5,0,g_reduceNoteriety)
 function meta:SetGangLeader(s)
 	self:SetDTBool(0,s)
 end
+function meta:SetHostileTo(plVictim)
+	if (plVictim.HostileTo && plVictim.HostileTo[self:SteamID()]) || (self.HostileTo && self.HostileTo[plVictim:SteamID()]) then return end
+	self:SendNotify("You are now hostile to "..plVictim:Name().." for the next 5 seconds","NOTIFY_GENERIC",6);
+	self.HostileTo = self.HostileTo or {}
+	self.HostileTo[plVictim:SteamID()] = CurTime()+5
+	umsg.Start("setHostileToMe",plVictim)
+		umsg.Entity(self)
+	umsg.End()
+	timer.Simple(5,function() 
+		if (IsValid(self) && self.HostileTo[plVictim:SteamID()] && self.HostileTo[plVictim:SteamID()] < CurTime()) then
+			self:SendNotify("You are no longer hostile to "..plVictim:Name(),"NOTIFY_GENERIC",6);
+		
+			self.HostileTo[plVictim:SteamID()] = nil
 
+			umsg.Start("clearHostileToMe",plVictim)
+				umsg.Entity(self)
+			umsg.End()
+		end
+
+			end)
+end
+function meta:IsHostileTo(pl)
+	return self.HostileTo && self.HostileTo[pl:SteamID()]
+end
+function meta:ClearHostility()
+	self.HostileTo = self.HostileTo or {}
+	for i,v in pairs(self.HostileTo) do
+		umsg.Start("clearHostileToMe",i)
+			umsg.Entity(self)
+		umsg.End()
+	end
+	self.HostileTo = {}
+end
 function meta:SetGangName(s)
 	self:SetDTString(0,s)
 end

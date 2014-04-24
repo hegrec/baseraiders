@@ -1,6 +1,7 @@
 local meta = FindMetaTable("Player")
 
-
+util.AddNetworkString("recvItem")
+util.AddNetworkString("loseItem")
 
 function meta:GiveItem(index,x,y)
 	local tbl = GetItems()[index]
@@ -30,11 +31,11 @@ function meta:GiveItem(index,x,y)
 			end
 		end
 	end
-	umsg.Start("recvItem",self)
-		umsg.String(index)
-		umsg.Char(y)
-		umsg.Char(x)
-	umsg.End()
+	net.Start("recvItem")
+		net.WriteString(index)
+		net.WriteInt(y,8)
+		net.WriteInt(x,8)
+	net.Send(self)
 	
 	SaveRPAccount(self)
 	return x,y
@@ -68,10 +69,10 @@ function meta:TakeItem(x,y)
 		self:StripWeapon(tbl.SWEPClass)
 	end
 	
-	umsg.Start("loseItem",self)
-		umsg.Char(y)
-		umsg.Char(x)
-	umsg.End()
+	net.Start("loseItem")
+		net.WriteInt(y,8)
+		net.WriteInt(x,8)
+	net.Send(self)
 	hook.Call("OnTakePlayerItem",GAMEMODE,self,item,x,y)
 	SaveRPAccount(self)
 	return x,y

@@ -27,7 +27,7 @@ function BeginRPProfile(pl)
 	local steamID = pl:SteamID();
 	print("loading profile")
 	
-	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model,GangID,Experience FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res)  end)
+	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model,GangID,Experience,Noteriety FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res)  end)
 end
 hook.Add("PlayerLoadedGlobalProfile","zzzzzRPLoadProfile",BeginRPProfile)
 
@@ -42,6 +42,7 @@ function RPLoadCallback(pl, tbl)
 	print("existing profile")
 	pl:SetMoney(tonumber(tbl["Money"]))
 	pl:SetExperience(tonumber(tbl["Experience"]))
+	pl:SetNoteriety(tonumber(tbl["Noteriety"]))
 	if !tbl["Model"] or tbl["Model"] == "" then
 		RequestModel(pl)
 	end
@@ -87,9 +88,10 @@ function SaveRPAccount(pl)
 	local clothing 		= table.ToSave(pl.Clothing)
 	local model 		= pl.Model or ""
 	local experience 		= pl:GetExperience() or ""
+	local noteriety = pl:GetNoteriety()
 	
 	if !safeinv or !skills or !levels then error("SOMETHING DIDN'T SAVE ---   Inv - "..tostring(safeinv).." Skills - "..tostring(skills).." Levels - "..tostring(levels)) return end
-	Query("UPDATE rp_playerdata SET Money=Money+"..safemoney..",Experience="..experience..",Inventory=\'"..safeinv.."\',Skills=\'"..skills.."\',Levels=\'"..levels.."\',Clothing=\'"..clothing.."\',Model=\'"..model.."\' WHERE SteamID=\'"..safeid.."\'")
+	Query("UPDATE rp_playerdata SET Money=Money+"..safemoney..",Experience="..experience..",Noteriety="..noteriety..",Inventory=\'"..safeinv.."\',Skills=\'"..skills.."\',Levels=\'"..levels.."\',Clothing=\'"..clothing.."\',Model=\'"..model.."\' WHERE SteamID=\'"..safeid.."\'")
 end
 AddChatCommand("save",function(pl,args)pl.nextSave = pl.nextSave or 0 if pl.nextSave > CurTime() then return end pl.nextSave = CurTime()+5 SaveRPAccount(pl) pl:SendNotify("Your RP Account has successfully saved","NOTIFY_GENERIC",4) end)
 

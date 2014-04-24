@@ -5,17 +5,6 @@ if CLIENT then
 	SWEP.SlotPos = 1
 else
 	AddCSLuaFile("shared.lua")
-	resource.AddFile("models/weapons/w_fists.dx80.vtx");
-	resource.AddFile("models/weapons/w_fists.dx90.vtx");
-	resource.AddFile("models/weapons/w_fists.mdl");
-	resource.AddFile("models/weapons/w_fists.phy");
-	resource.AddFile("models/weapons/w_fists.sw.vtx");
-	resource.AddFile("models/weapons/w_fists.vvd");
-	resource.AddFile("models/weapons/v_fists.dx80.vtx");
-	resource.AddFile("models/weapons/v_fists.dx90.vtx");
-	resource.AddFile("models/weapons/v_fists.mdl");
-	resource.AddFile("models/weapons/v_fists.sw.vtx");
-	resource.AddFile("models/weapons/v_fists.vvd");
 end
 function SWEP:Initialize()
 	if( SERVER ) then

@@ -153,6 +153,6 @@ function addStoreItem(um)
 	if !ValidPanel(Panels["ActiveStore"]) then
 		Panels["ActiveStore"] = vgui.Create("Store")
 	end
-	Panels["ActiveStore"]:AddItem(um:ReadString(),um:ReadLong())
+	Panels["ActiveStore"]:AddItem(net.ReadString(),net.ReadInt(8))
 end 
-usermessage.Hook("addStoreItem",addStoreItem)
+net.Receive("addStoreItem",addStoreItem)

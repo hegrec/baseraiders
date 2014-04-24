@@ -266,9 +266,9 @@ end
 vgui.Register("Inventory",INVENTORY,"DPanel")
 
 local function ReceiveItem( um )
-	local index = um:ReadString()
-	local y = um:ReadChar()
-	local x = um:ReadChar()
+	local index = net.ReadString()
+	local y = net.ReadInt(8)
+	local x = net.ReadInt(8)
 	
 	local tbl = GetItems()[index]
 	if !tbl then return end
@@ -317,14 +317,14 @@ local function ReceiveItem( um )
 	end
 	
 end
-usermessage.Hook("recvItem",ReceiveItem)
+net.Receive("recvItem",ReceiveItem)
 
 
 
     
 local function LoseItem( um )
-	local y = um:ReadChar()
-	local x = um:ReadChar()
+	local y = net.ReadInt(8)
+	local x = net.ReadInt(8)
 	local index = LocalPlayer().Inventory[y][x]
 	local tbl = GetItems()[index]
 	local tsize = tbl.Size
@@ -363,7 +363,7 @@ local function LoseItem( um )
 		end
 	end
 end
-usermessage.Hook("loseItem",LoseItem)
+net.Receive("loseItem",LoseItem)
 
 
 function recvInventorySize(um) 

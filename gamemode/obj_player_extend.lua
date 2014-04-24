@@ -14,6 +14,9 @@ end
 function meta:GetLevel()
 	return CalculateLevel(self:GetExperience())
 end
+function meta:GetNoteriety()
+	return self:GetDTInt(2)
+end
 function meta:GetGangID()
 	return self:GetDTInt(0)
 end

@@ -40,7 +40,6 @@ resource.AddMaterial("materials/katharsmodels/contraband/contraband_normal")
 resource.AddModel("models/katharsmodels/contraband/zak_wiet/zak_wiet")
 resource.AddModel("models/baseraiders/log")
 
-resource.AddModel("models/weapons/v_fists")
 resource.AddModel("models/nater/weedplant_pot")
 resource.AddModel("models/nater/weedplant_pot_dirt")
 resource.AddModel("models/nater/weedplant_pot_growing1")
@@ -180,7 +179,7 @@ function GM:OnHatchet(pl,tr)
 		end
 		table.insert(pl.harvestents,ent)
 		
-		timer.Simple(5, function()
+		timer.Simple(30, function()
 			if ent:IsValid() then
 				ent:Remove()
 			end
@@ -214,7 +213,7 @@ function GM:OnPickaxe(pl,tr)
 		end
 		table.insert(pl.harvestents,ent)
 		
-		timer.Simple(5, function()
+		timer.Simple(30, function()
 			if ent:IsValid() then
 				ent:Remove()
 			end
@@ -275,7 +274,7 @@ function GM:OnShovel(pl,tr)
 		end
 		table.insert(pl.harvestents,ent)
 		
-		timer.Simple(5, function()
+		timer.Simple(30, function()
 			if ent:IsValid() then
 				ent:Remove()
 			end
@@ -351,6 +350,11 @@ function GM:EntityTakeDamage(target, dmginfo)
 			util.Effect( "HelicopterMegaBomb", effectdata )
 			target:EmitSound("ambient/explosions/explode_4.wav")
 			target:Remove()
+		end
+	elseif target:IsPlayer() then
+		local attacker = dmginfo:GetAttacker()
+		if attacker:IsPlayer() then
+			attacker:SetHostileTo(target)
 		end
 	end
 end
@@ -491,6 +495,11 @@ function GM:PlayerDeath( Victim, Inflictor, Attacker )
 			Victim:TakeItem(v.WepType)
 		end			
 	end
+
+
+	--noteriety
+
+
 	
 	if ( Inflictor && Inflictor == Attacker && (Inflictor:IsPlayer() || Inflictor:IsNPC()) ) then
 		Inflictor = Inflictor:GetActiveWeapon()
@@ -503,7 +512,28 @@ function GM:PlayerDeath( Victim, Inflictor, Attacker )
 
 	if ( Attacker:IsPlayer() ) then
 		MsgAdmin( Attacker:Name() .. " killed " .. Victim:Name() .. " using " .. Inflictor:GetClass(),1)
+
+		if !Victim:IsHostileTo(Attacker) then
+			local innocent_gain = 200
+			if (Victim:GetGangID() == 0) then
+				innocent_gain = 300
+			end
+			if Victim:GetNoteriety() < 50 then
+				Attacker:AddNoteriety(innocent_gain)
+			elseif Victim:GetNoteriety() < 250 then
+				Attacker:AddNoteriety(125)
+			else
+				Attacker:AddNoteriety(50)
+			end
+		else
+			Attacker:SendNotify("You killed a hostile aggressor.","NOTIFY_GENERIC",5)
+		end
+
+
+
 	return end
+
+	Victim:ClearHostility()
 
 	
 	if(Attacker:IsVehicle())then
@@ -543,13 +573,6 @@ function GM:AFK(ply)
 	if(ply:InVehicle())then
 		ply:ExitVehicle()
 	end
-	if(ply:IsPremium() || ply:IsPlatinum())then
-		ply:SetTeam(TEAM_HOBO)
-		GAMEMODE:PlayerSetModel(ply)
-		ply:Spawn()
-		NewAFKTimer(ply)
-		return 
-	end
 	--game.ConsoleCommand( Format( "kickid %i %s\n", ply:UserID(), "AFK for 300 seconds" ) )
 end
 
@@ -558,7 +581,7 @@ function RequestModel(pl)
 	umsg.End()
 end
 
-
+util.AddNetworkString("addStoreItem")
 function ViewStore(pl,ent,store)
 	umsg.Start("showStore",pl)
 	umsg.Short(ent:EntIndex())
@@ -567,10 +590,11 @@ function ViewStore(pl,ent,store)
 	
 	
 	for i,v in pairs(store.items) do
-		umsg.Start("addStoreItem",pl)
-		umsg.String(i)
-		umsg.Long(v)
-		umsg.End()
+		print(i,v)
+		net.Start("addStoreItem")
+		net.WriteString(i)
+		net.WriteInt(v,8)
+		net.Send(pl)
 	end
 end
 

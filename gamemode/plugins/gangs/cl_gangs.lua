@@ -463,15 +463,5 @@ function territorieshud()
 		draw.SimpleTextOutlined(str,"Default",10+(i-1)*(width+10),30,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,255))
 		draw.SimpleTextOutlined("Held For: "..held_for,"Default",10+(i-1)*(width+10),45,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM,1,Color(0,0,0,255))
 	end
-	if (LocalPlayer():GetGangName() != "") then
-		draw.SimpleTextOutlined("Gang: "..LocalPlayer():GetGangName(),"HUDBars",215,ScrH()-50,Color(200,200,200,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2,Color(0,0,0,255))
-	end
-	if LocalPlayer():GetNWInt("TerritoryID") != 0 then
-		local name = territories[LocalPlayer():GetNWInt("TerritoryID")].Name
-		draw.SimpleTextOutlined(name,"HUDBars",215,ScrH()-80,Color(200,200,200,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2,Color(0,0,0,255))
-	else
-		draw.SimpleTextOutlined("Public","HUDBars",215,ScrH()-80,Color(200,200,200,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2,Color(0,0,0,255))
-	end
-		draw.SimpleTextOutlined("Level: "..LocalPlayer():GetLevel(),"HUDBars",215,ScrH()-110,Color(200,200,200,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2,Color(0,0,0,255))
 end
 hook.Add("HUDPaint","territorieshud",territorieshud)
