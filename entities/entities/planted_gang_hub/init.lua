@@ -16,7 +16,7 @@ function ENT:Initialize()
 	self:SetUseType(SIMPLE_USE)
 end
 function ENT:Use(ent)
-	ent:SendNotify("This is your gang hub. Make a vault to access the gang bank","NOTIFY_GENERIC",5);
+	ent:SendNotify("This is a gang hub. You need a vault to access the gang bank.","NOTIFY_GENERIC",5);
 end
 function ENT:SetTerritory(territoryID)
 	self:SetNWInt("TerritoryID",territoryID)
