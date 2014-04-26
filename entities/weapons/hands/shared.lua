@@ -20,7 +20,7 @@ SWEP.Secondary.ClipSize = -1;
 SWEP.Secondary.DefaultClip = -1;
 SWEP.Secondary.Automatic = false;
 SWEP.Secondary.Ammo = "none"; 
-SWEP.Instructions = "Left click: Punch. Right Click: Knock.";
+SWEP.Instructions = "Left click: Punch. Right Click: Punch + Knock.";
 SWEP.Purpose = "Punch and knock";
 
 SWEP.ViewModel = Model( "models/weapons/c_arms_citizen.mdl" );
@@ -61,11 +61,8 @@ function SWEP:PrimaryAttack()
 	elseif(tr.HitWorld)then
 		self.Weapon:EmitSound("physics/flesh/flesh_impact_hard5.wav")
 	end
-	self.RightPunch = !self.RightPunch
 	local anim = "fists_left"
-	if (self.RightPunch) then
-		anim = "fists_right"
-	end
+
 	self.Owner:SetAnimation( PLAYER_ATTACK1 )
 	local vm = self.Owner:GetViewModel()
 	vm:SendViewModelMatchingSequence( vm:LookupSequence( anim ) )
@@ -82,9 +79,24 @@ function SWEP:SecondaryAttack()
 	tr.endpos = tr.start + (self.Owner:GetAimVector()*70)
 	tr.filter = self.Owner
 	tr = util.TraceLine(tr)
-	if tr.Entity:IsValid() and tr.Entity:IsDoor() then
+	if IsValid(tr.Entity) and tr.Entity:IsDoor() then
 		self.Owner:SetAnimation( PLAYER_ATTACK1 )
 		self.Weapon:EmitSound("physics/plastic/plastic_box_impact_hard4.wav",100,70)
+	elseif IsValid(tr.Entity) and tr.HitNonWorld then
+		if(tr.MatType  == MAT_GLASS)then
+			self.Weapon:EmitSound("physics/glass/glass_cup_break1.wav")
+			if SERVER then tr.Entity:Fire("shatter") end
+		elseif(tr.MatType == MAT_FLESH)then
+			self.Weapon:EmitSound("physics/flesh/flesh_impact_bullet5.wav")
+				local effect = EffectData()
+				effect:SetOrigin(tr.HitPos)
+				util.Effect("BloodImpact", effect) 
+				if SERVER then tr.Entity:TakeDamage(1,self.Owner,self.Weapon) end
+		else
+			self.Weapon:EmitSound("physics/flesh/flesh_impact_bullet5.wav")
+		end
+	elseif(tr.HitWorld)then
+		self.Weapon:EmitSound("physics/flesh/flesh_impact_hard5.wav")
 	end
 	
 	local anim = "fists_right"
