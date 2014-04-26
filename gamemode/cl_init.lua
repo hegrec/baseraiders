@@ -28,8 +28,8 @@ include("items/sh_itemdefines.lua")
 
 include("npcchat/cl_conversation.lua")
 
-include("skills/sh_skills.lua")
-include("skills/cl_skills.lua")
+include("perks/sh_perks.lua")
+include("perks/cl_perks.lua")
 include("vgui/DCategoryCollapse2.lua")
 include("vgui/DColorMixerNoAlpha.lua")
 include("vgui/DMultiModelPanel.lua")
@@ -185,11 +185,13 @@ function GM:HUDPaint()
 	local nearby_ents = ents.FindInSphere(Me:GetShootPos(),300)
 	
 	for i,v in pairs(nearby_ents) do
+
 		local pos = v:LocalToWorld(v:OBBCenter())
 		local tr = {}
 		tr.start = LocalPlayer():EyePos()
 		tr.endpos = pos
 		tr.filter = LocalPlayer()
+		tr.mask = MASK_BLOCKLOS_AND_NPCS
 		tr = util.TraceLine(tr)
 		
 		
@@ -197,12 +199,28 @@ function GM:HUDPaint()
 		tr2.start = LocalPlayer():EyePos()
 		tr2.endpos = v:GetPos()
 		tr2.filter = LocalPlayer()
+		tr2.mask = MASK_BLOCKLOS_AND_NPCS
+		tr2 = util.TraceLine(tr2)
+
+		local tr2 = {}
+		tr2.start = LocalPlayer():EyePos()
+		tr2.endpos = v:LocalToWorld(v:OBBMaxs())
+		tr2.filter = LocalPlayer()
+		tr2.mask = MASK_BLOCKLOS_AND_NPCS
+		tr2 = util.TraceLine(tr2)
+
+		local tr2 = {}
+		tr2.start = LocalPlayer():EyePos()
+		tr2.endpos = v:LocalToWorld(v:OBBMins())
+		tr2.filter = LocalPlayer()
+		tr2.mask = MASK_BLOCKLOS_AND_NPCS
 		tr2 = util.TraceLine(tr2)
 		
 		
 		if tr.Entity == v or tr2.Entity == v then
 			local text = ""
 			local extra
+
 			if (v:GetItemName() != "") then
 				text = v:GetItemName()
 				if GetItems()[text].ExtraHUD then
@@ -216,7 +234,14 @@ function GM:HUDPaint()
 			elseif v:GetClass() == "money" then
 				text = "$"..v:GetNWInt("Amount")
 			elseif v:GetClass() == "vendingmachine" then
-				text = " $5 Water Press USE"
+				text = "$5 Water Press USE"
+			elseif v:GetClass() == "crafting_table" then
+				text = "Crafting Table"
+			elseif v:GetClass() == "smelting_furnace" then
+				text = "Smelting Furnace"
+			elseif v:GetClass() == "npc_generic" then
+
+				text = v:GetNWString("NPCName")
 			end
 			local maxdist = 500
 			pos = pos:ToScreen()

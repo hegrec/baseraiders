@@ -12,6 +12,7 @@ local voicetable = {}
 
 function meta:SetNPCName(str)
 	self.m_Name = str
+	self:SetNWString("NPCName",str)
 end
 function meta:GetName()
 	return self.m_Name

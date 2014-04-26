@@ -27,7 +27,7 @@ SWEP.ViewModel = Model( "models/weapons/c_arms_citizen.mdl" );
 SWEP.WorldModel = ""
 SWEP.ViewModelFOV		= 52
 SWEP.UseHands	= true
-
+SWEP.RightPunch = true
 function SWEP:SetupDataTables()
 
 	self:NetworkVar( "Float", 1, "NextIdle" )
@@ -35,8 +35,8 @@ function SWEP:SetupDataTables()
 end
 
 function SWEP:PrimaryAttack()
-	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
-	self.Weapon:SetNextSecondaryFire(CurTime() + 1)
+	self.Weapon:SetNextPrimaryFire(CurTime() + 0.6)
+	self.Weapon:SetNextSecondaryFire(CurTime() + 0.6)
 	self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
 	self.Weapon:EmitSound("npc/vort/claw_swing2.wav")
 	self.Owner:RestartGesture(ACT_HL2MP_GESTURE_RANGE_ATTACK_FIST)
@@ -61,8 +61,11 @@ function SWEP:PrimaryAttack()
 	elseif(tr.HitWorld)then
 		self.Weapon:EmitSound("physics/flesh/flesh_impact_hard5.wav")
 	end
-	
+	self.RightPunch = !self.RightPunch
 	local anim = "fists_left"
+	if (self.RightPunch) then
+		anim = "fists_right"
+	end
 	self.Owner:SetAnimation( PLAYER_ATTACK1 )
 	local vm = self.Owner:GetViewModel()
 	vm:SendViewModelMatchingSequence( vm:LookupSequence( anim ) )
@@ -70,8 +73,8 @@ function SWEP:PrimaryAttack()
 	
 end
 function SWEP:SecondaryAttack() 
-	self.Weapon:SetNextSecondaryFire(CurTime() + 1)
-	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
+	self.Weapon:SetNextSecondaryFire(CurTime() + 0.6)
+	self.Weapon:SetNextPrimaryFire(CurTime() + 0.6)
 	self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
 	self.Weapon:EmitSound("npc/vort/claw_swing2.wav")
 	local tr = {}

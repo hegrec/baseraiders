@@ -5,7 +5,7 @@ function loaddefaults(pl)
 	pl.Inventory 		= {}
 	pl.Clothing 		= {}
 	pl.CurrentClothing 	= {}
-	pl.Skills 			= {}
+	pl.Perks 			= {}
 	pl.Levels 			= {}
 	pl.Cars 			= {}
 	pl:SetMoney(DEFAULT_CASH)
@@ -27,7 +27,7 @@ function BeginRPProfile(pl)
 	local steamID = pl:SteamID();
 	print("loading profile")
 	
-	Query("SELECT Money,Inventory,Vehicle,Skills,Levels,Clothing,CurrentHat,CurrentSkin,Model,GangID,Experience,Noteriety FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res)  end)
+	Query("SELECT Money,Inventory,Vehicle,Perks,Clothing,CurrentHat,CurrentSkin,Model,GangID,Experience,Noteriety FROM rp_playerdata WHERE SteamID='"..steamID.."'", function(res) RPLoadCallback(pl, res)  end)
 end
 hook.Add("PlayerLoadedGlobalProfile","zzzzzRPLoadProfile",BeginRPProfile)
 
@@ -49,7 +49,7 @@ function RPLoadCallback(pl, tbl)
 	pl.Model = tbl["Model"]
 	SendModel(pl)
 	
-	hook.Call("OnLoadSkills",GAMEMODE,pl,tbl["Skills"],tbl["Levels"])
+	hook.Call("OnLoadPerks",GAMEMODE,pl,tbl["Perks"])
 	hook.Call("OnLoadInventory",GAMEMODE,pl,tbl["Inventory"])
 	hook.Call("OnLoadClothing",GAMEMODE,pl,tbl["Clothing"],tbl["CurrentHat"],tbl["CurrentSkin"])
 	hook.Call("OnLoadVehicles",GAMEMODE,pl,tbl["Vehicle"])
@@ -64,8 +64,8 @@ end
 --Player has no profile saved... Create a default one
 function NewProfile(pl)
 	print("new profile")
-	Query("INSERT INTO rp_playerdata (SteamID,Inventory,Money,Skills,Levels,BankAccount,Clothing) VALUES (\'"..pl:SteamID().."\',\'\',"..DEFAULT_CASH..",\'\',\'\',\'\',\'\')")
-	hook.Call("OnLoadSkills",GAMEMODE,pl,'','')
+	Query("INSERT INTO rp_playerdata (SteamID,Inventory,Money,Perks,BankAccount,Clothing) VALUES (\'"..pl:SteamID().."\',\'\',"..DEFAULT_CASH..",\'\',\'\',\'\')")
+	hook.Call("OnLoadPerks",GAMEMODE,pl,'','')
 	hook.Call("OnLoadInventory",GAMEMODE,pl,'')
 	hook.Call("OnLoadClothing",GAMEMODE,pl,'')
 	hook.Call("OnLoadGang",GAMEMODE,pl,0)
@@ -83,15 +83,14 @@ function SaveRPAccount(pl)
 	local safemoney 	= pl:GetMoneyOffset()
 	local safeinv 		= util.TableToKeyValues(pl.Inventory)
 	local safeid 		= pl:SteamID()
-	local skills 		= table.ToSave(pl.Skills)
-	local levels 		= table.ToSave(pl.Levels)
+	local perks 		= util.TableToJSON(pl.Perks)
 	local clothing 		= table.ToSave(pl.Clothing)
 	local model 		= pl.Model or ""
 	local experience 		= pl:GetExperience() or ""
 	local noteriety = pl:GetNoteriety()
 	
-	if !safeinv or !skills or !levels then error("SOMETHING DIDN'T SAVE ---   Inv - "..tostring(safeinv).." Skills - "..tostring(skills).." Levels - "..tostring(levels)) return end
-	Query("UPDATE rp_playerdata SET Money=Money+"..safemoney..",Experience="..experience..",Noteriety="..noteriety..",Inventory=\'"..safeinv.."\',Skills=\'"..skills.."\',Levels=\'"..levels.."\',Clothing=\'"..clothing.."\',Model=\'"..model.."\' WHERE SteamID=\'"..safeid.."\'")
+	if !safeinv or !perks then error("SOMETHING DIDN'T SAVE ---   Inv - "..tostring(safeinv).." Perks - "..tostring(perks)) return end
+	Query("UPDATE rp_playerdata SET Money=Money+"..safemoney..",Experience="..experience..",Noteriety="..noteriety..",Inventory=\'"..safeinv.."\',Perks=\'"..perks.."\',Clothing=\'"..clothing.."\',Model=\'"..model.."\' WHERE SteamID=\'"..safeid.."\'")
 end
 AddChatCommand("save",function(pl,args)pl.nextSave = pl.nextSave or 0 if pl.nextSave > CurTime() then return end pl.nextSave = CurTime()+5 SaveRPAccount(pl) pl:SendNotify("Your RP Account has successfully saved","NOTIFY_GENERIC",4) end)
 
@@ -109,7 +108,6 @@ end
 
 function table.ToLoad(str)
 	str = str or ''
-	--Load skills into a temp table
 	local tbl = {}
 	local t = string.Explode("|",str)
 	for i,v in pairs(t) do

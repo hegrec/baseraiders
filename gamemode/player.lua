@@ -70,7 +70,7 @@ function meta:SetHostileTo(plVictim)
 	if (plVictim.HostileTo && plVictim.HostileTo[self:SteamID()]) || (self.HostileTo && self.HostileTo[plVictim:SteamID()]) then return end
 	self:SendNotify("You are now hostile to "..plVictim:Name().." for the next 5 seconds","NOTIFY_GENERIC",6);
 	self.HostileTo = self.HostileTo or {}
-	self.HostileTo[plVictim:SteamID()] = CurTime()+5
+	self.HostileTo[plVictim:SteamID()] = CurTime()+200
 	umsg.Start("setHostileToMe",plVictim)
 		umsg.Entity(self)
 	umsg.End()

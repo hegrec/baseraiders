@@ -192,15 +192,15 @@ function SpawnRoleplayItem(index,spawnpos,plOwner)
 	end
 	return ent
 end
-
+util.AddNetworkString("setInventorySize")
 --Used when the player spawns
 function InventoryLoad(pl,str)
 	local t = util.KeyValuesToTable(str)
 	local xmax,ymax = pl:GetInventorySize()
-	umsg.Start("setInventorySize",pl)
-		umsg.Char(xmax)
-		umsg.Char(ymax)
-	umsg.End()
+	net.Start("setInventorySize")
+		net.WriteInt(xmax,8)
+		net.WriteInt(ymax,8)
+	net.Send(pl)
 	
 	if !t then return end
 

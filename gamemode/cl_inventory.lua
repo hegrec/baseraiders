@@ -1,5 +1,6 @@
 hook.Add("Initialize","dfsagdfds",function()
 Inventory = nil
+LocalPlayer().Inventory = LocalPlayer().Inventory or {}
 end)
 function ShowInv(pl,cmd,args)
 	if !LocalPlayer().Inventory then return end
@@ -80,6 +81,28 @@ function INVENTORY:Init()
 	self.descriptionLabel:SetPos(infoX+5,35)
 	self.descriptionLabel:SetMultiline(true)
 	self.descriptionLabel:SetWrap(true)
+
+	self.descriptionLabel:SetSize(140,100)
+
+
+
+	self.smeltRecipes = vgui.Create("DButton",self)
+	self.smeltRecipes:SetPos(infoX+5,self:GetTall()-60)
+	self.smeltRecipes:SetText("Smelting Recipes")
+	self.smeltRecipes:SetSize(140,25)
+	self.smeltRecipes.DoClick = function()
+
+		ShowCraftingMenu(true)
+	end
+
+	self.craftRecipes = vgui.Create("DButton",self)
+	self.craftRecipes:SetPos(infoX+5,self:GetTall()-30)
+	self.craftRecipes:SetText("Crafting Recipes")
+	self.craftRecipes:SetSize(140,25)
+	self.craftRecipes.DoClick = function()
+
+		ShowCraftingMenu()
+	end
 
 	self.descriptionLabel:SetSize(140,100)
 end
@@ -272,7 +295,7 @@ local function ReceiveItem( um )
 	
 	local tbl = GetItems()[index]
 	if !tbl then return end
-	
+
 	LocalPlayer().Inventory[y][x] = index
 	local tsize = tbl.Size
 	if tsize == nil then tsize = {2,2} end
@@ -366,10 +389,10 @@ end
 net.Receive("loseItem",LoseItem)
 
 
-function recvInventorySize(um) 
+function recvInventorySize() 
 	LocalPlayer().Inventory = {}
-	local x = um:ReadChar()
-	local y = um:ReadChar()
+	local x = net.ReadInt(8)
+	local y = net.ReadInt(8)
 	
 	for y=1,y do
 		LocalPlayer().Inventory[y] = {}
@@ -378,7 +401,7 @@ function recvInventorySize(um)
 		end
 	end
  end
- usermessage.Hook("setInventorySize",recvInventorySize)
+ net.Receive("setInventorySize",recvInventorySize)
 local draggingEntity
  hook.Add("GUIMousePressed","hoverclick",function(code,pos)
 	local ent = properties.GetHovered(LocalPlayer():EyePos(),LocalPlayer():GetAimVector())
