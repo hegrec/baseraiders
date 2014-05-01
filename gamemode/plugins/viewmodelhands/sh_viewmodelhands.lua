@@ -61,18 +61,18 @@ end
 
 function PLAYER:GetHandsModel()
 
-	//return { model = "models/weapons/c_arms_citizen.mdl", skin = 1, body = "000000" }
+	return { model = "models/weapons/c_arms_citizen.mdl", skin = 0, body = "000000" }
 	
 	
 --	local cl_playermodel = self.Player:GetInfo( "cl_playermodel" )
 	
-	for name, model in SortedPairs( player_manager.AllValidModels() ) do
+	--[[for name, model in SortedPairs( player_manager.AllValidModels() ) do
 		if model == self.Player:GetModel() then
-			return player_manager.TranslatePlayerHands( name )
+			return player_manager.TranslatePlayerHands( name ) or "models/weapons/c_arms_citizen.mdl"
 		end
 
 	end
-
+]]
 end
 
 player_manager.RegisterClass( "player_baseraiders", PLAYER, "player_default" )
