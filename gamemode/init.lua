@@ -495,46 +495,6 @@ function GM:PlayerDeath( Victim, Inflictor, Attacker )
 			Victim:TakeItem(v.WepType)
 		end			
 	end
-
-
-	--noteriety
-
-
-	
-	if ( Inflictor && Inflictor == Attacker && (Inflictor:IsPlayer() || Inflictor:IsNPC()) ) then
-		Inflictor = Inflictor:GetActiveWeapon()
-		if ( !Inflictor || Inflictor == NULL ) then Inflictor = Attacker end
-	end
-	
-	if (Attacker == Victim) then
-		MsgAdmin( Attacker:Name() .. " suicided!" ,1)
-	return end
-
-	if ( Attacker:IsPlayer() ) then
-		MsgAdmin( Attacker:Name() .. " killed " .. Victim:Name() .. " using " .. Inflictor:GetClass(),1)
-
-		if !Victim:IsHostileTo(Attacker) then
-			local innocent_gain = 200
-			if (Victim:GetGangID() == 0) then
-				innocent_gain = 300
-			end
-			if Victim:GetNoteriety() < 50 then
-				Attacker:AddNoteriety(innocent_gain)
-			elseif Victim:GetNoteriety() < 250 then
-				Attacker:AddNoteriety(125)
-			else
-				Attacker:AddNoteriety(50)
-			end
-		else
-			Attacker:SendNotify("You killed a hostile aggressor.","NOTIFY_GENERIC",5)
-		end
-
-
-
-	return end
-
-	Victim:ClearHostility()
-
 	
 	if(Attacker:IsVehicle())then
 		local driver = Attacker:GetDriver()

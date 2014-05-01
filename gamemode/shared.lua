@@ -50,9 +50,6 @@ POWER_DISTANCE = 175
 TEAM_CITIZENS = 1
 DROP_GUNS_ON_DEATH = true
 
-
-LOCK_PICK_NOTERIETY = 2
-
 team.SetUp(TEAM_CITIZENS, "Citizens", Color(0, 155, 0, 255))
 
 function GM:GravGunPunt(ply,ent)

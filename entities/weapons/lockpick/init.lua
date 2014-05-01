@@ -25,7 +25,6 @@ end
 function SWEP:TryUnlock(tr)
 	if tr.Entity.ConstLocked == 1 then self.Owner:SendNotify("This door is unable to be lockpicked!","NOTIFY_ERROR",3) return end
 	local num = math.random(1,100) - self.lockpickboost
-	self.Owner:AddNoteriety(LOCK_PICK_NOTERIETY)
 	if num <= 10-tr.Entity:GetNWInt("level") then
 		tr.Entity:Fire("unlock")
 		tr.Entity.Locked = false
@@ -43,13 +42,6 @@ function SWEP:TryUnlock(tr)
 	local alarms = ents.FindByClass("alarm_system")
 	if door:GetNWInt("Territory") > 0 and territories[door:GetNWInt("Territory")].OwnerGangID then
 		local owningGang = territories[door:GetNWInt("Territory")].OwnerGangID
-		
-
-		for i,v in pairs(player.GetAll()) do
-			if v:GetGangID() == owningGang then
-				self.Owner:SetHostileTo(v)
-			end
-		end
 
 		for i,v in pairs(alarms) do
 			if (v.ownerGang == owningGang and v:GetPos():Distance(door:GetPos())<300) then
@@ -59,11 +51,6 @@ function SWEP:TryUnlock(tr)
 
 	else
 		local owner = door:GetOwn()
-
-
-		if IsValid(owner) then
-			self.Owner:SetHostileTo(owner)
-		end
 		for i,v in pairs(alarms) do
 			if (v.pOwner == owner and v:GetPos():Distance(door:GetPos())<300) then
 				v:Alert(true)
@@ -77,7 +64,6 @@ end
 function SWEP:TrySteal(tr)
 
 	local num = math.random(1,100)
-	self.Owner:AddNoteriety(LOCK_PICK_NOTERIETY)
 	if num <= 10 then
 		gangs.StealGangVaultItem(tr.Entity,self.Owner)
 		self.Owner:EmitSound("doors/latchunlocked1.wav")

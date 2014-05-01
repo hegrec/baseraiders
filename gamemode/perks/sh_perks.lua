@@ -98,9 +98,6 @@ description = "Your guns do a tiny bit more damage."
 perks["Fleet"] = {
 description = "You run a tad bit faster."
 } 
-perks["Lay low"] = {
-description = "Your notoriety decreases somewhat faster"
-} 
 perks["Doctor, please!"] = {
 description = "Stimpacks heal you for a bit more then usual."
 } 

@@ -127,7 +127,7 @@ function PickupItem(ply,cmd,args)
 	tr.filter = ply
 	tr = util.TraceLine(tr)
 	if tr.Entity != ent || tr.StartPos:Distance(tr.HitPos) > 200 then return end
-	
+	if !ply:Alive() then return end
 	local itemType = ent:GetItemName()
 	if ply:GiveItem(itemType,x,y) then
 		ent:Remove()
