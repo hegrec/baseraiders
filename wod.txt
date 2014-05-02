@@ -7,6 +7,6 @@
 
 	"settings"
 	{
-		// TODO: put some settings here
+		// TODO: put some settings here 
 	}
 }
