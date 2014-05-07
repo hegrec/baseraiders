@@ -351,11 +351,6 @@ function GM:EntityTakeDamage(target, dmginfo)
 			target:EmitSound("ambient/explosions/explode_4.wav")
 			target:Remove()
 		end
-	elseif target:IsPlayer() then
-		local attacker = dmginfo:GetAttacker()
-		if attacker:IsPlayer() then
-			attacker:SetHostileTo(target)
-		end
 	end
 end
 
