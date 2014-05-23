@@ -4,7 +4,7 @@ function GM:OnLoadPerks(pl,perks)
 	if perks == "" then
 		return
 	end
-	pl.Perks = util.JSONToTable(perks)
+	pl.Perks = baseraiders.util.Deserialize(perks)
 end
 
 local meta = FindMetaTable("Player")

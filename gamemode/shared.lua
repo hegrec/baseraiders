@@ -1,26 +1,21 @@
-GM.DarklandID = 2
-GM.Name = "Base Raiders";
+baseraiders.DarklandID = 2
+baseraiders.Name = "Base Raiders";
 
-GM.Author = "Darkspider";
+baseraiders.Author = "Darkspider";
 DeriveGamemode("sandbox")
 
-function GetBySteamID( steamID )
+function GetBySteamID(steamID)
+	local players = player.GetAll()
 
-        --      Get all players
-        local players = player.GetAll()
-        
-        --      Loop players
-        for i,ply in ipairs(players) do
-        
-                --      Check if the player's steam ID is the same as the given one
-                if ply:GetNWString("SteamID") == steamID then
-                        return ply
-                end
-        end
-        
-        --      If not found, return false
-        return false
+	for k,pl in ipairs(players) do
+		if pl:GetNWString("SteamID") == steamID then
+			return pl
+		end
+	end
+
+	return false
 end
+
 function GM:PlayerNoClip(pl)
 	return DEVMODE or false
 end

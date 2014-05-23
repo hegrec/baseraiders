@@ -82,7 +82,7 @@ function SaveRPAccount(pl)
 	local safemoney 	= pl:GetMoneyOffset()
 	local safeinv 		= util.TableToKeyValues(pl.Inventory)
 	local safeid 		= pl:SteamID()
-	local perks 		= util.TableToJSON(pl.Perks)
+	local perks 		= baseraiders.util.Serialize(pl.Perks)
 	local clothing 		= table.ToSave(pl.Clothing)
 	local model 		= pl.Model or ""
 	local experience 		= pl:GetExperience() or ""

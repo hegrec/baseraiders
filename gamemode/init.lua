@@ -1,6 +1,4 @@
-//testing
-//test
-
+baseraiders = baseraiders or GM
 
 function resource.AddModel(path)
 	resource.AddFile(path..".mdl")
@@ -83,6 +81,8 @@ resource.AddModel("models/darkland/human/female/darkland_female_06_v2")
 resource.AddFolder("materials/models/darkland/human/female/")
 resource.AddFolder("materials/models/darkland/human/")
 --We include the needed files
+include("libs/external/von.lua")
+include("sh_util.lua")
 include("chat.lua")
 
 include("mapsetup.lua")
@@ -99,6 +99,8 @@ include("perks/sh_perks.lua")
 include("perks/sv_perks.lua")
 include("npcchat/sv_conversation.lua")
 
+AddCSLuaFile("libs/external/von.lua")
+AddCSLuaFile("sh_util.lua")
 AddCSLuaFile("cl_notify.lua")
 AddCSLuaFile("npcchat/cl_conversation.lua")
 AddCSLuaFile("obj_player_extend.lua")
