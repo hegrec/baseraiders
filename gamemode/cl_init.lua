@@ -1,3 +1,5 @@
+baseraiders = baseraiders or GM
+
 function IncludePlugins(dir)
 	MsgN("Starting to include CL Plugins!");
 	local fil, Folders = file.Find(dir.."*", "LUA")
@@ -15,6 +17,8 @@ function IncludePlugins(dir)
 end
 
 --Include em'
+include("libs/external/von.lua")
+include("sh_util.lua")
 include("cl_notify.lua")
 include("obj_player_extend.lua")
 include("obj_entity_extend.lua")
