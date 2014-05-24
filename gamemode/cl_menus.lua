@@ -139,18 +139,18 @@ function PANEL:AddItem(item,price)
 end
 vgui.Register("Store",PANEL,"DFrame")
 
-function ShowActiveStore(um)
-	if !ValidPanel(Panels["ActiveStore"]) then
+function ShowActiveStore(len, pl)
+	if not ValidPanel(Panels["ActiveStore"]) then
 		Panels["ActiveStore"] = vgui.Create("Store")
 	end
-	Panels["ActiveStore"].NPCIndex = um:ReadShort()
-	Panels["ActiveStore"]:SetTitle(um:ReadString())
+	Panels["ActiveStore"].NPCIndex = net.ReadUInt(16)
+	Panels["ActiveStore"]:SetTitle(net.ReadString())
 end 
-usermessage.Hook("showStore",ShowActiveStore)
+net.Receive("showStore", ShowActiveStore)
 
 
 function addStoreItem(um)
-	if !ValidPanel(Panels["ActiveStore"]) then
+	if not ValidPanel(Panels["ActiveStore"]) then
 		Panels["ActiveStore"] = vgui.Create("Store")
 	end
 	Panels["ActiveStore"]:AddItem(net.ReadString(),net.ReadInt(8))

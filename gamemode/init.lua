@@ -425,7 +425,7 @@ function CheckIfConnected(id)
 end
 
 function GM:PlayerDisconnected(ply)
-	timer.Create("PlyDisconnect_"..ply:SteamID(),180,1,CheckIfConnected,ply:SteamID())
+	timer.Create("PlyDisconnect_" .. ply:SteamID(), 180, 1, function() if IsValid(ply) then CheckIfConnected(ply:SteamID()) end end)
 	MsgAdmin(ply:Name() .. " ("..ply:SteamID()..") has disconnected",6)
 end
 
@@ -544,12 +544,13 @@ function RequestModel(pl)
 end
 
 util.AddNetworkString("addStoreItem")
+util.AddNetworkString("showStore")
+
 function ViewStore(pl,ent,store)
-	umsg.Start("showStore",pl)
-	umsg.Short(ent:EntIndex())
-	umsg.String(store.Title)
-	umsg.End()
-	
+	net.Start("showStore")
+		net.WriteUInt(ent:EntIndex(), 16)
+		net.WriteString(store.Title)
+	net.Send(pl)
 	
 	for i,v in pairs(store.items) do
 		print(i,v)
