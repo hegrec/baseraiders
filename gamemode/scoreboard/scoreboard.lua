@@ -35,7 +35,7 @@ function PANEL:Init()
 	self:UpdateScoreboard()
 	
 	// Update the scoreboard every 1 second
-	timer.Create( "ScoreboardUpdater", 1, 0, self.UpdateScoreboard, self )
+	timer.Create("ScoreboardUpdater", 1, 0, function() self:UpdateScoreboard() end)
 	
 	self.lblPing = vgui.Create( "DLabel", self )
 	self.lblPing:SetText( "Ping" )
