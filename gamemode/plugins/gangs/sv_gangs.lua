@@ -66,7 +66,7 @@ function gangs.OnLoadPlayerGang(pl,gangID)
 			
 			gangs.gangcache[cachedID] = gangs.gangcache[cachedID] or {}
 			gangs.gangcache[cachedID].Name = res.Name
-			gangs.gangcache[cachedID].GangBank = util.JSONToTable(res.GangBank) or {}
+			gangs.gangcache[cachedID].GangBank = baseraiders.util.Deserialize(res.GangBank)
 			for i,v in pairs(gangs.gangcache[cachedID].GangBank) do
 				if !GetItems()[i] then 
 					gangs.gangcache[cachedID].GangBank[i] = nil
@@ -294,7 +294,7 @@ function gangs.ItemToHub(pl,cmd,args)
 		umsg.String(item)
 		umsg.Short(gang.GangBank[item])
 	umsg.End()
-	Query("UPDATE rp_gangdata set GangBank='"..escape(util.TableToJSON(gang.GangBank)).."' WHERE ID="..gangID)
+	Query("UPDATE rp_gangdata set GangBank='"..escape(baseraiders.util.Serialize(gang.GangBank)).."' WHERE ID="..gangID)
 end
 concommand.Add("item_to_hub",gangs.ItemToHub)
 function gangs.HubToInv(pl,cmd,args)
@@ -332,7 +332,7 @@ function gangs.HubToInv(pl,cmd,args)
 		umsg.String(item)
 		umsg.Short(gang.GangBank[item])
 	umsg.End()
-	Query("UPDATE rp_gangdata set GangBank='"..escape(util.TableToJSON(gang.GangBank)).."' WHERE ID="..gangID)
+	Query("UPDATE rp_gangdata set GangBank='"..escape(baseraiders.util.Serialize(gang.GangBank)).."' WHERE ID="..gangID)
 end
 concommand.Add("hub_to_inv",gangs.HubToInv)
 function gangs.StealGangVaultItem(vault,plStealer)
@@ -363,7 +363,7 @@ function gangs.StealGangVaultItem(vault,plStealer)
 
 	SpawnRoleplayItem(stolenType,vault:GetPos()+Vector(0,0,70))
 	plStealer:SendNotify("You stole an item from the gang vault ("..stolenType..")","NOTIFY_GENERIC",10)
-	Query("UPDATE rp_gangdata set GangBank='"..escape(util.TableToJSON(gang.GangBank)).."' WHERE ID="..vault:GetGangID())
+	Query("UPDATE rp_gangdata set GangBank='"..escape(baseraiders.util.Serialize(gang.GangBank)).."' WHERE ID="..vault:GetGangID())
 
 
 end

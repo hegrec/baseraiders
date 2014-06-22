@@ -1,6 +1,4 @@
-//testing
-//test
-
+baseraiders = baseraiders or GM
 
 function resource.AddModel(path)
 	resource.AddFile(path..".mdl")
@@ -83,6 +81,8 @@ resource.AddModel("models/darkland/human/female/darkland_female_06_v2")
 resource.AddFolder("materials/models/darkland/human/female/")
 resource.AddFolder("materials/models/darkland/human/")
 --We include the needed files
+include("libs/external/von.lua")
+include("sh_util.lua")
 include("chat.lua")
 
 include("mapsetup.lua")
@@ -99,6 +99,8 @@ include("perks/sh_perks.lua")
 include("perks/sv_perks.lua")
 include("npcchat/sv_conversation.lua")
 
+AddCSLuaFile("libs/external/von.lua")
+AddCSLuaFile("sh_util.lua")
 AddCSLuaFile("cl_notify.lua")
 AddCSLuaFile("npcchat/cl_conversation.lua")
 AddCSLuaFile("obj_player_extend.lua")
@@ -418,7 +420,7 @@ function CheckIfConnected(id)
 end
 
 function GM:PlayerDisconnected(ply)
-	timer.Create("PlyDisconnect_"..ply:SteamID(),180,1,CheckIfConnected,ply:SteamID())
+	timer.Create("PlyDisconnect_" .. ply:SteamID(), 180, 1, function() if IsValid(ply) then CheckIfConnected(ply:SteamID()) end end)
 	MsgAdmin(ply:Name() .. " ("..ply:SteamID()..") has disconnected",6)
 end
 
@@ -537,12 +539,13 @@ function RequestModel(pl)
 end
 
 util.AddNetworkString("addStoreItem")
+util.AddNetworkString("showStore")
+
 function ViewStore(pl,ent,store)
-	umsg.Start("showStore",pl)
-	umsg.Short(ent:EntIndex())
-	umsg.String(store.Title)
-	umsg.End()
-	
+	net.Start("showStore")
+		net.WriteUInt(ent:EntIndex(), 16)
+		net.WriteString(store.Title)
+	net.Send(pl)
 	
 	for i,v in pairs(store.items) do
 		print(i,v)
